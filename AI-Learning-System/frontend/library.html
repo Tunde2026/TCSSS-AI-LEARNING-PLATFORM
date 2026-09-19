@@ -6,32 +6,325 @@
 <title>Library — AI Learning Platform</title>
 <link rel="stylesheet" href="assets/shell.css">
 <style>
-  .page { flex: 1; padding: 32px; max-width: 1100px; }
-  .placeholder {
-    margin-top: 24px; padding: 40px; text-align: center;
-    color: var(--slate); border: 2px dashed var(--blush-deep);
-    border-radius: var(--radius); background: var(--white);
+  .library-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 28px;
   }
+  .search-box {
+    position: relative;
+    max-width: 480px;
+  }
+  .search-box i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--slate);
+    font-size: 0.85rem;
+    pointer-events: none;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 12px 16px 12px 42px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--ink);
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
+  }
+  .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .resource-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  }
+  .resource-card:hover {
+    border-color: var(--gold);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+  }
+  .resource-card__cover {
+    height: 140px;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--soft-navy) 100%);
+    display: grid;
+    place-items: center;
+    color: rgba(255,255,255,0.55);
+    font-size: 2rem;
+    position: relative;
+  }
+  .resource-card__subject {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--gold);
+    color: var(--navy);
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  .resource-card__body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+  }
+  .resource-card__title {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--navy);
+    line-height: 1.3;
+    margin: 0;
+  }
+  .resource-card__meta {
+    font-size: 0.78rem;
+    color: var(--slate);
+    margin: 0;
+  }
+  .resource-card__actions {
+    margin-top: auto;
+    padding-top: 12px;
+    display: flex;
+    gap: 8px;
+  }
+  .resource-card__actions .btn {
+    font-size: 0.82rem;
+    padding: 0.55em 1em;
+    flex: 1;
+    justify-content: center;
+  }
+  .admin-cta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 28px;
+  }
+  .admin-cta__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--blush-deep);
+    color: var(--navy);
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .admin-cta__body { flex: 1; min-width: 0; }
+  .admin-cta__title {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--navy);
+    margin: 0 0 2px;
+  }
+  .admin-cta__sub { font-size: 0.83rem; color: var(--slate); margin: 0; }
 </style>
 </head>
 <body>
-  <div class="mobile-bar">
-    <button class="mobile-bar__toggle" id="sidebar-toggle" aria-label="Open menu">☰</button>
-    <span>AI Learning Platform</span>
-  </div>
-  <div class="backdrop" id="sidebar-backdrop"></div>
-
   <div class="app">
     <div id="sidebar-mount"></div>
+
     <main class="page">
-      <h1>Library</h1>
-      <p>Trusted educational resources, curated by administrators.</p>
-      <div class="placeholder">
-        Approved books · e-books · PDFs — added by administrators only
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Library</h1>
+              <p class="page-header__sub">
+                Trusted educational resources, added by your school administrators.
+                Click any card to download.
+              </p>
+            </div>
+          </header>
+
+          <div class="admin-cta" id="admin-cta" style="display:none">
+            <div class="admin-cta__icon">
+              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+            </div>
+            <div class="admin-cta__body">
+              <div class="admin-cta__title">You are an administrator</div>
+              <p class="admin-cta__sub">Add books and resources from the Admin panel.</p>
+            </div>
+            <a class="btn btn-primary" href="admin/library.html">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i>
+              Add resource
+            </a>
+          </div>
+
+          <div class="library-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+              <input type="search" id="search" placeholder="Search by title, subject, or author…">
+            </div>
+            <div class="filter-chips" id="chips">
+              <button class="chip is-active" data-subject="all" type="button">All</button>
+              <button class="chip" data-subject="Mathematics" type="button">Mathematics</button>
+              <button class="chip" data-subject="Biology" type="button">Biology</button>
+              <button class="chip" data-subject="Chemistry" type="button">Chemistry</button>
+              <button class="chip" data-subject="Physics" type="button">Physics</button>
+              <button class="chip" data-subject="English" type="button">English</button>
+            </div>
+          </div>
+
+          <section class="section">
+            <div id="resource-area">
+              <div class="empty-state">
+                <div class="empty-state__icon">
+                  <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+                </div>
+                <h3 class="empty-state__title">No resources yet</h3>
+                <p class="empty-state__desc">
+                  Your school administrators will add books, textbooks, and study materials here.
+                </p>
+              </div>
+            </div>
+          </section>
+
+        </div>
       </div>
     </main>
   </div>
 
 <script src="assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var allDocs = [];
+    var activeSubject = 'all';
+    var searchTerm = '';
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    async function loadDocs() {
+      var res = await fetch('/api/library', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = 'index.html'; return; }
+      if (!res.ok) return;
+      var data = await res.json();
+      allDocs = data.documents || [];
+      render();
+    }
+
+    function filtered() {
+      return allDocs.filter(function (d) {
+        if (activeSubject !== 'all') {
+          if ((d.subject || '').toLowerCase() !== activeSubject.toLowerCase()) return false;
+        }
+        if (!searchTerm) return true;
+        var t = searchTerm.toLowerCase();
+        return (d.title || '').toLowerCase().includes(t)
+            || (d.subject || '').toLowerCase().includes(t)
+            || (d.author || '').toLowerCase().includes(t);
+      });
+    }
+
+    function render() {
+      var area = document.getElementById('resource-area');
+      var list = filtered();
+
+      if (!list.length) {
+        area.innerHTML =
+          '<div class="empty-state">' +
+            '<div class="empty-state__icon"><i class="fa-solid fa-book-open" aria-hidden="true"></i></div>' +
+            '<h3 class="empty-state__title">' +
+              (allDocs.length ? 'No matches' : 'No resources yet') +
+            '</h3>' +
+            '<p class="empty-state__desc">' +
+              (allDocs.length
+                ? 'Try a different subject or search term.'
+                : 'Your school administrators will add books and study materials here.') +
+            '</p>' +
+          '</div>';
+        return;
+      }
+
+      area.innerHTML = '<div class="resource-grid">' + list.map(function (d) {
+        return (
+          '<div class="resource-card" data-id="' + d.id + '">' +
+            '<div class="resource-card__cover">' +
+              (d.subject ? '<span class="resource-card__subject">' + esc(d.subject) + '</span>' : '') +
+              '<i class="fa-solid fa-file-pdf" aria-hidden="true"></i>' +
+            '</div>' +
+            '<div class="resource-card__body">' +
+              '<h3 class="resource-card__title">' + esc(d.title) + '</h3>' +
+              '<p class="resource-card__meta">' +
+                (d.author ? esc(d.author) + ' · ' : '') +
+                (d.level ? esc(d.level) : '') +
+              '</p>' +
+              '<div class="resource-card__actions">' +
+                '<a class="btn btn-primary" href="/api/library/' + d.id + '/download">' +
+                  '<i class="fa-solid fa-download" aria-hidden="true"></i> Download' +
+                '</a>' +
+              '</div>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('') + '</div>';
+    }
+
+    // Load user + admin CTA
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data && data.user && data.user.role === 'admin') {
+          document.getElementById('admin-cta').style.display = 'flex';
+        }
+      })
+      .catch(function () {});
+
+    document.getElementById('search').addEventListener('input', function (e) {
+      searchTerm = e.target.value;
+      render();
+    });
+
+    document.querySelectorAll('#chips .chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('#chips .chip').forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        activeSubject = chip.getAttribute('data-subject');
+        render();
+      });
+    });
+
+    loadDocs();
+  })();
+</script>
 </body>
 </html>

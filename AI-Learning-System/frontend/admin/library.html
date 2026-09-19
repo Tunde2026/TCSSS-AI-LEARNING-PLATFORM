@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Library Management — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .lib-toolbar {
+    display: flex; gap: 12px; align-items: center;
+    flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .lib-search {
+    flex: 1; min-width: 200px; max-width: 400px;
+    padding: 10px 16px; border: 1px solid var(--border);
+    border-radius: 999px; font-family: var(--font-body); font-size: 0.9rem;
+  }
+  .lib-search:focus {
+    outline: none; border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
+  }
+
+  .bulk-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: var(--navy);
+    color: var(--white);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+  }
+  .bulk-bar.is-visible { display: flex; }
+  .bulk-bar strong { font-family: var(--font-ui); }
+  .bulk-bar .btn {
+    padding: 6px 12px; font-size: 0.82rem;
+    background: rgba(255,255,255,0.15); color: var(--white);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .bulk-bar .btn:hover { background: rgba(255,255,255,0.25); }
+  .bulk-bar .btn--danger { background: var(--red); border-color: var(--red); }
+  .bulk-bar .btn--danger:hover { background: var(--deep-red); }
+
+  .lib-table {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .lib-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 140px 120px 100px 140px;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .lib-row:last-child { border-bottom: none; }
+  .lib-row--head {
+    background: var(--blush);
+    font-family: var(--font-ui); font-size: 0.68rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--slate); font-weight: 500;
+  }
+  .lib-row input[type="checkbox"] {
+    width: 16px; height: 16px;
+    cursor: pointer;
+    accent-color: var(--red);
+  }
+  .lib-row__title-wrap { min-width: 0; }
+  .lib-row__title {
+    font-weight: 600; color: var(--ink); font-size: 0.92rem;
+    margin: 0 0 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer;
+    padding: 2px 4px;
+    margin-left: -4px;
+    border-radius: 4px;
+    transition: background var(--transition);
+  }
+  .lib-row__title:hover { background: var(--blush); }
+  .lib-row__title-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--ink);
+    outline: none;
+  }
+  .lib-row__sub {
+    font-size: 0.78rem; color: var(--slate);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .status-pill {
+    display: inline-block;
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    font-weight: 500;
+    padding: 3px 10px; border-radius: 999px;
+  }
+  .status-pill--pending  { background: #FBF3E1; color: #B77700; }
+  .status-pill--approved { background: #EAF7EE; color: #2F8F4A; }
+  .status-pill--rejected { background: #FDECEC; color: var(--deep-red); }
+  .status-pill--ready      { background: #EAF7EE; color: #2F8F4A; }
+  .status-pill--processing { background: #FBF3E1; color: #B77700; }
+  .status-pill--failed     { background: #FDECEC; color: var(--deep-red); }
+
+  .row-actions {
+    display: flex; gap: 4px; justify-content: flex-end;
+  }
+  .row-actions button {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: none; background: transparent;
+    color: var(--slate); cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .row-actions button:hover { background: var(--blush); color: var(--navy); }
+  .row-actions button.danger:hover { background: #FCECEC; color: var(--deep-red); }
+
+  .file-input-wrap {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+  }
+  .file-input-wrap:hover { border-color: var(--gold); background: var(--blush); }
+  .file-input-wrap input { display: none; }
+  .file-input-wrap i { font-size: 1.6rem; color: var(--slate); margin-bottom: 8px; display: block; }
+  .file-input-wrap small { color: var(--slate); font-size: 0.78rem; }
+  .file-name {
+    margin-top: 10px; font-size: 0.82rem; color: var(--navy); font-weight: 500;
+  }
+
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(17,16,74,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; padding: 24px;
+  }
+  .modal-overlay.is-open { display: flex; }
+  .modal {
+    width: 100%; max-width: 520px;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: var(--shadow-lg);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal__title {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .modal__sub {
+    font-size: 0.88rem; color: var(--slate);
+    margin: 0 0 20px; line-height: 1.5;
+  }
+  .modal__actions {
+    display: flex; gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  @media (max-width: 900px) {
+    .lib-row { grid-template-columns: 32px 1fr auto; }
+    .lib-row .lib-cell-hide { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Library Management</h1>
+              <p class="page-header__sub">
+                Upload resources, approve them, and manage the student library.
+              </p>
+            </div>
+            <button class="btn btn-primary" id="upload-btn" type="button">
+              <i class="fa-solid fa-upload" aria-hidden="true"></i>
+              Upload resource
+            </button>
+          </header>
+
+          <div class="lib-toolbar">
+            <input class="lib-search" type="search" id="search" placeholder="Search by title or subject…">
+            <div class="filter-chips" id="chips">
+              <button class="chip is-active" data-filter="all" type="button">All</button>
+              <button class="chip" data-filter="pending" type="button">Pending</button>
+              <button class="chip" data-filter="approved" type="button">Approved</button>
+              <button class="chip" data-filter="failed" type="button">Failed</button>
+            </div>
+          </div>
+
+          <div class="bulk-bar" id="bulk-bar">
+            <span><strong id="bulk-count">0</strong> selected</span>
+            <button class="btn" data-bulk="approve" type="button">Approve</button>
+            <button class="btn" data-bulk="unapprove" type="button">Unapprove</button>
+            <button class="btn btn--danger" data-bulk="delete" type="button">Delete</button>
+            <button class="btn" data-bulk="clear" type="button" style="margin-left:auto">Clear</button>
+          </div>
+
+          <div class="lib-table">
+            <div class="lib-row lib-row--head">
+              <div><input type="checkbox" id="check-all"></div>
+              <div>Document</div>
+              <div>Subject</div>
+              <div>Processing</div>
+              <div>Approval</div>
+              <div></div>
+            </div>
+            <div id="rows-wrap">
+              <div style="padding:40px;text-align:center;color:var(--slate)">Loading…</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Upload modal -->
+  <div class="modal-overlay" id="upload-modal">
+    <div class="modal">
+      <h3 class="modal__title">Upload resource</h3>
+      <p class="modal__sub">
+        PDF, DOCX, EPUB, or TXT. Max 50 MB. The document stays hidden until approved.
+      </p>
+
+      <div class="file-input-wrap" id="file-wrap">
+        <input type="file" id="file" accept=".pdf,.docx,.doc,.epub,.txt">
+        <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+        <div><strong>Click to choose a file</strong></div>
+        <small>or drag and drop</small>
+        <div class="file-name" id="file-name" style="display:none"></div>
+      </div>
+
+      <div style="margin-top:16px">
+        <label class="label" for="lib-title">Title</label>
+        <input class="input" type="text" id="lib-title" placeholder="e.g. New School Chemistry">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div>
+          <label class="label" for="lib-subject">Subject</label>
+          <input class="input" type="text" id="lib-subject" placeholder="Chemistry">
+        </div>
+        <div>
+          <label class="label" for="lib-level">Level</label>
+          <input class="input" type="text" id="lib-level" placeholder="SSS 2">
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <label class="label" for="lib-author">Author (optional)</label>
+        <input class="input" type="text" id="lib-author">
+      </div>
+
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="upload-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="upload-confirm" type="button">Upload</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm -->
+  <div class="modal-overlay" id="del-modal">
+    <div class="modal" style="max-width:400px">
+      <h3 class="modal__title">Delete resource?</h3>
+      <p class="modal__sub" id="del-sub">The file and record will be removed.</p>
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="del-cancel" type="button">Cancel</button>
+        <button class="btn btn-danger" id="del-confirm" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var docs = [];
+    var filterStatus = 'all';
+    var searchTerm = '';
+    var pendingDel = null;
+    var selectedIds = {};
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = [
+        'position:fixed','bottom:24px','left:50%','transform:translateX(-50%)',
+        'background:' + (isError ? 'var(--deep-red)' : 'var(--navy)'),
+        'color:#fff','padding:12px 20px','border-radius:999px',
+        'font-family:var(--font-body)','font-size:0.9rem',
+        'box-shadow:0 8px 24px rgba(17,16,74,0.2)','z-index:300'
+      ].join(';');
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+
+    function fmtSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function processingLabel(status, chunkCount) {
+      if (status === 'ready')      return '<span style="color:#2F8F4A">' + chunkCount + ' chunks</span>';
+      if (status === 'processing') return '<span style="color:#B77700">processing…</span>';
+      if (status === 'failed')     return '<span style="color:var(--deep-red)">failed</span>';
+      return '<span style="color:var(--slate)">pending</span>';
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      var data = await res.json();
+      if (!data.user || data.user.role !== 'admin') {
+        window.location.href = '../chat.html';
+        return false;
+      }
+      return true;
+    }
+
+    async function loadDocs() {
+      var res = await fetch('/api/library/admin', { credentials: 'include' });
+      if (!res.ok) { toast('Could not load library.', true); return; }
+      var data = await res.json();
+      docs = data.documents || [];
+      renderRows();
+    }
+
+    function filtered() {
+      return docs.filter(function (d) {
+        if (filterStatus === 'pending' && d.status !== 'pending') return false;
+        if (filterStatus === 'approved' && d.status !== 'approved') return false;
+        if (filterStatus === 'failed' && d.processing_status !== 'failed') return false;
+        if (!searchTerm) return true;
+        var t = searchTerm.toLowerCase();
+        return (d.title || '').toLowerCase().includes(t) || (d.subject || '').toLowerCase().includes(t);
+      });
+    }
+
+    function selectedCount() {
+      return Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; }).length;
+    }
+
+    function updateBulkBar() {
+      var n = selectedCount();
+      document.getElementById('bulk-count').textContent = n;
+      document.getElementById('bulk-bar').classList.toggle('is-visible', n > 0);
+    }
+
+    function syncCheckAll() {
+      var visible = filtered();
+      var allChecked = visible.length > 0 && visible.every(function (d) { return selectedIds[d.id]; });
+      var someChecked = visible.some(function (d) { return selectedIds[d.id]; });
+      var el = document.getElementById('check-all');
+      el.checked = allChecked;
+      el.indeterminate = !allChecked && someChecked;
+    }
+
+    function renderRows() {
+      var wrap = document.getElementById('rows-wrap');
+      var list = filtered();
+
+      if (!list.length) {
+        wrap.innerHTML =
+          '<div style="padding:40px;text-align:center;color:var(--slate)">' +
+          'No documents match your filter.</div>';
+        updateBulkBar();
+        syncCheckAll();
+        return;
+      }
+
+      wrap.innerHTML = list.map(function (d) {
+        var statusCls = 'status-pill status-pill--' + (d.status || 'pending');
+        var procCls   = 'status-pill status-pill--' + (d.processing_status || 'pending');
+        var approved = d.approved;
+
+        return (
+          '<div class="lib-row" data-id="' + d.id + '">' +
+            '<div><input type="checkbox" class="lib-check" data-id="' + d.id + '"' +
+              (selectedIds[d.id] ? ' checked' : '') + '></div>' +
+            '<div class="lib-row__title-wrap">' +
+              '<div class="lib-row__title" data-title-id="' + d.id + '">' + esc(d.title) + '</div>' +
+              '<div class="lib-row__sub">' +
+                esc(d.original_name) + ' · ' + fmtSize(Number(d.size_bytes)) +
+              '</div>' +
+            '</div>' +
+            '<div class="lib-cell-hide" style="font-size:0.85rem;color:var(--slate)">' +
+              esc(d.subject || '—') +
+            '</div>' +
+            '<div class="lib-cell-hide"><span class="' + procCls + '">' +
+              (d.processing_status || 'pending') +
+            '</span> <span style="font-size:0.75rem;color:var(--slate)">' +
+              (d.chunk_count || 0) + ' chunks</span></div>' +
+            '<div><span class="' + statusCls + '">' + (d.status || 'pending') + '</span></div>' +
+            '<div class="row-actions">' +
+              (approved
+                ? '<button data-action="reject" title="Unapprove" type="button">' +
+                    '<i class="fa-solid fa-eye-slash"></i></button>'
+                : '<button data-action="approve" title="Approve" type="button">' +
+                    '<i class="fa-solid fa-check"></i></button>') +
+              (d.processing_status === 'failed' || d.processing_status === 'pending'
+                ? '<button data-action="reprocess" title="Reprocess" type="button">' +
+                    '<i class="fa-solid fa-rotate-right"></i></button>'
+                : '') +
+              '<button class="danger" data-action="delete" title="Delete" type="button">' +
+                '<i class="fa-solid fa-trash"></i></button>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      wrap.querySelectorAll('.lib-check').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          selectedIds[cb.getAttribute('data-id')] = cb.checked;
+          updateBulkBar();
+          syncCheckAll();
+        });
+      });
+
+      wrap.querySelectorAll('.lib-row__title').forEach(function (el) {
+        el.addEventListener('click', function () {
+          startRename(el.getAttribute('data-title-id'));
+        });
+      });
+
+      wrap.querySelectorAll('.lib-row').forEach(function (row) {
+        var id = row.getAttribute('data-id');
+        var doc = docs.find(function (d) { return d.id === id; });
+        row.querySelectorAll('[data-action]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var action = btn.getAttribute('data-action');
+            if (action === 'approve')   setApproved(doc, true);
+            if (action === 'reject')    setApproved(doc, false);
+            if (action === 'reprocess') reprocess(doc);
+            if (action === 'delete')    promptDelete(doc);
+          });
+        });
+      });
+
+      updateBulkBar();
+      syncCheckAll();
+    }
+
+    // ----- Inline rename -----
+    function startRename(docId) {
+      var el = document.querySelector('.lib-row__title[data-title-id="' + docId + '"]');
+      if (!el) return;
+      var doc = docs.find(function (d) { return d.id === docId; });
+      if (!doc) return;
+
+      var input = document.createElement('input');
+      input.className = 'lib-row__title-input';
+      input.value = doc.title;
+      input.maxLength = 200;
+      el.replaceWith(input);
+      input.focus();
+      input.select();
+
+      var done = false;
+      async function commit() {
+        if (done) return; done = true;
+        var v = input.value.trim();
+        if (!v || v === doc.title) { renderRows(); return; }
+        try {
+          var res = await fetch('/api/admin/library/' + doc.id + '/rename', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ title: v }),
+          });
+          if (!res.ok) { toast('Could not rename.', true); renderRows(); return; }
+          doc.title = v;
+          toast('Renamed.');
+        } catch (_) { toast('Error renaming.', true); }
+        renderRows();
+      }
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { done = true; renderRows(); }
+      });
+      input.addEventListener('blur', commit);
+    }
+
+    // ----- Actions -----
+    async function setApproved(doc, approved) {
+      var res = await fetch('/api/library/admin/' + doc.id + '/approve', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ approved: approved }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast(data.error || 'Could not update.', true); return; }
+      var i = docs.findIndex(function (d) { return d.id === doc.id; });
+      if (i !== -1) docs[i] = data.document;
+      renderRows();
+      toast(approved ? 'Approved.' : 'Hidden from students.');
+    }
+
+    async function reprocess(doc) {
+      var res = await fetch('/api/library/admin/' + doc.id + '/reprocess', {
+        method: 'POST', credentials: 'include',
+      });
+      if (!res.ok) { toast('Could not reprocess.', true); return; }
+      toast('Reprocessing started. Refresh in ~30s.');
+      setTimeout(loadDocs, 8000);
+    }
+
+    function promptDelete(doc) {
+      pendingDel = doc;
+      document.getElementById('del-sub').textContent = '"' + doc.title + '" will be permanently deleted.';
+      document.getElementById('del-modal').classList.add('is-open');
+    }
+    function closeDel() {
+      pendingDel = null;
+      document.getElementById('del-modal').classList.remove('is-open');
+    }
+    async function confirmDelete() {
+      if (!pendingDel) return;
+      var d = pendingDel;
+      closeDel();
+      var res = await fetch('/api/library/admin/' + d.id, { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) { toast('Could not delete.', true); return; }
+      docs = docs.filter(function (x) { return x.id !== d.id; });
+      delete selectedIds[d.id];
+      renderRows();
+      toast('Deleted.');
+    }
+
+    // ----- Bulk -----
+    async function runBulk(action) {
+      var ids = Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; });
+      if (!ids.length) return;
+      if (action === 'clear') {
+        selectedIds = {};
+        renderRows();
+        return;
+      }
+      if (action === 'delete' && !confirm('Delete ' + ids.length + ' document(s)?')) return;
+
+      try {
+        var res = await fetch('/api/admin/library/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ ids: ids, action: action }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(data.error || 'Bulk operation failed.', true); return; }
+        selectedIds = {};
+        await loadDocs();
+        toast('Updated ' + data.affected + ' document(s).');
+      } catch (_) { toast('Network error.', true); }
+    }
+
+    // ----- Upload -----
+    var selectedFile = null;
+
+    function openUpload() {
+      selectedFile = null;
+      document.getElementById('file').value = '';
+      document.getElementById('file-name').style.display = 'none';
+      document.getElementById('lib-title').value = '';
+      document.getElementById('lib-subject').value = '';
+      document.getElementById('lib-level').value = '';
+      document.getElementById('lib-author').value = '';
+      document.getElementById('upload-modal').classList.add('is-open');
+    }
+    function closeUpload() { document.getElementById('upload-modal').classList.remove('is-open'); }
+
+    document.getElementById('file-wrap').addEventListener('click', function () {
+      document.getElementById('file').click();
+    });
+    document.getElementById('file').addEventListener('change', function (e) {
+      selectedFile = e.target.files[0] || null;
+      var nameEl = document.getElementById('file-name');
+      if (selectedFile) {
+        nameEl.textContent = selectedFile.name + ' (' + fmtSize(selectedFile.size) + ')';
+        nameEl.style.display = 'block';
+        if (!document.getElementById('lib-title').value) {
+          document.getElementById('lib-title').value = selectedFile.name.replace(/\.[^.]+$/, '');
+        }
+      } else {
+        nameEl.style.display = 'none';
+      }
+    });
+
+    async function submitUpload() {
+      if (!selectedFile) { toast('Please choose a file.', true); return; }
+      var title = document.getElementById('lib-title').value.trim();
+      if (!title) { toast('Please enter a title.', true); return; }
+
+      var btn = document.getElementById('upload-confirm');
+      btn.disabled = true; btn.textContent = 'Uploading…';
+
+      var form = new FormData();
+      form.append('file', selectedFile);
+      form.append('title', title);
+      form.append('subject', document.getElementById('lib-subject').value.trim());
+      form.append('level', document.getElementById('lib-level').value.trim());
+      form.append('author', document.getElementById('lib-author').value.trim());
+
+      try {
+        var res = await fetch('/api/library/admin/upload', {
+          method: 'POST', credentials: 'include', body: form,
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(data.error || 'Upload failed.', true); return; }
+        closeUpload();
+        await loadDocs();
+        toast('Uploaded.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Upload';
+      }
+    }
+
+    // ----- Wire -----
+    document.getElementById('upload-btn').addEventListener('click', openUpload);
+    document.getElementById('upload-cancel').addEventListener('click', closeUpload);
+    document.getElementById('upload-confirm').addEventListener('click', submitUpload);
+    document.getElementById('upload-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'upload-modal') closeUpload();
+    });
+
+    document.getElementById('del-cancel').addEventListener('click', closeDel);
+    document.getElementById('del-confirm').addEventListener('click', confirmDelete);
+    document.getElementById('del-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'del-modal') closeDel();
+    });
+
+    document.getElementById('check-all').addEventListener('change', function (e) {
+      var visible = filtered();
+      for (var i = 0; i < visible.length; i++) selectedIds[visible[i].id] = e.target.checked;
+      renderRows();
+    });
+
+    document.querySelectorAll('#bulk-bar [data-bulk]').forEach(function (btn) {
+      btn.addEventListener('click', function () { runBulk(btn.getAttribute('data-bulk')); });
+    });
+
+    document.getElementById('search').addEventListener('input', function (e) {
+      searchTerm = e.target.value;
+      renderRows();
+    });
+
+    document.querySelectorAll('#chips .chip').forEach(function (c) {
+      c.addEventListener('click', function () {
+        document.querySelectorAll('#chips .chip').forEach(function (x) { x.classList.remove('is-active'); });
+        c.classList.add('is-active');
+        filterStatus = c.getAttribute('data-filter');
+        renderRows();
+      });
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      await loadDocs();
+    })();
+  })();
+</script>
+</body>
+</html>

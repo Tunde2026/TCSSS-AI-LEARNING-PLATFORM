@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visualization — Studying Lab</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .viz-inner { max-width: 900px; }
+
+  .setup-card { padding: 28px; }
+  .setup-field { margin-bottom: 18px; }
+  .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .setup-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+  .generating { text-align: center; padding: 60px 20px; }
+  .generating__spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--blush-deep);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .generating__text {
+    font-family: var(--font-head); color: var(--navy);
+    font-size: 1.1rem; margin: 0;
+  }
+
+  .viz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .viz-title {
+    font-family: var(--font-head);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0;
+  }
+  .viz-kind {
+    font-family: var(--font-ui);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--gold);
+    color: var(--navy);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  .viz-canvas {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    min-height: 240px;
+    overflow-x: auto;
+    display: grid;
+    place-items: center;
+    margin-bottom: 16px;
+  }
+  .viz-canvas svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .viz-explanation {
+    background: #EEF3FB;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--navy);
+    margin-bottom: 20px;
+  }
+
+  .viz-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .viz-error {
+    background: #FDECEC;
+    color: var(--deep-red);
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 860px) {
+    .setup-row { grid-template-columns: 1fr; }
+    .viz-canvas { padding: 20px 12px; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner viz-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Visualization</h1>
+              <p class="page-header__sub">
+                Turn any topic into a diagram — flowcharts, sequences, mindmaps, and more.
+              </p>
+            </div>
+          </header>
+
+          <div id="stage-setup">
+            <div class="card setup-card">
+              <div class="setup-field">
+                <label class="label" for="topic">Topic or process</label>
+                <input class="input" type="text" id="topic"
+                       placeholder="e.g. Mitosis, Water cycle, Photosynthesis, Newton's laws">
+              </div>
+              <div class="setup-field">
+                <label class="label" for="kind">Diagram type</label>
+                <select class="input" id="kind">
+                  <option value="">Auto (AI chooses)</option>
+                  <option value="flowchart">Flowchart</option>
+                  <option value="sequence">Sequence</option>
+                  <option value="mindmap">Mind map</option>
+                  <option value="class">Class diagram</option>
+                  <option value="state">State diagram</option>
+                  <option value="timeline">Timeline</option>
+                </select>
+              </div>
+              <div class="setup-actions">
+                <button class="btn btn-primary" id="gen-btn" type="button">
+                  <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                  Generate diagram
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="stage-generating" style="display:none">
+            <div class="card generating">
+              <div class="generating__spinner"></div>
+              <p class="generating__text">Generating your diagram…</p>
+            </div>
+          </div>
+
+          <div id="stage-result" style="display:none">
+            <div class="viz-header">
+              <h2 class="viz-title" id="viz-title">—</h2>
+              <span class="viz-kind" id="viz-kind">flowchart</span>
+            </div>
+
+            <div class="viz-error" id="viz-error" style="display:none"></div>
+
+            <div class="viz-canvas" id="viz-canvas"></div>
+
+            <div class="viz-explanation" id="viz-explanation" style="display:none"></div>
+
+            <div class="viz-actions">
+              <button class="btn btn-ghost" id="new-btn" type="button">
+                <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                New diagram
+              </button>
+              <button class="btn btn-ghost" id="copy-btn" type="button">
+                <i class="fa-solid fa-code" aria-hidden="true"></i>
+                Copy Mermaid code
+              </button>
+              <button class="btn btn-primary" id="download-btn" type="button">
+                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                Download SVG
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var stages = {
+      setup:      document.getElementById('stage-setup'),
+      generating: document.getElementById('stage-generating'),
+      result:     document.getElementById('stage-result'),
+    };
+
+    function showStage(name) {
+      Object.keys(stages).forEach(function (k) {
+        stages[k].style.display = (k === name) ? '' : 'none';
+      });
+    }
+
+    var current = null;
+
+    // Initialize Mermaid with a safe default theme.
+    if (window.mermaid) {
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: 'base',
+        themeVariables: {
+          primaryColor: '#FBEFEF',
+          primaryTextColor: '#1E1D3D',
+          primaryBorderColor: '#11104A',
+          lineColor: '#5B5A6B',
+          fontFamily: 'Work Sans, sans-serif',
+          fontSize: '14px',
+        },
+        securityLevel: 'strict',
+      });
+    }
+
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = [
+        'position:fixed','bottom:24px','left:50%','transform:translateX(-50%)',
+        'background:' + (isError ? 'var(--deep-red)' : 'var(--navy)'),
+        'color:#fff','padding:12px 20px','border-radius:999px',
+        'font-family:var(--font-body)','font-size:0.9rem',
+        'box-shadow:0 8px 24px rgba(17,16,74,0.2)','z-index:300'
+      ].join(';');
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      return true;
+    }
+
+    async function generate() {
+      var topic = document.getElementById('topic').value.trim();
+      if (!topic) { toast('Please enter a topic.', true); return; }
+      var kind = document.getElementById('kind').value || null;
+
+      showStage('generating');
+
+      try {
+        var res = await fetch('/api/tools/visualization/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ topic: topic, kind: kind }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+          toast(data.error || 'Could not generate.', true);
+          showStage('setup');
+          return;
+        }
+        current = data.visualization;
+        render(current);
+        showStage('result');
+      } catch (_) {
+        toast('Cannot reach the server.', true);
+        showStage('setup');
+      }
+    }
+
+    async function render(viz) {
+      document.getElementById('viz-title').textContent = viz.title || 'Diagram';
+      document.getElementById('viz-kind').textContent = viz.kind || 'flowchart';
+
+      var expl = document.getElementById('viz-explanation');
+      if (viz.explanation) {
+        expl.textContent = viz.explanation;
+        expl.style.display = '';
+      } else {
+        expl.style.display = 'none';
+      }
+
+      var errBox = document.getElementById('viz-error');
+      errBox.style.display = 'none';
+
+      var canvas = document.getElementById('viz-canvas');
+      canvas.innerHTML = '<div style="color:var(--slate);font-size:0.9rem">Rendering…</div>';
+
+      try {
+        var id = 'viz-' + Date.now();
+        var result = await window.mermaid.render(id, viz.mermaid);
+        canvas.innerHTML = result.svg;
+      } catch (err) {
+        canvas.innerHTML = '';
+        errBox.style.display = '';
+        errBox.innerHTML =
+          '<strong>Could not render this diagram.</strong><br>' +
+          'The AI produced invalid Mermaid syntax. You can try generating again, ' +
+          'or copy the code below and fix it in a Mermaid editor.<br><br>' +
+          '<pre style="background:#fff;padding:10px;border-radius:8px;overflow-x:auto;font-size:0.78rem;margin:0">' +
+          escapeHtml(viz.mermaid) + '</pre>';
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function copyCode() {
+      if (!current) return;
+      navigator.clipboard.writeText(current.mermaid).then(function () {
+        toast('Mermaid code copied.');
+      }).catch(function () {
+        toast('Copy failed.', true);
+      });
+    }
+
+    function downloadSVG() {
+      if (!current) return;
+      var svg = document.querySelector('#viz-canvas svg');
+      if (!svg) { toast('Nothing to download.', true); return; }
+      var data = new XMLSerializer().serializeToString(svg);
+      var blob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = (current.title || 'diagram').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.svg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('gen-btn').addEventListener('click', generate);
+    document.getElementById('new-btn').addEventListener('click', function () {
+      current = null;
+      showStage('setup');
+    });
+    document.getElementById('copy-btn').addEventListener('click', copyCode);
+    document.getElementById('download-btn').addEventListener('click', downloadSVG);
+
+    document.getElementById('topic').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); generate(); }
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      showStage('setup');
+      document.getElementById('topic').focus();
+    })();
+  })();
+</script>
+</body>
+</html>

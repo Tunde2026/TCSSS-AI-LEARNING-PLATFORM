@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exam Mode — Studying Lab</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .exam-inner { max-width: 760px; }
+
+  .setup-card { padding: 28px; }
+  .setup-field { margin-bottom: 18px; }
+  .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .setup-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+  .rules-box {
+    background: #FBF3E1;
+    border-left: 3px solid var(--gold);
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 0.86rem;
+    color: #8A5A00;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .rules-box strong { display: block; margin-bottom: 6px; }
+  .rules-box ul { margin: 0; padding-left: 18px; }
+  .rules-box li { margin-bottom: 4px; }
+
+  .generating { text-align: center; padding: 60px 20px; }
+  .generating__spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--blush-deep);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .generating__text {
+    font-family: var(--font-head); color: var(--navy);
+    font-size: 1.1rem; margin: 0;
+  }
+
+  /* Timer bar */
+  .timer-bar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .timer-bar.is-warning {
+    background: #FDECEC;
+    border-color: var(--red);
+  }
+  .timer-bar.is-critical {
+    background: var(--deep-red);
+    color: var(--white);
+    border-color: var(--deep-red);
+  }
+  .timer-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .timer-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--navy); color: var(--white);
+    display: grid; place-items: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .timer-bar.is-warning .timer-icon { background: var(--red); }
+  .timer-bar.is-critical .timer-icon { background: rgba(255,255,255,0.2); }
+  .timer-clock {
+    font-family: var(--font-ui);
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .timer-bar.is-warning .timer-clock { color: var(--deep-red); }
+  .timer-bar.is-critical .timer-clock { color: var(--white); }
+  .timer-meta {
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.75;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .q-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .q-progress {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--slate);
+    text-transform: uppercase;
+  }
+  .q-progress-bar {
+    height: 4px;
+    background: var(--blush-deep);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .q-progress-bar__fill {
+    height: 100%;
+    background: var(--red);
+    transition: width 240ms var(--ease);
+  }
+
+  .q-text {
+    font-family: var(--font-head);
+    font-size: 1.25rem;
+    color: var(--navy);
+    line-height: 1.4;
+    margin: 0 0 24px;
+  }
+  .q-options {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-bottom: 24px;
+  }
+  .q-option {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 16px;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    text-align: left;
+    transition: border-color var(--transition), background var(--transition);
+    width: 100%;
+  }
+  .q-option:hover { border-color: var(--navy); }
+  .q-option.is-selected { border-color: var(--red); background: #FDECEC; }
+  .q-option__label {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--blush-deep); color: var(--navy);
+    display: grid; place-items: center;
+    font-family: var(--font-ui); font-weight: 600; font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+  .q-option.is-selected .q-option__label { background: var(--red); color: var(--white); }
+  .q-option__text { line-height: 1.5; padding-top: 2px; }
+
+  .q-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .q-actions .btn { flex: 1; justify-content: center; }
+
+  /* Results */
+  .result-card { padding: 40px 28px; text-align: center; }
+  .result-score {
+    font-family: var(--font-head);
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .result-score span { font-size: 1.5rem; color: var(--slate); }
+  .result-label {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 20px;
+  }
+  .result-message {
+    font-family: var(--font-head);
+    font-size: 1.15rem;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+  .result-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .result-stat {
+    background: var(--blush);
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .result-stat__value {
+    font-family: var(--font-head);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .result-stat__label {
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+  .result-actions {
+    display: flex; gap: 10px;
+    justify-content: center; flex-wrap: wrap;
+  }
+
+  @media (max-width: 860px) {
+    .setup-row { grid-template-columns: 1fr; }
+    .result-stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner exam-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Exam Mode</h1>
+              <p class="page-header__sub">
+                Timed quiz under real exam conditions. No hints, no answers until you submit.
+              </p>
+            </div>
+          </header>
+
+          <!-- Stage: setup -->
+          <div id="stage-setup">
+            <div class="card setup-card">
+              <div class="rules-box">
+                <strong>Exam rules</strong>
+                <ul>
+                  <li>You cannot see whether an answer is correct until you submit.</li>
+                  <li>The timer starts when the exam begins and does not pause.</li>
+                  <li>If time runs out, your answers are submitted automatically.</li>
+                  <li>You can move between questions with Next and Back.</li>
+                </ul>
+              </div>
+
+              <div class="setup-field">
+                <label class="label" for="topic">Topic</label>
+                <input class="input" type="text" id="topic"
+                       placeholder="e.g. Cell division, Trigonometry, Chemical bonding">
+              </div>
+              <div class="setup-row">
+                <div class="setup-field">
+                  <label class="label" for="subject">Subject (optional)</label>
+                  <input class="input" type="text" id="subject" placeholder="Biology">
+                </div>
+                <div class="setup-field">
+                  <label class="label" for="difficulty">Difficulty</label>
+                  <select class="input" id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
+              </div>
+              <div class="setup-row">
+                <div class="setup-field">
+                  <label class="label" for="count">Questions</label>
+                  <select class="input" id="count">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                  </select>
+                </div>
+                <div class="setup-field">
+                  <label class="label" for="duration">Time limit</label>
+                  <select class="input" id="duration">
+                    <option value="300">5 minutes</option>
+                    <option value="600" selected>10 minutes</option>
+                    <option value="900">15 minutes</option>
+                    <option value="1200">20 minutes</option>
+                    <option value="1800">30 minutes</option>
+                  </select>
+                </div>
+              </div>
+              <div class="setup-actions">
+                <button class="btn btn-primary" id="start-btn" type="button">
+                  <i class="fa-solid fa-stopwatch" aria-hidden="true"></i>
+                  Start exam
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage: generating -->
+          <div id="stage-generating" style="display:none">
+            <div class="card generating">
+              <div class="generating__spinner"></div>
+              <p class="generating__text">Preparing your exam…</p>
+            </div>
+          </div>
+
+          <!-- Stage: question -->
+          <div id="stage-question" style="display:none">
+            <div class="timer-bar" id="timer-bar">
+              <div class="timer-left">
+                <div class="timer-icon"><i class="fa-solid fa-stopwatch" aria-hidden="true"></i></div>
+                <div>
+                  <div class="timer-clock" id="timer-clock">10:00</div>
+                  <span class="timer-meta">Time remaining</span>
+                </div>
+              </div>
+              <button class="btn btn-danger" id="finish-btn" type="button">
+                <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>
+                Finish exam
+              </button>
+            </div>
+
+            <div class="q-header">
+              <span class="q-progress" id="q-progress">Question 1 of 10</span>
+              <span class="q-progress" id="q-answered" style="color:var(--red)">0 answered</span>
+            </div>
+            <div class="q-progress-bar">
+              <div class="q-progress-bar__fill" id="q-progress-fill" style="width:10%"></div>
+            </div>
+
+            <div class="card">
+              <h2 class="q-text" id="q-text">—</h2>
+              <div class="q-options" id="q-options"></div>
+              <div class="q-actions">
+                <button class="btn btn-ghost" id="prev-btn" type="button">
+                  <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Previous
+                </button>
+                <button class="btn btn-primary" id="next-btn" type="button">
+                  Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage: result -->
+          <div id="stage-result" style="display:none">
+            <div class="card result-card">
+              <div class="result-score" id="result-score">0<span> / 10</span></div>
+              <div class="result-label">Final score</div>
+              <p class="result-message" id="result-message">—</p>
+
+              <div class="result-stats">
+                <div class="result-stat">
+                  <div class="result-stat__value" id="stat-correct">0</div>
+                  <div class="result-stat__label">Correct</div>
+                </div>
+                <div class="result-stat">
+                  <div class="result-stat__value" id="stat-time">0:00</div>
+                  <div class="result-stat__label">Time used</div>
+                </div>
+                <div class="result-stat">
+                  <div class="result-stat__value" id="stat-percent">0%</div>
+                  <div class="result-stat__label">Score</div>
+                </div>
+              </div>
+
+              <div class="result-actions">
+                <button class="btn btn-ghost" id="review-btn" type="button">
+                  <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                  Review answers
+                </button>
+                <button class="btn btn-primary" id="again-btn" type="button">
+                  <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                  New exam
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage: review -->
+          <div id="stage-review" style="display:none">
+            <div class="q-header">
+              <span class="q-progress" id="r-progress">Review 1 of 10</span>
+              <button class="btn btn-ghost" id="back-result-btn" type="button">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                Back to results
+              </button>
+            </div>
+
+            <div class="card">
+              <h2 class="q-text" id="r-q-text">—</h2>
+              <div class="q-options" id="r-q-options"></div>
+              <div class="q-actions">
+                <button class="btn btn-ghost" id="r-prev-btn" type="button">Previous</button>
+                <button class="btn btn-primary" id="r-next-btn" type="button">Next</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var stages = {
+      setup:      document.getElementById('stage-setup'),
+      generating: document.getElementById('stage-generating'),
+      question:   document.getElementById('stage-question'),
+      result:     document.getElementById('stage-result'),
+      review:     document.getElementById('stage-review'),
+    };
+    function showStage(name) {
+      Object.keys(stages).forEach(function (k) {
+        stages[k].style.display = (k === name) ? '' : 'none';
+      });
+    }
+
+    var exam       = null;      // { id, questions, time_limit_seconds }
+    var index      = 0;
+    var answers    = [];        // [{ questionId, selected }]
+    var startTime  = 0;
+    var timerInt   = null;
+    var submitted  = false;
+    var graded     = null;
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      return true;
+    }
+
+    function fmtClock(seconds) {
+      var m = Math.floor(seconds / 60);
+      var s = Math.max(0, seconds - m * 60);
+      return m + ':' + (s < 10 ? '0' : '') + s;
+    }
+
+    // ---------- Start ----------
+    async function start() {
+      var topic = document.getElementById('topic').value.trim();
+      if (!topic) { alert('Please enter a topic.'); return; }
+      var subject    = document.getElementById('subject').value.trim() || null;
+      var count      = parseInt(document.getElementById('count').value, 10);
+      var difficulty = document.getElementById('difficulty').value;
+      var duration   = parseInt(document.getElementById('duration').value, 10);
+
+      showStage('generating');
+
+      try {
+        var res = await fetch('/api/tools/quiz/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            topic, subject, count, difficulty,
+            isExam: true,
+            timeLimitSeconds: duration,
+          }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+          alert(data.error || 'Could not generate.');
+          showStage('setup');
+          return;
+        }
+
+        exam = data.quiz;
+        if (!exam.time_limit_seconds) exam.time_limit_seconds = duration;
+
+        index = 0;
+        answers = [];
+        submitted = false;
+        graded = null;
+        startTime = Date.now();
+
+        renderQuestion();
+        startTimer();
+        showStage('question');
+      } catch (_) {
+        alert('Cannot reach the server.');
+        showStage('setup');
+      }
+    }
+
+    // ---------- Timer ----------
+    function startTimer() {
+      clearInterval(timerInt);
+      tick();
+      timerInt = setInterval(tick, 1000);
+    }
+
+    function tick() {
+      if (submitted) return;
+      var elapsed   = Math.floor((Date.now() - startTime) / 1000);
+      var remaining = exam.time_limit_seconds - elapsed;
+
+      var clock = document.getElementById('timer-clock');
+      var bar   = document.getElementById('timer-bar');
+      bar.classList.remove('is-warning', 'is-critical');
+
+      if (remaining <= 0) {
+        clock.textContent = '0:00';
+        finish(true);
+        return;
+      }
+
+      clock.textContent = fmtClock(remaining);
+      if (remaining <= 30) bar.classList.add('is-critical');
+      else if (remaining <= 120) bar.classList.add('is-warning');
+    }
+
+    // ---------- Question rendering ----------
+    function renderQuestion() {
+      var q = exam.questions[index];
+
+      document.getElementById('q-progress').textContent =
+        'Question ' + (index + 1) + ' of ' + exam.questions.length;
+      document.getElementById('q-progress-fill').style.width =
+        ((index + 1) / exam.questions.length * 100) + '%';
+
+      var answeredCount = answers.filter(function (a) { return a.selected; }).length;
+      document.getElementById('q-answered').textContent = answeredCount + ' answered';
+
+      document.getElementById('q-text').textContent = q.question;
+
+      var opts = document.getElementById('q-options');
+      opts.innerHTML = '';
+      var existing = answers.find(function (a) { return a.questionId === q.id; });
+      var selected = existing ? existing.selected : null;
+
+      q.options.forEach(function (opt) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'q-option' + (selected === opt.label ? ' is-selected' : '');
+        btn.setAttribute('data-label', opt.label);
+        btn.innerHTML =
+          '<span class="q-option__label">' + opt.label + '</span>' +
+          '<span class="q-option__text">' + esc(opt.text) + '</span>';
+        btn.addEventListener('click', function () { selectOption(opt.label); });
+        opts.appendChild(btn);
+      });
+
+      document.getElementById('prev-btn').disabled = index === 0;
+      document.getElementById('next-btn').innerHTML =
+        (index === exam.questions.length - 1
+          ? 'Finish <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>'
+          : 'Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>');
+    }
+
+    function selectOption(label) {
+      var q = exam.questions[index];
+      var existing = answers.find(function (a) { return a.questionId === q.id; });
+      if (existing) existing.selected = label;
+      else answers.push({ questionId: q.id, selected: label });
+
+      document.querySelectorAll('.q-option').forEach(function (el) {
+        el.classList.toggle('is-selected', el.getAttribute('data-label') === label);
+      });
+
+      var answeredCount = answers.filter(function (a) { return a.selected; }).length;
+      document.getElementById('q-answered').textContent = answeredCount + ' answered';
+    }
+
+    function prev() {
+      if (index > 0) { index -= 1; renderQuestion(); }
+    }
+
+    function next() {
+      if (index < exam.questions.length - 1) { index += 1; renderQuestion(); }
+      else confirmFinish();
+    }
+
+    function confirmFinish() {
+      var answered = answers.filter(function (a) { return a.selected; }).length;
+      var total = exam.questions.length;
+      if (answered < total) {
+        if (!confirm('You have answered ' + answered + ' of ' + total + ' questions. Submit anyway?')) {
+          return;
+        }
+      }
+      finish(false);
+    }
+
+    // ---------- Submit ----------
+    async function finish(auto) {
+      if (submitted) return;
+      submitted = true;
+      clearInterval(timerInt);
+
+      var timeTaken = Math.floor((Date.now() - startTime) / 1000);
+      showStage('generating');
+      document.querySelector('.generating__text').textContent = 'Scoring your exam…';
+
+      try {
+        var res = await fetch('/api/tools/quiz/' + exam.id + '/attempt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            answers: answers,
+            timeTakenSeconds: timeTaken,
+          }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+          alert(data.error || 'Could not submit.');
+          showStage('question');
+          return;
+        }
+
+        graded = data.graded;
+        var score = data.attempt.score;
+        var total = data.attempt.total;
+        var pct = Math.round((score / total) * 100);
+
+        document.getElementById('result-score').innerHTML = score + '<span> / ' + total + '</span>';
+        document.getElementById('stat-correct').textContent = score;
+        document.getElementById('stat-time').textContent = fmtClock(timeTaken);
+        document.getElementById('stat-percent').textContent = pct + '%';
+
+        var msg = '';
+        if (pct === 100) msg = 'Perfect score — outstanding work.';
+        else if (pct >= 80) msg = 'Excellent. You have a strong grasp.';
+        else if (pct >= 60) msg = 'Good effort. Review the ones you missed.';
+        else if (pct >= 40) msg = 'Keep practicing — you are getting there.';
+        else msg = 'This topic needs more work. Review and try again.';
+        if (auto) msg = 'Time expired. ' + msg;
+        document.getElementById('result-message').textContent = msg;
+
+        document.querySelector('.generating__text').textContent = 'Preparing your exam…';
+        showStage('result');
+      } catch (_) {
+        alert('Cannot reach the server.');
+        showStage('question');
+      }
+    }
+
+    // ---------- Review ----------
+    function review() {
+      if (!graded) return;
+      index = 0;
+      renderReview();
+      showStage('review');
+    }
+
+    function renderReview() {
+      var q = exam.questions[index];
+      var g = graded.find(function (x) { return x.questionId === q.id; }) || {};
+
+      document.getElementById('r-progress').textContent =
+        'Review ' + (index + 1) + ' of ' + exam.questions.length;
+      document.getElementById('r-q-text').textContent = q.question;
+
+      var opts = document.getElementById('r-q-options');
+      opts.innerHTML = '';
+      q.options.forEach(function (opt) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'q-option';
+        btn.disabled = true;
+        if (opt.label === g.correct) btn.classList.add('is-selected');
+        btn.style.cursor = 'default';
+        if (opt.label === g.correct) {
+          btn.style.borderColor = '#2F8F4A';
+          btn.style.background = '#EAF7EE';
+        }
+        if (opt.label === g.selected && !g.isCorrect) {
+          btn.style.borderColor = 'var(--red)';
+          btn.style.background = '#FDECEC';
+        }
+        btn.innerHTML =
+          '<span class="q-option__label">' + opt.label + '</span>' +
+          '<span class="q-option__text">' + esc(opt.text) + '</span>';
+        opts.appendChild(btn);
+      });
+
+      var explanation = document.getElementById('r-explanation');
+      if (explanation) explanation.remove();
+
+      if (q.explanation) {
+        var ex = document.createElement('div');
+        ex.id = 'r-explanation';
+        ex.style.cssText =
+          'margin-top:16px;padding:14px 16px;background:#EEF3FB;border-radius:12px;' +
+          'font-size:0.9rem;color:var(--navy);line-height:1.55';
+        ex.innerHTML = '<strong style="display:block;margin-bottom:4px;font-family:var(--font-ui);' +
+          'font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--slate)">Explanation</strong>' +
+          esc(q.explanation);
+        document.getElementById('r-q-options').parentElement.appendChild(ex);
+      }
+
+      document.getElementById('r-prev-btn').disabled = index === 0;
+      document.getElementById('r-next-btn').textContent =
+        index === exam.questions.length - 1 ? 'Done' : 'Next';
+    }
+
+    function reviewPrev() { if (index > 0) { index -= 1; renderReview(); } }
+    function reviewNext() {
+      if (index < exam.questions.length - 1) { index += 1; renderReview(); }
+      else showStage('result');
+    }
+
+    // ---------- Wire up ----------
+    document.getElementById('start-btn').addEventListener('click', start);
+    document.getElementById('prev-btn').addEventListener('click', prev);
+    document.getElementById('next-btn').addEventListener('click', next);
+    document.getElementById('finish-btn').addEventListener('click', confirmFinish);
+    document.getElementById('review-btn').addEventListener('click', review);
+    document.getElementById('back-result-btn').addEventListener('click', function () {
+      showStage('result');
+    });
+    document.getElementById('r-prev-btn').addEventListener('click', reviewPrev);
+    document.getElementById('r-next-btn').addEventListener('click', reviewNext);
+    document.getElementById('again-btn').addEventListener('click', function () {
+      exam = null; answers = []; graded = null; submitted = false;
+      showStage('setup');
+    });
+
+    document.getElementById('topic').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); start(); }
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      showStage('setup');
+      document.getElementById('topic').focus();
+    })();
+  })();
+</script>
+</body>
+</html>

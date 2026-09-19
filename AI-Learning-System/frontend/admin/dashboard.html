@@ -6,32 +6,264 @@
 <title>Admin — AI Learning Platform</title>
 <link rel="stylesheet" href="../assets/shell.css">
 <style>
-  .page { flex: 1; padding: 32px; max-width: 1100px; }
-  .placeholder {
-    margin-top: 24px; padding: 40px; text-align: center;
-    color: var(--slate); border: 2px dashed var(--blush-deep);
-    border-radius: var(--radius); background: var(--white);
+  .admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+  .admin-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    font-family: var(--font-body);
+    text-decoration: none;
+    color: inherit;
+  }
+  .admin-tile:hover {
+    border-color: var(--gold);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+  .admin-tile__icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: grid; place-items: center;
+    font-size: 1.1rem;
+  }
+  .admin-tile__icon--red   { background: #FDECEC; color: var(--red); }
+  .admin-tile__icon--navy  { background: #ECEBF5; color: var(--navy); }
+  .admin-tile__icon--gold  { background: #FBF3E1; color: var(--gold); }
+  .admin-tile__title {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--navy);
+    margin: 0;
+    line-height: 1.25;
+  }
+  .admin-tile__desc {
+    font-size: 0.85rem;
+    color: var(--slate);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .stat-card__value {
+    font-family: var(--font-head);
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-card__label {
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+  .stat-card__delta {
+    font-size: 0.78rem;
+    color: var(--red);
+    margin-top: 4px;
+    font-weight: 500;
   }
 </style>
 </head>
 <body>
-  <div class="mobile-bar">
-    <button class="mobile-bar__toggle" id="sidebar-toggle" aria-label="Open menu">☰</button>
-    <span>Admin</span>
-  </div>
-  <div class="backdrop" id="sidebar-backdrop"></div>
-
   <div class="app">
     <div id="sidebar-mount"></div>
+
     <main class="page">
-      <h1>Admin Dashboard</h1>
-      <p>Restricted area — administrators only.</p>
-      <div class="placeholder">
-        Library Management · AI Knowledge · Users · Models · Tools · Analytics
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Admin Dashboard</h1>
+              <p class="page-header__sub">
+                Manage users, knowledge, and platform resources.
+              </p>
+            </div>
+          </header>
+
+          <section class="section">
+            <h2 class="section__title">Overview</h2>
+            <div class="stat-row">
+              <div class="stat-card">
+                <div class="stat-card__value" id="stat-users">—</div>
+                <div class="stat-card__label">Total users</div>
+                <div class="stat-card__delta" id="stat-users-delta"></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-card__value" id="stat-admins">—</div>
+                <div class="stat-card__label">Admins</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-card__value" id="stat-students">—</div>
+                <div class="stat-card__label">Students</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-card__value" id="stat-resources">—</div>
+                <div class="stat-card__label">Library resources</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2 class="section__title">Management</h2>
+            <div class="admin-grid">
+
+              <a class="admin-tile" href="users.html">
+                <div class="admin-tile__icon admin-tile__icon--navy">
+                  <i class="fa-solid fa-users" aria-hidden="true"></i>
+                </div>
+                <h3 class="admin-tile__title">Users</h3>
+                <p class="admin-tile__desc">
+                  View students and administrators. Create, suspend, reset passwords.
+                </p>
+              </a>
+
+              <a class="admin-tile" href="library.html">
+                <div class="admin-tile__icon admin-tile__icon--red">
+                  <i class="fa-solid fa-book" aria-hidden="true"></i>
+                </div>
+                <h3 class="admin-tile__title">Library</h3>
+                <p class="admin-tile__desc">
+                  Add textbooks, PDFs, and study resources to the platform.
+                </p>
+              </a>
+
+              <a class="admin-tile" href="knowledge.html">
+                <div class="admin-tile__icon admin-tile__icon--gold">
+                  <i class="fa-solid fa-brain" aria-hidden="true"></i>
+                </div>
+                <h3 class="admin-tile__title">AI Knowledge</h3>
+                <p class="admin-tile__desc">
+                  Review every chunk of text the AI can use. Approve or hide passages.
+                </p>
+              </a>
+
+              <a class="admin-tile" href="models.html">
+                <div class="admin-tile__icon admin-tile__icon--navy">
+                  <i class="fa-solid fa-microchip" aria-hidden="true"></i>
+                </div>
+                <h3 class="admin-tile__title">AI Models</h3>
+                <p class="admin-tile__desc">
+                  Configure models and provider API keys.
+                </p>
+              </a>
+
+              <a class="admin-tile" href="analytics.html">
+                <div class="admin-tile__icon admin-tile__icon--gold">
+                  <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                </div>
+                <h3 class="admin-tile__title">Analytics</h3>
+                <p class="admin-tile__desc">
+                  Usage, response times, and platform health at a glance.
+                </p>
+              </a>
+
+              <a class="admin-tile" href="audit.html">
+                <div class="admin-tile__icon admin-tile__icon--navy">
+                  <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                </div>
+                <h3 class="admin-tile__title">Audit Log</h3>
+                <p class="admin-tile__desc">
+                  Every admin action recorded — who did what, and when.
+                </p>
+              </a>
+
+              <a class="admin-tile" href="backup.html">
+                <div class="admin-tile__icon admin-tile__icon--red">
+                  <i class="fa-solid fa-database" aria-hidden="true"></i>
+                </div>
+                <h3 class="admin-tile__title">Backup</h3>
+                <p class="admin-tile__desc">
+                  Export the entire database as JSON. Restore from a backup file.
+                </p>
+              </a>
+
+              <a class="admin-tile" href="settings.html">
+                <div class="admin-tile__icon admin-tile__icon--red">
+                  <i class="fa-solid fa-gears" aria-hidden="true"></i>
+                </div>
+                <h3 class="admin-tile__title">System Settings</h3>
+                <p class="admin-tile__desc">
+                  Branding, registration, and platform-wide options.
+                </p>
+              </a>
+
+            </div>
+          </section>
+
+        </div>
       </div>
     </main>
   </div>
 
 <script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    async function guard() {
+      try {
+        var res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (res.status === 401) { window.location.href = '../index.html'; return false; }
+        var data = await res.json();
+        if (!data.user || data.user.role !== 'admin') {
+          window.location.href = '../chat.html';
+          return false;
+        }
+        return true;
+      } catch (_) {
+        window.location.href = '../index.html';
+        return false;
+      }
+    }
+
+    async function loadStats() {
+      try {
+        var res = await fetch('/api/admin/stats', { credentials: 'include' });
+        if (!res.ok) return;
+        var s = await res.json();
+        document.getElementById('stat-users').textContent     = s.total;
+        document.getElementById('stat-admins').textContent    = s.admins;
+        document.getElementById('stat-students').textContent  = s.students;
+        document.getElementById('stat-resources').textContent = s.resources;
+        if (s.newThisWeek > 0) {
+          document.getElementById('stat-users-delta').textContent =
+            '+' + s.newThisWeek + ' this week';
+        }
+      } catch (_) {}
+    }
+
+    (async function init() {
+      var ok = await guard();
+      if (ok) loadStats();
+    })();
+  })();
+</script>
 </body>
 </html>

@@ -1,11 +1,17 @@
 const express = require('express');
-const { list } = require('./registry');
+const router  = express.Router();
+const registry = require('./registry');
 
-const router = express.Router();
+router.use('/quiz',          require('./quiz').router);
+router.use('/flashcards',    require('./flashcards').router);
+router.use('/mistakes',      require('./mistakes').router);
+router.use('/notes',         require('./notes').router);
+router.use('/practice',      require('./practice').router);
+router.use('/visualization', require('./visualization').router);
+router.use('/studyplans',    require('./studyplans').router);
 
 router.get('/', (req, res) => {
-  // TODO: return a list of registered tools.
-  res.status(200).json({ tools: list() });
+  res.json({ tools: registry.list() });
 });
 
 module.exports = router;

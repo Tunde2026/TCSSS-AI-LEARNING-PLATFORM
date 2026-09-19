@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice — Studying Lab</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .pr-inner { max-width: 760px; }
+
+  .setup-card { padding: 28px; }
+  .setup-field { margin-bottom: 18px; }
+  .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .setup-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+  .generating {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .generating__spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--blush-deep);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .generating__text {
+    font-family: var(--font-head);
+    color: var(--navy);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .q-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .q-progress {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--slate);
+    text-transform: uppercase;
+  }
+  .q-progress-bar {
+    height: 4px;
+    background: var(--blush-deep);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .q-progress-bar__fill {
+    height: 100%;
+    background: var(--red);
+    transition: width 240ms var(--ease);
+  }
+
+  .q-text {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    color: var(--navy);
+    line-height: 1.5;
+    margin: 0 0 20px;
+    white-space: pre-wrap;
+  }
+
+  .hint-box {
+    background: #FBF3E1;
+    border-left: 3px solid var(--gold);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #8A5A00;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .hint-box.is-visible { display: block; }
+  .hint-box__label {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+
+  .answer-box {
+    background: #EAF7EE;
+    border-left: 3px solid #2F8F4A;
+    padding: 16px 18px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: none;
+    line-height: 1.6;
+  }
+  .answer-box.is-visible { display: block; }
+  .answer-box__label {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #2F8F4A;
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .answer-box__text {
+    font-size: 0.95rem;
+    color: var(--ink);
+    white-space: pre-wrap;
+  }
+
+  .q-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .q-actions .btn { flex: 1; justify-content: center; }
+
+  .done-card {
+    padding: 48px 28px;
+    text-align: center;
+  }
+  .done-icon {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: #EAF7EE;
+    color: #2F8F4A;
+    display: grid; place-items: center;
+    font-size: 1.6rem;
+    margin: 0 auto 20px;
+  }
+  .done-title {
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    color: var(--navy);
+    margin: 0 0 8px;
+  }
+  .done-desc {
+    color: var(--slate);
+    font-size: 0.95rem;
+    margin: 0 0 24px;
+  }
+  .done-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 860px) {
+    .setup-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner pr-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Practice</h1>
+              <p class="page-header__sub">
+                Open-ended questions with model answers. Think, then reveal.
+              </p>
+            </div>
+          </header>
+
+          <div id="stage-setup">
+            <div class="card setup-card">
+              <div class="setup-field">
+                <label class="label" for="topic">Topic</label>
+                <input class="input" type="text" id="topic"
+                       placeholder="e.g. Newton's laws, Trigonometry identities">
+              </div>
+              <div class="setup-row">
+                <div class="setup-field">
+                  <label class="label" for="subject">Subject (optional)</label>
+                  <input class="input" type="text" id="subject" placeholder="Physics">
+                </div>
+                <div class="setup-field">
+                  <label class="label" for="count">Number of questions</label>
+                  <select class="input" id="count">
+                    <option value="3">3</option>
+                    <option value="5" selected>5</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                  </select>
+                </div>
+              </div>
+              <div class="setup-field">
+                <label class="label" for="difficulty">Difficulty</label>
+                <select class="input" id="difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="setup-actions">
+                <button class="btn btn-primary" id="start-btn" type="button">
+                  <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                  Generate practice
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="stage-generating" style="display:none">
+            <div class="card generating">
+              <div class="generating__spinner"></div>
+              <p class="generating__text">Generating your questions…</p>
+            </div>
+          </div>
+
+          <div id="stage-question" style="display:none">
+            <div class="q-header">
+              <span class="q-progress" id="q-progress">Question 1 of 5</span>
+            </div>
+            <div class="q-progress-bar">
+              <div class="q-progress-bar__fill" id="q-progress-fill" style="width:20%"></div>
+            </div>
+
+            <div class="card">
+              <h2 class="q-text" id="q-text">—</h2>
+
+              <div class="hint-box" id="hint-box">
+                <span class="hint-box__label">Hint</span>
+                <span id="hint-text"></span>
+              </div>
+
+              <div class="answer-box" id="answer-box">
+                <span class="answer-box__label">Model answer</span>
+                <div class="answer-box__text" id="answer-text"></div>
+              </div>
+
+              <div class="q-actions">
+                <button class="btn btn-ghost" id="hint-btn" type="button">
+                  <i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Hint
+                </button>
+                <button class="btn btn-primary" id="reveal-btn" type="button">
+                  Show answer
+                </button>
+                <button class="btn btn-primary" id="next-btn" type="button" style="display:none">
+                  Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="stage-done" style="display:none">
+            <div class="card done-card">
+              <div class="done-icon"><i class="fa-solid fa-check" aria-hidden="true"></i></div>
+              <h2 class="done-title">Practice complete</h2>
+              <p class="done-desc">You worked through <strong id="done-count">0</strong> questions.</p>
+              <div class="done-actions">
+                <button class="btn btn-ghost" id="restart-btn" type="button">
+                  <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Practice again
+                </button>
+                <button class="btn btn-primary" id="new-btn" type="button">
+                  New topic
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var stages = {
+      setup:      document.getElementById('stage-setup'),
+      generating: document.getElementById('stage-generating'),
+      question:   document.getElementById('stage-question'),
+      done:       document.getElementById('stage-done'),
+    };
+
+    function showStage(name) {
+      Object.keys(stages).forEach(function (k) {
+        stages[k].style.display = (k === name) ? '' : 'none';
+      });
+    }
+
+    var set = null;
+    var index = 0;
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      return true;
+    }
+
+    async function generate() {
+      var topic = document.getElementById('topic').value.trim();
+      if (!topic) { alert('Please enter a topic.'); return; }
+
+      var subject = document.getElementById('subject').value.trim() || null;
+      var count = parseInt(document.getElementById('count').value, 10);
+      var difficulty = document.getElementById('difficulty').value;
+
+      showStage('generating');
+
+      try {
+        var res = await fetch('/api/tools/practice/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ topic, subject, count, difficulty }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+          alert(data.error || 'Could not generate.');
+          showStage('setup');
+          return;
+        }
+        set = data.set;
+        index = 0;
+        renderQuestion();
+        showStage('question');
+      } catch (err) {
+        alert('Cannot reach the server.');
+        showStage('setup');
+      }
+    }
+
+    function renderQuestion() {
+      var q = set.questions[index];
+      document.getElementById('q-progress').textContent =
+        'Question ' + (index + 1) + ' of ' + set.questions.length;
+      document.getElementById('q-progress-fill').style.width =
+        ((index + 1) / set.questions.length * 100) + '%';
+
+      document.getElementById('q-text').textContent = q.question;
+      document.getElementById('answer-text').textContent = q.answer;
+
+      var hintBox = document.getElementById('hint-box');
+      var hintBtn = document.getElementById('hint-btn');
+      if (q.hint) {
+        document.getElementById('hint-text').textContent = q.hint;
+        hintBtn.style.display = '';
+        hintBox.classList.remove('is-visible');
+      } else {
+        hintBtn.style.display = 'none';
+        hintBox.classList.remove('is-visible');
+      }
+
+      document.getElementById('answer-box').classList.remove('is-visible');
+      document.getElementById('reveal-btn').style.display = '';
+      document.getElementById('next-btn').style.display = 'none';
+      document.getElementById('next-btn').innerHTML =
+        (index === set.questions.length - 1 ? 'Finish' : 'Next') +
+        ' <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+    }
+
+    function revealAnswer() {
+      document.getElementById('answer-box').classList.add('is-visible');
+      document.getElementById('reveal-btn').style.display = 'none';
+      document.getElementById('next-btn').style.display = '';
+    }
+
+    function next() {
+      if (index < set.questions.length - 1) {
+        index += 1;
+        renderQuestion();
+      } else {
+        document.getElementById('done-count').textContent = set.questions.length;
+        showStage('done');
+      }
+    }
+
+    function showHint() {
+      document.getElementById('hint-box').classList.add('is-visible');
+    }
+
+    document.getElementById('start-btn').addEventListener('click', generate);
+    document.getElementById('reveal-btn').addEventListener('click', revealAnswer);
+    document.getElementById('next-btn').addEventListener('click', next);
+    document.getElementById('hint-btn').addEventListener('click', showHint);
+
+    document.getElementById('restart-btn').addEventListener('click', function () {
+      index = 0;
+      renderQuestion();
+      showStage('question');
+    });
+
+    document.getElementById('new-btn').addEventListener('click', function () {
+      set = null;
+      showStage('setup');
+    });
+
+    document.getElementById('topic').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); generate(); }
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      showStage('setup');
+      document.getElementById('topic').focus();
+    })();
+  })();
+</script>
+</body>
+</html>

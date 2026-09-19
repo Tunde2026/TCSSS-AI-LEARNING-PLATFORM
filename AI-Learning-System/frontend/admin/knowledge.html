@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Knowledge — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .kn-page { max-width: 1100px; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+  .stat-card__value {
+    font-family: var(--font-head);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-card__label {
+    font-family: var(--font-ui);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+
+  .chip-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .bulk-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: var(--navy);
+    color: var(--white);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+  }
+  .bulk-bar.is-visible { display: flex; }
+  .bulk-bar strong { font-family: var(--font-ui); }
+  .bulk-bar .btn {
+    padding: 6px 12px; font-size: 0.82rem;
+    background: rgba(255,255,255,0.15); color: var(--white);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .bulk-bar .btn:hover { background: rgba(255,255,255,0.25); }
+  .bulk-bar .btn--danger { background: var(--red); border-color: var(--red); }
+  .bulk-bar .btn--danger:hover { background: var(--deep-red); }
+
+  .doc-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .doc-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+  .doc-head:hover { background: var(--blush); }
+  .doc-head input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--red); cursor: pointer;
+    flex-shrink: 0;
+  }
+  .doc-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--blush-deep);
+    color: var(--navy);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+  }
+  .doc-body { flex: 1; min-width: 0; }
+  .doc-title {
+    font-weight: 600; color: var(--ink);
+    font-size: 0.95rem; margin: 0 0 3px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .doc-meta {
+    font-size: 0.78rem; color: var(--slate);
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .doc-arrow {
+    color: var(--slate);
+    transition: transform var(--transition);
+    flex-shrink: 0;
+  }
+  .doc-card.is-open .doc-arrow { transform: rotate(180deg); }
+
+  .status-pill {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .status-pill--ready      { background: #EAF7EE; color: #2F8F4A; }
+  .status-pill--processing { background: #FBF3E1; color: #B77700; }
+  .status-pill--failed     { background: #FDECEC; color: var(--deep-red); }
+  .status-pill--pending    { background: var(--blush-deep); color: var(--slate); }
+  .source-badge {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--gold);
+    color: var(--navy);
+    font-weight: 500;
+  }
+
+  .doc-chunks {
+    display: none;
+    border-top: 1px solid var(--border-soft);
+    padding: 0 20px 20px;
+    background: var(--blush);
+  }
+  .doc-card.is-open .doc-chunks { display: block; }
+
+  .doc-actions {
+    display: flex;
+    gap: 8px;
+    padding: 16px 0 12px;
+    flex-wrap: wrap;
+  }
+
+  .chunk-item {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+  }
+  .chunk-item input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--red); cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+  .chunk-body { flex: 1; min-width: 0; }
+  .chunk-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .chunk-pos {
+    font-family: var(--font-ui);
+    font-size: 0.7rem; color: var(--slate);
+    background: var(--blush-deep);
+    padding: 2px 8px; border-radius: 6px;
+  }
+  .chunk-badge {
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .chunk-badge--ok     { background: #EAF7EE; color: #2F8F4A; }
+  .chunk-badge--hidden { background: var(--blush-deep); color: var(--slate); }
+  .chunk-actions {
+    margin-left: auto;
+    display: flex; gap: 4px;
+  }
+  .chunk-actions button {
+    width: 28px; height: 28px;
+    border: none; background: transparent;
+    border-radius: 6px; color: var(--slate);
+    cursor: pointer;
+    display: grid; place-items: center;
+    font-size: 0.75rem;
+  }
+  .chunk-actions button:hover { background: var(--blush); color: var(--navy); }
+  .chunk-actions button.danger:hover { background: #FCECEC; color: var(--deep-red); }
+
+  .chunk-content {
+    font-size: 0.88rem;
+    color: var(--ink);
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 140px;
+    overflow-y: auto;
+  }
+
+  .empty-state-small {
+    padding: 40px; text-align: center;
+    color: var(--slate); font-size: 0.9rem;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(17,16,74,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; padding: 24px;
+  }
+  .modal-overlay.is-open { display: flex; }
+  .modal {
+    width: 100%; max-width: 640px;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: var(--shadow-lg);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal__title {
+    font-family: var(--font-head);
+    font-size: 1.2rem; color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .modal__sub {
+    font-size: 0.88rem; color: var(--slate);
+    margin: 0 0 20px; line-height: 1.5;
+  }
+  .modal__actions {
+    display: flex; gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner kn-page">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">AI Knowledge</h1>
+              <p class="page-header__sub">
+                Every document that powers the AI's library lookup. Approve or hide chunks individually or in bulk.
+              </p>
+            </div>
+            <button class="btn btn-primary" id="add-knowledge-btn" type="button">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i> Add knowledge
+            </button>
+          </header>
+
+          <section class="stat-row">
+            <div class="stat-card"><div class="stat-card__value" id="s-docs">—</div><div class="stat-card__label">Documents</div></div>
+            <div class="stat-card"><div class="stat-card__value" id="s-appr-docs">—</div><div class="stat-card__label">Approved docs</div></div>
+            <div class="stat-card"><div class="stat-card__value" id="s-chunks">—</div><div class="stat-card__label">Total chunks</div></div>
+            <div class="stat-card"><div class="stat-card__value" id="s-appr-chunks">—</div><div class="stat-card__label">Approved chunks</div></div>
+            <div class="stat-card"><div class="stat-card__value" id="s-embedded">—</div><div class="stat-card__label">With embeddings</div></div>
+            <div class="stat-card"><div class="stat-card__value" id="s-failed">—</div><div class="stat-card__label">Failed</div></div>
+          </section>
+
+          <div class="chip-row" id="chips">
+            <button class="chip is-active" data-status="all" type="button">All</button>
+            <button class="chip" data-status="ready" type="button">Ready</button>
+            <button class="chip" data-status="processing" type="button">Processing</button>
+            <button class="chip" data-status="failed" type="button">Failed</button>
+            <button class="chip" data-status="pending" type="button">Pending</button>
+          </div>
+
+          <div class="bulk-bar" id="bulk-bar-doc">
+            <span><strong id="bulk-count-doc">0</strong> document(s)</span>
+            <button class="btn" data-bulk-doc="approve" type="button">Approve</button>
+            <button class="btn" data-bulk-doc="unapprove" type="button">Unapprove</button>
+            <button class="btn btn--danger" data-bulk-doc="delete" type="button">Delete</button>
+            <button class="btn" data-bulk-doc="clear" type="button" style="margin-left:auto">Clear</button>
+          </div>
+
+          <section class="section">
+            <div id="docs-wrap">
+              <div class="empty-state-small">Loading…</div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Manual knowledge modal -->
+  <div class="modal-overlay" id="manual-modal">
+    <div class="modal">
+      <h3 class="modal__title">Add knowledge manually</h3>
+      <p class="modal__sub">
+        Paste any educational text. It will be chunked and embedded automatically and be immediately available to the AI.
+      </p>
+
+      <div style="margin-bottom:14px">
+        <label class="label" for="mn-title">Title</label>
+        <input class="input" type="text" id="mn-title" placeholder="e.g. The Water Cycle — Key Facts">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <label class="label" for="mn-subject">Subject (optional)</label>
+          <input class="input" type="text" id="mn-subject" placeholder="Biology">
+        </div>
+        <div>
+          <label class="label" for="mn-level">Level (optional)</label>
+          <input class="input" type="text" id="mn-level" placeholder="SSS 2">
+        </div>
+      </div>
+
+      <div>
+        <label class="label" for="mn-text">Content</label>
+        <textarea class="textarea" id="mn-text" rows="12"
+                  placeholder="Paste the educational text here. Minimum 100 characters."></textarea>
+        <div id="mn-count" style="font-size:0.75rem;color:var(--slate);margin-top:4px;text-align:right">0 characters</div>
+      </div>
+
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="manual-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="manual-save" type="button">Add knowledge</button>
+      </div>
+    </div>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var docs = [];
+    var filterStatus = 'all';
+    var openDocId = null;
+    var chunksByDoc = {};
+    var selectedDocs = {};
+    var selectedChunks = {};    // grouped by docId
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = [
+        'position:fixed','bottom:24px','left:50%','transform:translateX(-50%)',
+        'background:' + (isError ? 'var(--deep-red)' : 'var(--navy)'),
+        'color:#fff','padding:12px 20px','border-radius:999px',
+        'font-family:var(--font-body)','font-size:0.9rem',
+        'box-shadow:0 8px 24px rgba(17,16,74,0.2)','z-index:300'
+      ].join(';');
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+
+    function fmtSize(bytes) {
+      if (!bytes) return '—';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      var data = await res.json();
+      if (!data.user || data.user.role !== 'admin') {
+        window.location.href = '../chat.html';
+        return false;
+      }
+      return true;
+    }
+
+    async function loadStats() {
+      try {
+        var res = await fetch('/api/admin/knowledge/stats', { credentials: 'include' });
+        if (!res.ok) return;
+        var d = await res.json();
+        var s = d.stats || {};
+        document.getElementById('s-docs').textContent        = s.documents ?? 0;
+        document.getElementById('s-appr-docs').textContent   = s.approved_documents ?? 0;
+        document.getElementById('s-chunks').textContent      = s.chunks ?? 0;
+        document.getElementById('s-appr-chunks').textContent = s.approved_chunks ?? 0;
+        document.getElementById('s-embedded').textContent    = s.embedded_chunks ?? 0;
+        document.getElementById('s-failed').textContent      = s.failed_documents ?? 0;
+      } catch (_) {}
+    }
+
+    async function loadDocs() {
+      var wrap = document.getElementById('docs-wrap');
+      wrap.innerHTML = '<div class="empty-state-small">Loading…</div>';
+      try {
+        var url = '/api/admin/knowledge/documents';
+        if (filterStatus !== 'all') url += '?status=' + encodeURIComponent(filterStatus);
+        var res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) { wrap.innerHTML = '<div class="empty-state-small">Could not load.</div>'; return; }
+        var d = await res.json();
+        docs = d.documents || [];
+        renderDocs();
+      } catch (_) {
+        wrap.innerHTML = '<div class="empty-state-small" style="color:var(--deep-red)">Error.</div>';
+      }
+    }
+
+    function statusPillClass(s) {
+      if (s === 'ready')      return 'status-pill status-pill--ready';
+      if (s === 'processing') return 'status-pill status-pill--processing';
+      if (s === 'failed')     return 'status-pill status-pill--failed';
+      return 'status-pill status-pill--pending';
+    }
+
+    function renderDocs() {
+      var wrap = document.getElementById('docs-wrap');
+      if (!docs.length) {
+        wrap.innerHTML = '<div class="empty-state-small">No documents match this filter.</div>';
+        updateDocBulkBar();
+        return;
+      }
+
+      wrap.innerHTML = docs.map(function (d) {
+        var open = openDocId === d.id;
+        var status = d.processing_status || 'pending';
+        var chunkSummary = status === 'ready'
+          ? d.chunk_count + ' chunks'
+          : (status === 'failed' ? 'Extraction failed' : 'Not processed');
+        var sourceBadge = d.source_type === 'manual' ? ' <span class="source-badge">manual</span>' : '';
+
+        return (
+          '<div class="doc-card' + (open ? ' is-open' : '') + '" data-id="' + d.id + '">' +
+            '<div class="doc-head">' +
+              '<input type="checkbox" class="doc-check" data-doc-id="' + d.id + '"' +
+                (selectedDocs[d.id] ? ' checked' : '') + '>' +
+              '<div class="doc-icon"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></div>' +
+              '<div class="doc-body">' +
+                '<div class="doc-title">' + esc(d.title) + sourceBadge + '</div>' +
+                '<div class="doc-meta">' +
+                  '<span>' + esc(d.subject || 'No subject') + '</span>' +
+                  '<span>' + esc(d.original_name) + '</span>' +
+                  '<span>' + fmtSize(Number(d.size_bytes)) + '</span>' +
+                  '<span>' + chunkSummary + '</span>' +
+                  '<span>' + fmtDate(d.uploaded_at) + '</span>' +
+                  (d.approved ? '<span style="color:#2F8F4A;font-weight:600">Approved</span>'
+                              : '<span style="color:#B77700">Hidden</span>') +
+                '</div>' +
+              '</div>' +
+              '<span class="' + statusPillClass(status) + '">' + status + '</span>' +
+              '<i class="fa-solid fa-chevron-down doc-arrow" aria-hidden="true"></i>' +
+            '</div>' +
+            '<div class="doc-chunks">' +
+              '<div class="doc-actions">' +
+                '<button class="btn btn-ghost" data-action="reprocess" data-id="' + d.id + '" type="button">' +
+                  '<i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Reprocess' +
+                '</button>' +
+                '<button class="btn btn-ghost" data-action="bulk-chunk-approve" data-id="' + d.id + '" type="button">' +
+                  '<i class="fa-solid fa-check"></i> Approve all chunks' +
+                '</button>' +
+                '<button class="btn btn-ghost" data-action="bulk-chunk-unapprove" data-id="' + d.id + '" type="button">' +
+                  '<i class="fa-solid fa-eye-slash"></i> Hide all chunks' +
+                '</button>' +
+              '</div>' +
+              '<div class="bulk-bar" id="bulk-bar-chunk-' + d.id + '">' +
+                '<span><strong id="chunk-count-' + d.id + '">0</strong> selected</span>' +
+                '<button class="btn" data-chunk-bulk="approve" data-doc="' + d.id + '" type="button">Approve</button>' +
+                '<button class="btn" data-chunk-bulk="unapprove" data-doc="' + d.id + '" type="button">Unapprove</button>' +
+                '<button class="btn btn--danger" data-chunk-bulk="delete" data-doc="' + d.id + '" type="button">Delete</button>' +
+              '</div>' +
+              '<div class="chunks-list" id="chunks-' + d.id + '">' +
+                (open ? '<div class="empty-state-small">Loading chunks…</div>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      // Doc click handlers
+      wrap.querySelectorAll('.doc-card').forEach(function (card) {
+        var id = card.getAttribute('data-id');
+        card.querySelector('.doc-head').addEventListener('click', function (e) {
+          if (e.target.closest('input[type=checkbox]') || e.target.closest('[data-action]')) return;
+          toggleDoc(id);
+        });
+        card.querySelector('.doc-check').addEventListener('change', function (e) {
+          selectedDocs[id] = e.target.checked;
+          updateDocBulkBar();
+        });
+        card.querySelectorAll('[data-action="reprocess"]').forEach(function (b) {
+          b.addEventListener('click', function (e) { e.stopPropagation(); reprocess(id); });
+        });
+        card.querySelectorAll('[data-action="bulk-chunk-approve"]').forEach(function (b) {
+          b.addEventListener('click', function (e) {
+            e.stopPropagation(); bulkAllChunks(id, 'approve');
+          });
+        });
+        card.querySelectorAll('[data-action="bulk-chunk-unapprove"]').forEach(function (b) {
+          b.addEventListener('click', function (e) {
+            e.stopPropagation(); bulkAllChunks(id, 'unapprove');
+          });
+        });
+      });
+
+      // Chunk bulk bar handlers
+      wrap.querySelectorAll('[data-chunk-bulk]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var docId = btn.getAttribute('data-doc');
+          var action = btn.getAttribute('data-chunk-bulk');
+          runChunkBulk(docId, action);
+        });
+      });
+
+      updateDocBulkBar();
+      if (openDocId) loadChunks(openDocId);
+    }
+
+    function updateDocBulkBar() {
+      var n = Object.keys(selectedDocs).filter(function (k) { return selectedDocs[k]; }).length;
+      document.getElementById('bulk-count-doc').textContent = n;
+      document.getElementById('bulk-bar-doc').classList.toggle('is-visible', n > 0);
+    }
+
+    function updateChunkBulkBar(docId) {
+      var ids = Object.keys(selectedChunks[docId] || {}).filter(function (k) { return selectedChunks[docId][k]; });
+      var countEl = document.getElementById('chunk-count-' + docId);
+      var barEl = document.getElementById('bulk-bar-chunk-' + docId);
+      if (countEl) countEl.textContent = ids.length;
+      if (barEl) barEl.classList.toggle('is-visible', ids.length > 0);
+    }
+
+    async function toggleDoc(id) {
+      if (openDocId === id) { openDocId = null; renderDocs(); return; }
+      openDocId = id;
+      renderDocs();
+    }
+
+    async function loadChunks(docId) {
+      var target = document.getElementById('chunks-' + docId);
+      if (!target) return;
+      try {
+        var res = await fetch('/api/admin/knowledge/documents/' + docId + '/chunks?limit=200',
+          { credentials: 'include' });
+        if (!res.ok) { target.innerHTML = '<div class="empty-state-small">Could not load chunks.</div>'; return; }
+        var d = await res.json();
+        chunksByDoc[docId] = d.chunks || [];
+        renderChunks(docId);
+      } catch (_) {
+        target.innerHTML = '<div class="empty-state-small" style="color:var(--deep-red)">Error.</div>';
+      }
+    }
+
+    function renderChunks(docId) {
+      var target = document.getElementById('chunks-' + docId);
+      if (!target) return;
+      var chunks = chunksByDoc[docId] || [];
+      if (!chunks.length) {
+        target.innerHTML = '<div class="empty-state-small">No chunks yet. Click Reprocess to extract and embed text.</div>';
+        updateChunkBulkBar(docId);
+        return;
+      }
+
+      var selected = selectedChunks[docId] || {};
+
+      target.innerHTML = chunks.map(function (c) {
+        return (
+          '<div class="chunk-item">' +
+            '<input type="checkbox" class="chunk-check" data-doc="' + docId + '" data-chunk="' + c.id + '"' +
+              (selected[c.id] ? ' checked' : '') + '>' +
+            '<div class="chunk-body">' +
+              '<div class="chunk-head">' +
+                '<span class="chunk-pos">#' + (c.position + 1) + '</span>' +
+                '<span class="chunk-badge ' + (c.approved ? 'chunk-badge--ok' : 'chunk-badge--hidden') + '">' +
+                  (c.approved ? 'visible to AI' : 'hidden') +
+                '</span>' +
+                (c.has_embedding ? '' : '<span class="chunk-badge chunk-badge--hidden">no embedding</span>') +
+                '<div class="chunk-actions">' +
+                  '<button data-action="toggle-approve" data-doc="' + docId + '" data-chunk-id="' + c.id + '" type="button" title="Toggle approval">' +
+                    '<i class="fa-solid ' + (c.approved ? 'fa-eye-slash' : 'fa-check') + '"></i>' +
+                  '</button>' +
+                  '<button class="danger" data-action="delete-chunk" data-doc="' + docId + '" data-chunk-id="' + c.id + '" type="button" title="Delete">' +
+                    '<i class="fa-solid fa-trash"></i>' +
+                  '</button>' +
+                '</div>' +
+              '</div>' +
+              '<div class="chunk-content">' + esc(c.content) + '</div>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      target.querySelectorAll('.chunk-check').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          if (!selectedChunks[docId]) selectedChunks[docId] = {};
+          selectedChunks[docId][cb.getAttribute('data-chunk')] = cb.checked;
+          updateChunkBulkBar(docId);
+        });
+      });
+
+      target.querySelectorAll('[data-action="toggle-approve"]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var chunkId = b.getAttribute('data-chunk-id');
+          var chunk = (chunksByDoc[docId] || []).find(function (x) { return x.id === chunkId; });
+          if (chunk) toggleChunkApprove(docId, chunk);
+        });
+      });
+      target.querySelectorAll('[data-action="delete-chunk"]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var chunkId = b.getAttribute('data-chunk-id');
+          if (confirm('Delete this chunk?')) deleteChunk(docId, chunkId);
+        });
+      });
+
+      updateChunkBulkBar(docId);
+    }
+
+    async function toggleChunkApprove(docId, chunk) {
+      var res = await fetch('/api/admin/knowledge/chunks/' + chunk.id + '/approve', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ approved: !chunk.approved }),
+      });
+      if (!res.ok) { toast('Could not update.', true); return; }
+      chunk.approved = !chunk.approved;
+      renderChunks(docId);
+      loadStats();
+    }
+
+    async function deleteChunk(docId, chunkId) {
+      var res = await fetch('/api/admin/knowledge/chunks/' + chunkId, {
+        method: 'DELETE', credentials: 'include',
+      });
+      if (!res.ok) { toast('Could not delete.', true); return; }
+      chunksByDoc[docId] = (chunksByDoc[docId] || []).filter(function (c) { return c.id !== chunkId; });
+      renderChunks(docId);
+      loadStats();
+      toast('Deleted.');
+    }
+
+    async function runChunkBulk(docId, action) {
+      var selected = selectedChunks[docId] || {};
+      var ids = Object.keys(selected).filter(function (k) { return selected[k]; });
+      if (!ids.length) return;
+      if (action === 'delete' && !confirm('Delete ' + ids.length + ' chunk(s)?')) return;
+
+      var res = await fetch('/api/admin/knowledge/chunks/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ids: ids, action: action }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast(data.error || 'Failed.', true); return; }
+      selectedChunks[docId] = {};
+      await loadChunks(docId);
+      await loadStats();
+      toast('Updated ' + data.affected + ' chunk(s).');
+    }
+
+    async function bulkAllChunks(docId, action) {
+      var chunks = chunksByDoc[docId] || [];
+      if (!chunks.length) { toast('No chunks to update.', true); return; }
+      var ids = chunks.map(function (c) { return c.id; });
+      var res = await fetch('/api/admin/knowledge/chunks/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ids: ids, action: action }),
+      });
+      if (!res.ok) { toast('Failed.', true); return; }
+      await loadChunks(docId);
+      await loadStats();
+      toast('Updated all chunks.');
+    }
+
+    async function reprocess(docId) {
+      var res = await fetch('/api/admin/knowledge/documents/' + docId + '/reprocess', {
+        method: 'POST', credentials: 'include',
+      });
+      if (!res.ok) { toast('Could not start.', true); return; }
+      toast('Reprocessing started. Refresh in ~30s.');
+      setTimeout(function () { loadDocs(); loadStats(); }, 8000);
+    }
+
+    async function runDocBulk(action) {
+      var ids = Object.keys(selectedDocs).filter(function (k) { return selectedDocs[k]; });
+      if (!ids.length) return;
+      if (action === 'clear') { selectedDocs = {}; renderDocs(); return; }
+      if (action === 'delete' && !confirm('Delete ' + ids.length + ' document(s)?')) return;
+
+      var res = await fetch('/api/admin/knowledge/documents/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ids: ids, action: action }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast(data.error || 'Failed.', true); return; }
+      selectedDocs = {};
+      await loadDocs();
+      await loadStats();
+      toast('Updated ' + data.affected + ' document(s).');
+    }
+
+    // Manual modal
+    function openManual() {
+      document.getElementById('mn-title').value = '';
+      document.getElementById('mn-subject').value = '';
+      document.getElementById('mn-level').value = '';
+      document.getElementById('mn-text').value = '';
+      document.getElementById('mn-count').textContent = '0 characters';
+      document.getElementById('manual-modal').classList.add('is-open');
+      setTimeout(function () { document.getElementById('mn-title').focus(); }, 60);
+    }
+    function closeManual() { document.getElementById('manual-modal').classList.remove('is-open'); }
+
+    document.getElementById('mn-text').addEventListener('input', function () {
+      document.getElementById('mn-count').textContent = this.value.length + ' characters';
+    });
+
+    async function saveManual() {
+      var title = document.getElementById('mn-title').value.trim();
+      var subject = document.getElementById('mn-subject').value.trim();
+      var level = document.getElementById('mn-level').value.trim();
+      var text = document.getElementById('mn-text').value;
+
+      if (!title) { toast('Title is required.', true); return; }
+      if (!text || text.trim().length < 100) { toast('At least 100 characters.', true); return; }
+
+      var btn = document.getElementById('manual-save');
+      btn.disabled = true; btn.textContent = 'Adding…';
+      try {
+        var res = await fetch('/api/admin/knowledge/manual', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ title, subject, level, text }),
+        });
+        var d = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(d.error || 'Could not add.', true); return; }
+        closeManual();
+        await loadDocs();
+        await loadStats();
+        toast('Knowledge added.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Add knowledge';
+      }
+    }
+
+    // Wire
+    document.getElementById('add-knowledge-btn').addEventListener('click', openManual);
+    document.getElementById('manual-cancel').addEventListener('click', closeManual);
+    document.getElementById('manual-save').addEventListener('click', saveManual);
+    document.getElementById('manual-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'manual-modal') closeManual();
+    });
+
+    document.querySelectorAll('#chips .chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('#chips .chip').forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        filterStatus = chip.getAttribute('data-status');
+        openDocId = null;
+        loadDocs();
+      });
+    });
+
+    document.querySelectorAll('#bulk-bar-doc [data-bulk-doc]').forEach(function (btn) {
+      btn.addEventListener('click', function () { runDocBulk(btn.getAttribute('data-bulk-doc')); });
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      await loadStats();
+      await loadDocs();
+    })();
+  })();
+</script>
+</body>
+</html>

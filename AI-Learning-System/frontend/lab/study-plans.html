@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Plans — Studying Lab</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .sp-inner { max-width: 800px; }
+
+  .setup-card { padding: 28px; }
+  .setup-field { margin-bottom: 18px; }
+  .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .setup-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+  .generating { text-align: center; padding: 60px 20px; }
+  .generating__spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--blush-deep);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .generating__text {
+    font-family: var(--font-head); color: var(--navy);
+    font-size: 1.1rem; margin: 0;
+  }
+
+  .plan-list { display: flex; flex-direction: column; gap: 10px; }
+  .plan-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 20px; background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  }
+  .plan-row:hover {
+    border-color: var(--gold);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+  }
+  .plan-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: #FBF3E1; color: var(--gold);
+    display: grid; place-items: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .plan-body { flex: 1; min-width: 0; }
+  .plan-title {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: 1rem; color: var(--navy);
+    margin: 0 0 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .plan-meta {
+    font-size: 0.8rem; color: var(--slate);
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .plan-del {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: none; background: transparent;
+    color: var(--slate); cursor: pointer;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .plan-del:hover { background: #FCECEC; color: var(--deep-red); }
+
+  /* Plan viewer */
+  .plan-header {
+    margin-bottom: 20px;
+  }
+  .plan-header__title {
+    font-family: var(--font-head);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .plan-header__meta {
+    font-size: 0.88rem;
+    color: var(--slate);
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .progress-block {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-block__bar {
+    flex: 1;
+    height: 8px;
+    background: var(--blush-deep);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-block__fill {
+    height: 100%;
+    background: var(--red);
+    border-radius: 4px;
+    transition: width 300ms var(--ease);
+  }
+  .progress-block__label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    color: var(--slate);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .day-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .day-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+  .day-head:hover { background: var(--blush); }
+  .day-num {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--navy); color: var(--white);
+    display: grid; place-items: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .day-body { flex: 1; min-width: 0; }
+  .day-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--navy);
+    margin: 0 0 2px;
+  }
+  .day-meta {
+    font-size: 0.78rem;
+    color: var(--slate);
+  }
+  .day-arrow {
+    color: var(--slate);
+    transition: transform var(--transition);
+    flex-shrink: 0;
+  }
+  .day-card.is-open .day-arrow { transform: rotate(180deg); }
+
+  .day-tasks {
+    display: none;
+    border-top: 1px solid var(--border-soft);
+    padding: 8px 20px 16px;
+  }
+  .day-card.is-open .day-tasks { display: block; }
+
+  .task-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    cursor: pointer;
+  }
+  .task-check {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    background: var(--white);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition);
+  }
+  .task-row.is-done .task-check {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+  }
+  .task-row.is-done .task-text {
+    text-decoration: line-through;
+    color: var(--slate);
+    opacity: 0.7;
+  }
+  .task-text {
+    font-size: 0.9rem;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+
+  @media (max-width: 860px) {
+    .setup-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner sp-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Study Plans</h1>
+              <p class="page-header__sub">
+                Multi-day schedules built for your topic. Tick off tasks as you go.
+              </p>
+            </div>
+          </header>
+
+          <!-- Stage: list -->
+          <div id="stage-list">
+            <section class="section">
+              <h2 class="section__title">Create a plan</h2>
+              <div class="card setup-card">
+                <div class="setup-field">
+                  <label class="label" for="topic">Topic</label>
+                  <input class="input" type="text" id="topic"
+                         placeholder="e.g. Photosynthesis, Trigonometry, Newton's laws">
+                </div>
+                <div class="setup-row">
+                  <div class="setup-field">
+                    <label class="label" for="subject">Subject (optional)</label>
+                    <input class="input" type="text" id="subject" placeholder="Biology">
+                  </div>
+                  <div class="setup-field">
+                    <label class="label" for="days">Duration</label>
+                    <select class="input" id="days">
+                      <option value="3">3 days</option>
+                      <option value="5">5 days</option>
+                      <option value="7" selected>7 days</option>
+                      <option value="14">14 days</option>
+                      <option value="21">21 days</option>
+                      <option value="30">30 days</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="setup-field">
+                  <label class="label" for="exam-date">Exam date (optional)</label>
+                  <input class="input" type="text" id="exam-date" placeholder="e.g. WAEC May 2026">
+                </div>
+                <div class="setup-actions">
+                  <button class="btn btn-primary" id="gen-btn" type="button">
+                    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    Generate plan
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section class="section">
+              <h2 class="section__title">Your plans</h2>
+              <div class="plan-list" id="plans-wrap">
+                <div style="color:var(--slate);font-size:0.9rem">Loading…</div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Stage: generating -->
+          <div id="stage-generating" style="display:none">
+            <div class="card generating">
+              <div class="generating__spinner"></div>
+              <p class="generating__text">Building your study plan…</p>
+            </div>
+          </div>
+
+          <!-- Stage: viewer -->
+          <div id="stage-view" style="display:none">
+            <div class="plan-header">
+              <h2 class="plan-header__title" id="v-title">—</h2>
+              <div class="plan-header__meta">
+                <span id="v-topic"></span>
+                <span id="v-duration"></span>
+                <span id="v-start"></span>
+              </div>
+            </div>
+
+            <div class="progress-block">
+              <span class="progress-block__label">Progress</span>
+              <div class="progress-block__bar">
+                <div class="progress-block__fill" id="v-progress" style="width:0%"></div>
+              </div>
+              <span class="progress-block__label" id="v-progress-label">0%</span>
+              <button class="btn btn-ghost" id="back-btn" type="button" style="flex-shrink:0">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back
+              </button>
+            </div>
+
+            <div id="days-wrap"></div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var stages = {
+      list:       document.getElementById('stage-list'),
+      generating: document.getElementById('stage-generating'),
+      view:       document.getElementById('stage-view'),
+    };
+    function showStage(name) {
+      Object.keys(stages).forEach(function (k) {
+        stages[k].style.display = (k === name) ? '' : 'none';
+      });
+    }
+
+    var plans = [];
+    var currentPlan = null;
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = [
+        'position:fixed','bottom:24px','left:50%','transform:translateX(-50%)',
+        'background:' + (isError ? 'var(--deep-red)' : 'var(--navy)'),
+        'color:#fff','padding:12px 20px','border-radius:999px',
+        'font-family:var(--font-body)','font-size:0.9rem',
+        'box-shadow:0 8px 24px rgba(17,16,74,0.2)','z-index:300'
+      ].join(';');
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' });
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      return true;
+    }
+
+    async function loadPlans() {
+      var res = await fetch('/api/tools/studyplans', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      plans = data.plans || [];
+      renderPlans();
+    }
+
+    function renderPlans() {
+      var wrap = document.getElementById('plans-wrap');
+      if (!plans.length) {
+        wrap.innerHTML =
+          '<div class="empty-state">' +
+            '<div class="empty-state__icon"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i></div>' +
+            '<h3 class="empty-state__title">No plans yet</h3>' +
+            '<p class="empty-state__desc">Generate your first study plan above to get a day-by-day schedule.</p>' +
+          '</div>';
+        return;
+      }
+
+      wrap.innerHTML = plans.map(function (p) {
+        return (
+          '<div class="plan-row" data-id="' + p.id + '">' +
+            '<div class="plan-icon"><i class="fa-solid fa-calendar-days" aria-hidden="true"></i></div>' +
+            '<div class="plan-body">' +
+              '<div class="plan-title">' + esc(p.title) + '</div>' +
+              '<div class="plan-meta">' +
+                '<span>' + esc(p.topic) + '</span>' +
+                '<span>' + p.duration_days + ' days</span>' +
+                '<span>Started ' + fmtDate(p.start_date) + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<button class="plan-del" data-id="' + p.id + '" title="Delete" type="button">' +
+              '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
+            '</button>' +
+          '</div>'
+        );
+      }).join('');
+
+      wrap.querySelectorAll('.plan-row').forEach(function (row) {
+        row.addEventListener('click', function (e) {
+          if (e.target.closest('.plan-del')) return;
+          openPlan(row.getAttribute('data-id'));
+        });
+      });
+
+      wrap.querySelectorAll('.plan-del').forEach(function (btn) {
+        btn.addEventListener('click', async function (e) {
+          e.stopPropagation();
+          var id = btn.getAttribute('data-id');
+          if (!confirm('Delete this plan?')) return;
+          var res = await fetch('/api/tools/studyplans/' + id, {
+            method: 'DELETE', credentials: 'include',
+          });
+          if (!res.ok) { toast('Could not delete.', true); return; }
+          plans = plans.filter(function (p) { return p.id !== id; });
+          renderPlans();
+          toast('Plan deleted.');
+        });
+      });
+    }
+
+    async function generate() {
+      var topic = document.getElementById('topic').value.trim();
+      if (!topic) { toast('Please enter a topic.', true); return; }
+
+      var subject  = document.getElementById('subject').value.trim() || null;
+      var days     = parseInt(document.getElementById('days').value, 10);
+      var examDate = document.getElementById('exam-date').value.trim() || null;
+
+      showStage('generating');
+
+      try {
+        var res = await fetch('/api/tools/studyplans/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ topic, days, subject, examDate }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+          toast(data.error || 'Could not generate.', true);
+          showStage('list');
+          return;
+        }
+        currentPlan = data.plan;
+        renderPlanView();
+        showStage('view');
+      } catch (_) {
+        toast('Cannot reach the server.', true);
+        showStage('list');
+      }
+    }
+
+    function progressKey(planId) {
+      return 'study-plan-progress-' + planId;
+    }
+    function loadProgress(planId) {
+      try { return JSON.parse(localStorage.getItem(progressKey(planId)) || '{}'); }
+      catch (_) { return {}; }
+    }
+    function saveProgress(planId, progress) {
+      try { localStorage.setItem(progressKey(planId), JSON.stringify(progress)); } catch (_) {}
+    }
+
+    function renderPlanView() {
+      var p = currentPlan;
+      document.getElementById('v-title').textContent = p.title;
+      document.getElementById('v-topic').textContent = 'Topic: ' + p.topic;
+      document.getElementById('v-duration').textContent = p.duration_days + ' days';
+      document.getElementById('v-start').textContent = 'Started ' + fmtDate(p.start_date);
+
+      var days = (p.plan && p.plan.days) || [];
+      var progress = loadProgress(p.id);
+
+      var wrap = document.getElementById('days-wrap');
+      wrap.innerHTML = days.map(function (d, dayIdx) {
+        var tasks = d.tasks || [];
+        var tasksHtml = tasks.map(function (t, taskIdx) {
+          var key = dayIdx + ':' + taskIdx;
+          var done = !!progress[key];
+          return (
+            '<div class="task-row' + (done ? ' is-done' : '') + '" data-key="' + key + '">' +
+              '<div class="task-check">' +
+                (done ? '<i class="fa-solid fa-check" style="font-size:0.75rem"></i>' : '') +
+              '</div>' +
+              '<div class="task-text">' + esc(t) + '</div>' +
+            '</div>'
+          );
+        }).join('');
+
+        return (
+          '<div class="day-card" data-day="' + dayIdx + '">' +
+            '<div class="day-head">' +
+              '<div class="day-num">' + d.day + '</div>' +
+              '<div class="day-body">' +
+                '<div class="day-title">' + esc(d.title) + '</div>' +
+                '<div class="day-meta">' + (d.duration_minutes || 45) + ' min · ' +
+                  tasks.length + ' task' + (tasks.length === 1 ? '' : 's') + '</div>' +
+              '</div>' +
+              '<i class="fa-solid fa-chevron-down day-arrow" aria-hidden="true"></i>' +
+            '</div>' +
+            '<div class="day-tasks">' + tasksHtml + '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      // Open the first day by default
+      var firstCard = wrap.querySelector('.day-card');
+      if (firstCard) firstCard.classList.add('is-open');
+
+      wrap.querySelectorAll('.day-head').forEach(function (h) {
+        h.addEventListener('click', function () {
+          h.parentElement.classList.toggle('is-open');
+        });
+      });
+
+      wrap.querySelectorAll('.task-row').forEach(function (row) {
+        row.addEventListener('click', function () {
+          var key = row.getAttribute('data-key');
+          var prog = loadProgress(currentPlan.id);
+          prog[key] = !prog[key];
+          saveProgress(currentPlan.id, prog);
+
+          row.classList.toggle('is-done', prog[key]);
+          var check = row.querySelector('.task-check');
+          check.innerHTML = prog[key]
+            ? '<i class="fa-solid fa-check" style="font-size:0.75rem"></i>'
+            : '';
+
+          updateProgressBar();
+        });
+      });
+
+      updateProgressBar();
+    }
+
+    function updateProgressBar() {
+      var days = (currentPlan.plan && currentPlan.plan.days) || [];
+      var total = days.reduce(function (sum, d) { return sum + (d.tasks || []).length; }, 0);
+      var prog = loadProgress(currentPlan.id);
+      var done = Object.keys(prog).filter(function (k) { return prog[k]; }).length;
+      var pct = total ? Math.round((done / total) * 100) : 0;
+      document.getElementById('v-progress').style.width = pct + '%';
+      document.getElementById('v-progress-label').textContent =
+        done + ' / ' + total + ' (' + pct + '%)';
+    }
+
+    async function openPlan(id) {
+      var res = await fetch('/api/tools/studyplans/' + id, { credentials: 'include' });
+      if (!res.ok) { toast('Could not load plan.', true); return; }
+      var data = await res.json();
+      currentPlan = data.plan;
+      renderPlanView();
+      showStage('view');
+    }
+
+    document.getElementById('gen-btn').addEventListener('click', generate);
+    document.getElementById('back-btn').addEventListener('click', async function () {
+      currentPlan = null;
+      await loadPlans();
+      showStage('list');
+    });
+
+    document.getElementById('topic').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); generate(); }
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      await loadPlans();
+      showStage('list');
+    })();
+  })();
+</script>
+</body>
+</html>

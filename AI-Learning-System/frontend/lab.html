@@ -6,32 +6,191 @@
 <title>Studying Lab — AI Learning Platform</title>
 <link rel="stylesheet" href="assets/shell.css">
 <style>
-  .page { flex: 1; padding: 32px; max-width: 1100px; }
-  .placeholder {
-    margin-top: 24px; padding: 40px; text-align: center;
-    color: var(--slate); border: 2px dashed var(--blush-deep);
-    border-radius: var(--radius); background: var(--white);
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .tool-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    font-family: var(--font-body);
+    position: relative;
+  }
+  .tool-card:hover {
+    border-color: var(--gold);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-2px);
+  }
+  .tool-card__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .tool-card__icon--red   { background: #FDECEC; color: var(--red); }
+  .tool-card__icon--navy  { background: #ECEBF5; color: var(--navy); }
+  .tool-card__icon--gold  { background: #FBF3E1; color: var(--gold); }
+  .tool-card__icon--slate { background: var(--blush); color: var(--slate); }
+
+  .tool-card__title {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--navy);
+    margin: 0;
+    line-height: 1.25;
+  }
+  .tool-card__desc {
+    font-size: 0.85rem;
+    color: var(--slate);
+    line-height: 1.5;
+    margin: 0;
   }
 </style>
 </head>
 <body>
-  <div class="mobile-bar">
-    <button class="mobile-bar__toggle" id="sidebar-toggle" aria-label="Open menu">☰</button>
-    <span>AI Learning Platform</span>
-  </div>
-  <div class="backdrop" id="sidebar-backdrop"></div>
-
   <div class="app">
     <div id="sidebar-mount"></div>
+
     <main class="page">
-      <h1>Studying Lab</h1>
-      <p>Active-learning workspace.</p>
-      <div class="placeholder">
-        Notes · Flashcards · Quiz · Practice · Study Plans · Visualization · Exam Mode
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Studying Lab</h1>
+              <p class="page-header__sub">
+                Your active-learning workspace. Practice, review, and track what you are learning.
+              </p>
+            </div>
+          </header>
+
+          <section class="section">
+            <h2 class="section__title">Tools</h2>
+            <div class="tool-grid">
+
+              <button class="tool-card" type="button" data-tool="notes">
+                <div class="tool-card__icon tool-card__icon--navy">
+                  <i class="fa-solid fa-note-sticky" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Notes</h3>
+                <p class="tool-card__desc">Write and organize your study notes by subject.</p>
+              </button>
+
+              <button class="tool-card" type="button" data-tool="flashcards">
+                <div class="tool-card__icon tool-card__icon--red">
+                  <i class="fa-solid fa-clone" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Flashcards</h3>
+                <p class="tool-card__desc">Review cards with spaced repetition to lock in memory.</p>
+              </button>
+
+              <button class="tool-card" type="button" data-tool="quiz">
+                <div class="tool-card__icon tool-card__icon--gold">
+                  <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Quiz</h3>
+                <p class="tool-card__desc">Test your understanding with multiple-choice questions.</p>
+              </button>
+
+              <button class="tool-card" type="button" data-tool="practice">
+                <div class="tool-card__icon tool-card__icon--navy">
+                  <i class="fa-solid fa-dumbbell" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Practice</h3>
+                <p class="tool-card__desc">Open-ended problems with model answers.</p>
+              </button>
+
+              <button class="tool-card" type="button" data-tool="visualization">
+                <div class="tool-card__icon tool-card__icon--gold">
+                  <i class="fa-solid fa-diagram-project" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Visualization</h3>
+                <p class="tool-card__desc">Turn topics into flowcharts, mindmaps, and diagrams.</p>
+              </button>
+
+              <button class="tool-card" type="button" data-tool="studyplans">
+                <div class="tool-card__icon tool-card__icon--red">
+                  <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Study Plans</h3>
+                <p class="tool-card__desc">Build a schedule that fits your exams and goals.</p>
+              </button>
+
+              <button class="tool-card" type="button" data-tool="exam">
+                <div class="tool-card__icon tool-card__icon--slate">
+                  <i class="fa-solid fa-stopwatch" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Exam Mode</h3>
+                <p class="tool-card__desc">Timed practice under real exam conditions.</p>
+              </button>
+
+              <button class="tool-card" type="button" data-tool="mistakes">
+                <div class="tool-card__icon tool-card__icon--navy">
+                  <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Mistake Bank</h3>
+                <p class="tool-card__desc">Review every mistake you've made, organized by topic.</p>
+              </button>
+
+            </div>
+          </section>
+
+          <section class="section">
+            <h2 class="section__title">Next up</h2>
+            <div class="empty-state">
+              <div class="empty-state__icon">
+                <i class="fa-solid fa-rocket" aria-hidden="true"></i>
+              </div>
+              <h3 class="empty-state__title">Nothing scheduled</h3>
+              <p class="empty-state__desc">
+                Start a quiz, review flashcards, or create a study plan — your next steps will appear here.
+              </p>
+            </div>
+          </section>
+
+        </div>
       </div>
     </main>
   </div>
 
 <script src="assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var TOOL_ROUTES = {
+      quiz:          'lab/quiz.html',
+      flashcards:    'lab/flashcards.html',
+      mistakes:      'lab/mistakes.html',
+      notes:         'lab/notes.html',
+      practice:      'lab/practice.html',
+      visualization: 'lab/visualization.html',
+      studyplans:    'lab/study-plans.html',
+      exam:          'lab/exam.html'
+    };
+
+    document.querySelectorAll('.tool-card[data-tool]').forEach(function (card) {
+      var tool = card.getAttribute('data-tool');
+      var route = TOOL_ROUTES[tool];
+      if (!route) return;
+      card.addEventListener('click', function () {
+        window.location.href = route;
+      });
+    });
+  })();
+</script>
 </body>
 </html>

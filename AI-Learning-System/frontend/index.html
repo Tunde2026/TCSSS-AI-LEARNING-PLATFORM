@@ -6,7 +6,6 @@
 <title>Sign in — AI Learning Platform</title>
 <link rel="stylesheet" href="assets/shell.css">
 <style>
-  /* Page-specific styles for the auth screen only */
   .auth-wrap {
     min-height: 100vh;
     display: grid;
@@ -19,11 +18,18 @@
   .auth-card { width: 100%; max-width: 440px; }
   .auth-brand { text-align: center; margin-bottom: 22px; }
   .auth-brand__mark {
-    width: 48px; height: 48px; margin: 0 auto 12px;
+    width: 56px; height: 56px; margin: 0 auto 12px;
     border-radius: 12px; background: var(--navy);
     color: rgba(255,255,255,0.5);
     display: grid; place-items: center;
     font-family: var(--font-ui); font-size: 0.6rem;
+    overflow: hidden;
+  }
+  .auth-brand__mark img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    padding: 6px;
+    background: var(--white);
   }
   .auth-brand__title {
     font-family: var(--font-head); font-size: 1.35rem;
@@ -33,7 +39,6 @@
     font-size: 0.85rem; color: var(--slate); margin-top: 4px;
   }
 
-  /* Tab switcher */
   .auth-tabs {
     display: flex; gap: 4px;
     background: var(--blush-deep);
@@ -61,9 +66,7 @@
   }
 
   .field { margin-bottom: 14px; }
-  .field-hint {
-    font-size: 0.75rem; color: var(--slate); margin-top: 4px;
-  }
+  .field-hint { font-size: 0.75rem; color: var(--slate); margin-top: 4px; }
 
   .auth-actions {
     display: flex; align-items: center; justify-content: space-between;
@@ -73,22 +76,35 @@
 
   .auth-alert {
     border-radius: var(--radius-sm);
-    padding: 10px 14px;
+    padding: 12px 14px;
     font-size: 0.9rem;
     margin-bottom: 14px;
     display: none;
-    line-height: 1.45;
+    line-height: 1.5;
   }
   .auth-alert.is-visible { display: block; }
-  .auth-alert--error {
-    background: #FDECEC; color: var(--deep-red);
+  .auth-alert--error { background: #FDECEC; color: var(--deep-red); }
+  .auth-alert--info  { background: #EEF3FB; color: var(--navy); }
+  .auth-alert--warn  { background: #FBF3E1; color: #8A5A00; }
+
+  .auth-alert__title {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.95rem;
   }
-  .auth-alert--info {
-    background: #EEF3FB; color: var(--navy);
+  .auth-alert__reason {
+    display: block;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-style: italic;
   }
   .auth-alert__action {
     display: inline-block;
-    margin-top: 6px;
+    margin-top: 8px;
     font-weight: 600;
     color: var(--red);
     cursor: pointer;
@@ -112,8 +128,8 @@
   <main class="auth-wrap">
     <div class="auth-card">
       <div class="auth-brand">
-        <div class="auth-brand__mark" aria-hidden="true">LOGO</div>
-        <h1 class="auth-brand__title">AI Learning Platform</h1>
+        <div class="auth-brand__mark" id="brand-mark" aria-hidden="true">LOGO</div>
+        <h1 class="auth-brand__title" id="brand-title">AI Learning Platform</h1>
         <div class="auth-brand__sub" id="brand-sub">Sign in to continue</div>
       </div>
 
@@ -125,37 +141,29 @@
 
         <div class="auth-alert" id="alert" role="alert"></div>
 
-        <!-- LOGIN FORM -->
         <form id="login-form" novalidate>
           <div class="field">
             <label class="label" for="login-email">Email</label>
-            <input class="input" type="email" id="login-email"
-                   autocomplete="email" required>
+            <input class="input" type="email" id="login-email" autocomplete="email" required>
           </div>
           <div class="field">
             <label class="label" for="login-password">Password</label>
-            <input class="input" type="password" id="login-password"
-                   autocomplete="current-password" required>
+            <input class="input" type="password" id="login-password" autocomplete="current-password" required>
           </div>
           <div class="auth-actions">
             <a href="#" class="forgot">Forgot password?</a>
-            <button class="btn btn-primary" type="submit" id="login-submit">
-              Sign in
-            </button>
+            <button class="btn btn-primary" type="submit" id="login-submit">Sign in</button>
           </div>
         </form>
 
-        <!-- SIGNUP FORM (hidden by default) -->
         <form id="signup-form" class="hidden" novalidate>
           <div class="field">
             <label class="label" for="signup-name">Full name</label>
-            <input class="input" type="text" id="signup-name"
-                   autocomplete="name" required>
+            <input class="input" type="text" id="signup-name" autocomplete="name" required>
           </div>
           <div class="field">
             <label class="label" for="signup-email">Email</label>
-            <input class="input" type="email" id="signup-email"
-                   autocomplete="email" required>
+            <input class="input" type="email" id="signup-email" autocomplete="email" required>
           </div>
           <div class="field">
             <label class="label" for="signup-password">Password</label>
@@ -165,20 +173,16 @@
           </div>
           <div class="field">
             <label class="label" for="signup-confirm">Confirm password</label>
-            <input class="input" type="password" id="signup-confirm"
-                   autocomplete="new-password" required>
+            <input class="input" type="password" id="signup-confirm" autocomplete="new-password" required>
           </div>
           <div class="auth-actions" style="justify-content:flex-end">
-            <button class="btn btn-primary" type="submit" id="signup-submit">
-              Create account
-            </button>
+            <button class="btn btn-primary" type="submit" id="signup-submit">Create account</button>
           </div>
         </form>
       </div>
 
       <div class="auth-foot">
-        <a href="https://gideon-olukanni.github.io/TCSSS/"
-           target="_blank" rel="noopener noreferrer">
+        <a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">
           Official School Website &#8599;
         </a>
       </div>
@@ -192,7 +196,22 @@
   const loginForm  = document.getElementById('login-form');
   const signupForm = document.getElementById('signup-form');
   const brandSub   = document.getElementById('brand-sub');
+  const brandTitle = document.getElementById('brand-title');
+  const brandMark  = document.getElementById('brand-mark');
   const alertEl    = document.getElementById('alert');
+
+  // ---- Load branding ----
+  (async function loadBranding() {
+    try {
+      const res = await fetch('/api/platform/info');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.name) brandTitle.textContent = data.name;
+      if (data.logoUrl) {
+        brandMark.innerHTML = '<img src="' + data.logoUrl + '" alt="Logo">';
+      }
+    } catch (_) {}
+  })();
 
   // ---- Alert helpers ----
   function clearAlert() {
@@ -207,7 +226,6 @@
     alertEl.className = 'auth-alert auth-alert--info is-visible';
     alertEl.textContent = msg;
   }
-  // Info alert with a clickable action ("Create one now")
   function showInfoWithAction(msg, actionLabel, onClick) {
     alertEl.className = 'auth-alert auth-alert--info is-visible';
     alertEl.innerHTML = '';
@@ -218,6 +236,40 @@
     btn.textContent = actionLabel;
     btn.addEventListener('click', onClick);
     alertEl.appendChild(btn);
+  }
+
+  // Special: suspended account with reason
+  function showSuspended(reason, suspendedAt) {
+    alertEl.className = 'auth-alert auth-alert--warn is-visible';
+    alertEl.innerHTML = '';
+
+    const title = document.createElement('span');
+    title.className = 'auth-alert__title';
+    title.textContent = 'Your account is suspended';
+    alertEl.appendChild(title);
+
+    const body = document.createElement('span');
+    body.textContent = 'You are not able to sign in at the moment. If you believe this is a mistake, contact your school administrator.';
+    alertEl.appendChild(body);
+
+    if (reason) {
+      const r = document.createElement('span');
+      r.className = 'auth-alert__reason';
+      r.textContent = 'Reason: ' + reason;
+      alertEl.appendChild(r);
+    }
+
+    if (suspendedAt) {
+      const t = document.createElement('span');
+      t.style.cssText = 'display:block;margin-top:6px;font-size:0.78rem;opacity:0.8';
+      t.textContent = 'Suspended on ' + new Date(suspendedAt).toLocaleDateString();
+      alertEl.appendChild(t);
+    }
+
+    const footer = document.createElement('span');
+    footer.style.cssText = 'display:block;margin-top:10px;font-size:0.82rem;font-weight:500';
+    footer.textContent = 'Please try again later.';
+    alertEl.appendChild(footer);
   }
 
   // ---- Tab switching ----
@@ -234,11 +286,9 @@
     signupForm.classList.toggle('hidden', isLogin);
     brandSub.textContent = isLogin ? 'Sign in to continue' : 'Create your account';
 
-    // Clear inputs on switch
     loginForm.reset();
     signupForm.reset();
 
-    // Focus first field
     setTimeout(() => {
       document.getElementById(isLogin ? 'login-email' : 'signup-name').focus();
     }, 0);
@@ -256,10 +306,7 @@
     const password = document.getElementById('login-password').value;
     const submit   = document.getElementById('login-submit');
 
-    if (!email || !password) {
-      showError('Please enter both email and password.');
-      return;
-    }
+    if (!email || !password) { showError('Please enter both email and password.'); return; }
 
     submit.disabled = true;
     submit.textContent = 'Signing in…';
@@ -271,36 +318,30 @@
         credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
-
       const data = await res.json().catch(() => ({}));
 
-      if (res.ok) {
-        window.location.href = 'chat.html';
+      if (res.ok) { window.location.href = 'chat.html'; return; }
+
+      if (res.status === 403 && data.code === 'SUSPENDED') {
+        showSuspended(data.reason, data.suspendedAt);
         return;
       }
 
-      // Server signals "no such account" with 404 + code NO_ACCOUNT
       if (res.status === 404 || data.code === 'NO_ACCOUNT') {
         const typedEmail = email;
-        showInfoWithAction(
-          'No account found with that email.',
-          'Create one now',
-          () => {
-            switchMode('signup');
-            document.getElementById('signup-email').value = typedEmail;
-          }
-        );
+        showInfoWithAction('No account found with that email.', 'Create one now', () => {
+          switchMode('signup');
+          document.getElementById('signup-email').value = typedEmail;
+        });
         return;
       }
 
-      // Wrong password → 401
       if (res.status === 401 || data.code === 'BAD_CREDENTIALS') {
         showError('Incorrect password. Please try again.');
         return;
       }
 
       showError(data.error || 'Sign in failed. Please try again.');
-
     } catch (err) {
       showError('Cannot reach the server. Please try again.');
     } finally {
@@ -320,19 +361,9 @@
     const confirm  = document.getElementById('signup-confirm').value;
     const submit   = document.getElementById('signup-submit');
 
-    // Client-side validation
-    if (!name || !email || !password || !confirm) {
-      showError('Please fill in every field.');
-      return;
-    }
-    if (password.length < 8) {
-      showError('Password must be at least 8 characters.');
-      return;
-    }
-    if (password !== confirm) {
-      showError('Passwords do not match.');
-      return;
-    }
+    if (!name || !email || !password || !confirm) { showError('Please fill in every field.'); return; }
+    if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+    if (password !== confirm) { showError('Passwords do not match.'); return; }
 
     submit.disabled = true;
     submit.textContent = 'Creating account…';
@@ -344,30 +375,19 @@
         credentials: 'include',
         body: JSON.stringify({ name, email, password }),
       });
-
       const data = await res.json().catch(() => ({}));
 
-      if (res.ok) {
-        // Account created and session opened → straight to chat
-        window.location.href = 'chat.html';
-        return;
-      }
+      if (res.ok) { window.location.href = 'chat.html'; return; }
 
       if (res.status === 409 || data.code === 'EMAIL_TAKEN') {
         const typedEmail = email;
-        showInfoWithAction(
-          'An account with that email already exists.',
-          'Sign in instead',
-          () => {
-            switchMode('login');
-            document.getElementById('login-email').value = typedEmail;
-          }
-        );
+        showInfoWithAction('An account with that email already exists.', 'Sign in instead', () => {
+          switchMode('login');
+          document.getElementById('login-email').value = typedEmail;
+        });
         return;
       }
-
       showError(data.error || 'Could not create your account.');
-
     } catch (err) {
       showError('Cannot reach the server. Please try again.');
     } finally {
@@ -376,7 +396,6 @@
     }
   });
 
-  // Focus the first field on load
   window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('login-email').focus();
   });

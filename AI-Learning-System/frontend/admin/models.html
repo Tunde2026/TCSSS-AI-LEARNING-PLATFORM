@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Models — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .models-page { max-width: 960px; }
+
+  .model-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-bottom: none;
+  }
+  .model-row:first-of-type {
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+  }
+  .model-row:last-child {
+    border-bottom: 1px solid var(--border);
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+  }
+
+  .model-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: var(--blush); color: var(--navy);
+    display: grid; place-items: center; flex-shrink: 0;
+    font-size: 1rem;
+  }
+  .model-icon--primary { background: var(--red); color: var(--white); }
+
+  .model-body { flex: 1; min-width: 0; }
+  .model-name {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--navy);
+    margin: 0 0 2px;
+    word-break: break-all;
+  }
+  .model-meta {
+    font-size: 0.78rem;
+    color: var(--slate);
+    margin: 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .model-badge {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--red);
+    color: var(--white);
+    margin-left: 8px;
+  }
+  .model-badge--embed {
+    background: var(--gold);
+    color: var(--navy);
+  }
+
+  /* Provider key cards */
+  .provider-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .provider-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .provider-logo {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+    color: var(--white);
+  }
+  .provider-logo--groq       { background: #F55036; }
+  .provider-logo--cerebras   { background: #FF6B35; }
+  .provider-logo--google     { background: #4285F4; }
+  .provider-logo--nvidia     { background: #76B900; }
+  .provider-logo--openrouter { background: #6366F1; }
+  .provider-logo--tavily     { background: #0A7B83; }
+
+  .provider-info { flex: 1; min-width: 0; }
+  .provider-name {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--navy);
+    margin: 0 0 2px;
+  }
+  .provider-desc {
+    font-size: 0.78rem;
+    color: var(--slate);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .provider-body {
+    padding: 10px 20px 16px;
+  }
+
+  .key-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--blush);
+    margin-bottom: 8px;
+  }
+  .key-row:last-child { margin-bottom: 0; }
+  .key-mask {
+    font-family: var(--font-ui);
+    font-size: 0.82rem;
+    color: var(--navy);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .key-label {
+    font-size: 0.75rem;
+    color: var(--slate);
+    background: var(--white);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .key-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .key-actions button {
+    width: 28px; height: 28px;
+    border: none; background: transparent;
+    border-radius: 6px;
+    color: var(--slate);
+    cursor: pointer;
+    display: grid; place-items: center;
+    font-size: 0.78rem;
+    transition: background var(--transition), color var(--transition);
+  }
+  .key-actions button:hover { background: var(--white); color: var(--navy); }
+  .key-actions button.danger:hover { background: #FCECEC; color: var(--deep-red); }
+  .key-actions button.on { color: #2F8F4A; }
+
+  .no-keys {
+    font-size: 0.85rem;
+    color: var(--slate);
+    padding: 6px 4px 10px;
+  }
+
+  .add-key-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background var(--transition);
+  }
+  .add-key-btn:hover { background: var(--soft-navy); }
+
+  .empty-state-small {
+    padding: 40px;
+    text-align: center;
+    color: var(--slate);
+    font-size: 0.9rem;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(17,16,74,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 24px;
+  }
+  .modal-overlay.is-open { display: flex; }
+  .modal {
+    width: 100%;
+    max-width: 460px;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal__title {
+    font-family: var(--font-head);
+    font-size: 1.15rem;
+    color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .modal__sub {
+    font-size: 0.85rem;
+    color: var(--slate);
+    margin: 0 0 20px;
+    line-height: 1.5;
+  }
+  .modal__actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+  }
+  .toast--error { background: var(--deep-red); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner models-page">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">AI Models</h1>
+              <p class="page-header__sub">
+                Manage Ollama models and API keys for cloud providers.
+                Keys stored here are used automatically. Ollama always works offline.
+              </p>
+            </div>
+            <button class="btn btn-ghost" id="refresh-btn" type="button">
+              <i class="fa-solid fa-rotate" aria-hidden="true"></i> Refresh
+            </button>
+          </header>
+
+          <section class="section">
+            <h2 class="section__title">Provider API keys</h2>
+            <div id="providers-wrap">
+              <div class="empty-state-small">Loading…</div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2 class="section__title">Ollama models installed</h2>
+            <div id="models-wrap">
+              <div class="empty-state-small">Loading…</div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2 class="section__title">Adding new Ollama models</h2>
+            <div class="card" style="padding:20px">
+              <p style="font-size:0.9rem;color:var(--slate);margin:0 0 12px">
+                Run these on the server to pull additional models:
+              </p>
+              <pre style="background:var(--blush);padding:12px 16px;border-radius:8px;font-family:var(--font-ui);font-size:0.85rem;overflow:auto;margin:0">ollama pull llama3.1:8b
+ollama pull qwen2.5:7b
+ollama pull nomic-embed-text</pre>
+              <p style="font-size:0.85rem;color:var(--slate);margin:12px 0 0">
+                Then click Refresh above and set the default model in
+                <a href="settings.html">System Settings</a>.
+              </p>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add key modal -->
+  <div class="modal-overlay" id="add-key-modal">
+    <div class="modal">
+      <h3 class="modal__title">Add <span id="add-provider-name">provider</span> key</h3>
+      <p class="modal__sub">
+        Keys are stored in the database and applied immediately.
+        They are never shown in full once saved.
+      </p>
+
+      <div style="margin-bottom:14px">
+        <label class="label" for="key-label">Label (optional)</label>
+        <input class="input" type="text" id="key-label" placeholder="e.g. Emmanuel's key">
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label class="label" for="key-value">API key</label>
+        <input class="input" type="text" id="key-value" autocomplete="off"
+               placeholder="Paste key here">
+      </div>
+
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="add-key-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="add-key-confirm" type="button">Save key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit key modal -->
+  <div class="modal-overlay" id="edit-key-modal">
+    <div class="modal">
+      <h3 class="modal__title">Edit key</h3>
+      <p class="modal__sub">Change the label or paste a new key value.</p>
+
+      <div style="margin-bottom:14px">
+        <label class="label" for="edit-label">Label</label>
+        <input class="input" type="text" id="edit-label">
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label class="label" for="edit-value">New key value (leave blank to keep current)</label>
+        <input class="input" type="text" id="edit-value" autocomplete="off"
+               placeholder="Paste new key or leave blank">
+      </div>
+
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="edit-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="edit-confirm" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var PROVIDERS = [
+      { id: 'groq',       name: 'Groq',       initial: 'G',  desc: 'Fast open-model inference. Free tier: generous daily limit.' },
+      { id: 'cerebras',   name: 'Cerebras',   initial: 'C',  desc: 'Very fast inference on specialised hardware.' },
+      { id: 'google',     name: 'Google AI',  initial: 'A',  desc: 'Gemma + Gemini Flash. Note: free tier may train on data.' },
+      { id: 'nvidia',     name: 'NVIDIA NIM', initial: 'N',  desc: 'Wide model catalogue, no hard daily cap.' },
+      { id: 'openrouter', name: 'OpenRouter', initial: 'O',  desc: 'Aggregator with free-model fallbacks.' },
+      { id: 'tavily',     name: 'Tavily',     initial: 'T',  desc: 'Web search for current facts in chat.' },
+    ];
+
+    var keys = [];
+    var pendingProvider = null;   // { id, name }
+    var editingKey = null;
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.className = 'toast' + (isError ? ' toast--error' : '');
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      var data = await res.json();
+      if (!data.user || data.user.role !== 'admin') {
+        window.location.href = '../chat.html';
+        return false;
+      }
+      return true;
+    }
+
+    async function loadKeys() {
+      try {
+        var res = await fetch('/api/admin/keys', { credentials: 'include' });
+        if (!res.ok) return;
+        var d = await res.json();
+        keys = d.keys || [];
+      } catch (_) { keys = []; }
+    }
+
+    function renderProviders() {
+      var wrap = document.getElementById('providers-wrap');
+      wrap.innerHTML = PROVIDERS.map(function (p) {
+        var providerKeys = keys.filter(function (k) { return k.provider === p.id; });
+        var rowsHtml = providerKeys.length
+          ? providerKeys.map(function (k) {
+              return (
+                '<div class="key-row" data-key-id="' + k.id + '">' +
+                  '<span class="key-mask">' + esc(k.maskedKey) + '</span>' +
+                  (k.label ? '<span class="key-label">' + esc(k.label) + '</span>' : '') +
+                  '<div class="key-actions">' +
+                    '<button data-action="toggle" title="' + (k.enabled ? 'Disable' : 'Enable') + '" ' +
+                            'class="' + (k.enabled ? 'on' : '') + '" type="button">' +
+                      '<i class="fa-solid ' + (k.enabled ? 'fa-circle-check' : 'fa-circle') + '" aria-hidden="true"></i>' +
+                    '</button>' +
+                    '<button data-action="edit" title="Edit" type="button">' +
+                      '<i class="fa-solid fa-pen" aria-hidden="true"></i>' +
+                    '</button>' +
+                    '<button data-action="delete" class="danger" title="Delete" type="button">' +
+                      '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
+                    '</button>' +
+                  '</div>' +
+                '</div>'
+              );
+            }).join('')
+          : '<div class="no-keys">No keys added yet.</div>';
+
+        return (
+          '<div class="provider-card">' +
+            '<div class="provider-head">' +
+              '<div class="provider-logo provider-logo--' + p.id + '">' + p.initial + '</div>' +
+              '<div class="provider-info">' +
+                '<div class="provider-name">' + esc(p.name) + '</div>' +
+                '<div class="provider-desc">' + esc(p.desc) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="provider-body">' +
+              rowsHtml +
+              '<button class="add-key-btn" data-provider="' + p.id + '" data-name="' + esc(p.name) + '" type="button">' +
+                '<i class="fa-solid fa-plus" aria-hidden="true"></i> Add key' +
+              '</button>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      wrap.querySelectorAll('.add-key-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          openAddModal(
+            btn.getAttribute('data-provider'),
+            btn.getAttribute('data-name')
+          );
+        });
+      });
+
+      wrap.querySelectorAll('.key-row').forEach(function (row) {
+        var id = row.getAttribute('data-key-id');
+        var key = keys.find(function (k) { return k.id === id; });
+        row.querySelectorAll('[data-action]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var action = b.getAttribute('data-action');
+            if (action === 'toggle') toggleKey(key);
+            if (action === 'edit')   openEditModal(key);
+            if (action === 'delete') deleteKey(key);
+          });
+        });
+      });
+    }
+
+    async function toggleKey(key) {
+      var res = await fetch('/api/admin/keys/' + key.id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ enabled: !key.enabled }),
+      });
+      if (!res.ok) { toast('Could not update.', true); return; }
+      key.enabled = !key.enabled;
+      renderProviders();
+      toast(key.enabled ? 'Key enabled.' : 'Key disabled.');
+    }
+
+    async function deleteKey(key) {
+      if (!confirm('Delete this key? It will be removed immediately.')) return;
+      var res = await fetch('/api/admin/keys/' + key.id, {
+        method: 'DELETE', credentials: 'include',
+      });
+      if (!res.ok) { toast('Could not delete.', true); return; }
+      keys = keys.filter(function (k) { return k.id !== key.id; });
+      renderProviders();
+      toast('Key deleted.');
+    }
+
+    // ----- Add modal -----
+    function openAddModal(provider, providerName) {
+      pendingProvider = { id: provider, name: providerName };
+      document.getElementById('add-provider-name').textContent = providerName;
+      document.getElementById('key-label').value = '';
+      document.getElementById('key-value').value = '';
+      document.getElementById('add-key-modal').classList.add('is-open');
+      setTimeout(function () { document.getElementById('key-value').focus(); }, 60);
+    }
+    function closeAddModal() {
+      pendingProvider = null;
+      document.getElementById('add-key-modal').classList.remove('is-open');
+    }
+    async function confirmAdd() {
+      if (!pendingProvider) return;
+      var label = document.getElementById('key-label').value.trim();
+      var keyValue = document.getElementById('key-value').value.trim();
+      if (!keyValue) { toast('Please paste a key.', true); return; }
+
+      var btn = document.getElementById('add-key-confirm');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      try {
+        var res = await fetch('/api/admin/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            provider: pendingProvider.id,
+            label: label || null,
+            keyValue: keyValue,
+          }),
+        });
+        var d = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(d.error || 'Could not save.', true); return; }
+        keys.push(d.key);
+        closeAddModal();
+        renderProviders();
+        toast('Key added.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save key';
+      }
+    }
+
+    // ----- Edit modal -----
+    function openEditModal(key) {
+      editingKey = key;
+      document.getElementById('edit-label').value = key.label || '';
+      document.getElementById('edit-value').value = '';
+      document.getElementById('edit-key-modal').classList.add('is-open');
+    }
+    function closeEditModal() {
+      editingKey = null;
+      document.getElementById('edit-key-modal').classList.remove('is-open');
+    }
+    async function confirmEdit() {
+      if (!editingKey) return;
+      var label = document.getElementById('edit-label').value.trim();
+      var newValue = document.getElementById('edit-value').value.trim();
+
+      var body = { label: label || null };
+      if (newValue) body.keyValue = newValue;
+
+      var res = await fetch('/api/admin/keys/' + editingKey.id, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) { toast('Could not save.', true); return; }
+
+      closeEditModal();
+      await loadKeys();
+      renderProviders();
+      toast('Key updated.');
+    }
+
+    // ----- Ollama models -----
+    async function loadModels() {
+      var wrap = document.getElementById('models-wrap');
+      wrap.innerHTML = '<div class="empty-state-small">Loading…</div>';
+      try {
+        var res = await fetch('/api/admin/models', { credentials: 'include' });
+        var d = await res.json().catch(function () { return {}; });
+        if (!res.ok) {
+          wrap.innerHTML =
+            '<div class="empty-state-small" style="color:var(--deep-red)">' +
+            esc(d.error || 'Could not reach Ollama.') + '</div>';
+          return;
+        }
+        var models = d.models || [];
+        if (!models.length) {
+          wrap.innerHTML = '<div class="empty-state-small">No models installed.</div>';
+          return;
+        }
+        wrap.innerHTML = models.map(function (m) {
+          var isEmbed = m.name.indexOf('nomic-embed') === 0;
+          var badge = isEmbed
+            ? '<span class="model-badge model-badge--embed">embeddings</span>'
+            : '<span class="model-badge">chat</span>';
+          return (
+            '<div class="model-row">' +
+              '<div class="model-icon"><i class="fa-solid fa-microchip" aria-hidden="true"></i></div>' +
+              '<div class="model-body">' +
+                '<p class="model-name">' + esc(m.name) + badge + '</p>' +
+                '<p class="model-meta">' +
+                  (m.params ? '<span>' + esc(m.params) + '</span>' : '') +
+                  (m.quant  ? '<span>' + esc(m.quant) + '</span>' : '') +
+                '</p>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+      } catch (_) {
+        wrap.innerHTML = '<div class="empty-state-small" style="color:var(--deep-red)">Error.</div>';
+      }
+    }
+
+    // ---- Wire up ----
+    document.getElementById('refresh-btn').addEventListener('click', async function () {
+      await loadKeys();
+      renderProviders();
+      loadModels();
+    });
+    document.getElementById('add-key-cancel').addEventListener('click', closeAddModal);
+    document.getElementById('add-key-confirm').addEventListener('click', confirmAdd);
+    document.getElementById('add-key-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'add-key-modal') closeAddModal();
+    });
+    document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
+    document.getElementById('edit-confirm').addEventListener('click', confirmEdit);
+    document.getElementById('edit-key-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'edit-key-modal') closeEditModal();
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      await loadKeys();
+      renderProviders();
+      await loadModels();
+    })();
+  })();
+</script>
+</body>
+</html>

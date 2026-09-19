@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backup — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .backup-page { max-width: 780px; }
+
+  .backup-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .backup-card__icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+  }
+  .backup-card__icon--export { background: #EAF7EE; color: #2F8F4A; }
+  .backup-card__icon--import { background: #FDECEC; color: var(--deep-red); }
+
+  .backup-card__title {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .backup-card__desc {
+    font-size: 0.9rem;
+    color: var(--slate);
+    line-height: 1.55;
+    margin: 0 0 20px;
+  }
+  .backup-card__actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .warning-box {
+    background: #FDECEC;
+    border-left: 3px solid var(--deep-red);
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 0.86rem;
+    color: var(--deep-red);
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .warning-box strong { display: block; margin-bottom: 4px; }
+
+  .file-drop {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+    margin-bottom: 16px;
+  }
+  .file-drop:hover { border-color: var(--deep-red); background: #FFF5F5; }
+  .file-drop input { display: none; }
+  .file-drop i {
+    font-size: 2rem;
+    color: var(--slate);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .file-drop__name {
+    font-size: 0.88rem;
+    color: var(--navy);
+    font-weight: 600;
+    margin-top: 10px;
+  }
+
+  .confirm-input {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    width: 100%;
+    max-width: 240px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+  }
+  .toast--error { background: var(--deep-red); }
+  .toast--success { background: #2F8F4A; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner backup-page">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Backup</h1>
+              <p class="page-header__sub">
+                Export a full snapshot of the platform, or restore from an earlier backup.
+              </p>
+            </div>
+          </header>
+
+          <!-- Export -->
+          <div class="backup-card">
+            <div class="backup-card__icon backup-card__icon--export">
+              <i class="fa-solid fa-download" aria-hidden="true"></i>
+            </div>
+            <h2 class="backup-card__title">Export</h2>
+            <p class="backup-card__desc">
+              Download a JSON file containing every table in the database —
+              users, conversations, quizzes, flashcards, documents, settings, and
+              audit history. Keep it somewhere safe, ideally off this server.
+            </p>
+            <div class="backup-card__actions">
+              <button class="btn btn-primary" id="export-btn" type="button">
+                <i class="fa-solid fa-file-arrow-down" aria-hidden="true"></i>
+                Download backup
+              </button>
+            </div>
+          </div>
+
+          <!-- Import -->
+          <div class="backup-card">
+            <div class="backup-card__icon backup-card__icon--import">
+              <i class="fa-solid fa-upload" aria-hidden="true"></i>
+            </div>
+            <h2 class="backup-card__title">Restore from backup</h2>
+            <p class="backup-card__desc">
+              Upload a backup file created by the Export button above.
+            </p>
+
+            <div class="warning-box">
+              <strong>This replaces everything.</strong>
+              All users, conversations, quizzes, flashcards, documents, and settings
+              will be deleted and replaced with the contents of the uploaded backup.
+              This cannot be undone. Take a fresh export first if you are unsure.
+            </div>
+
+            <div class="file-drop" id="file-drop">
+              <input type="file" id="backup-file" accept="application/json,.json">
+              <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+              <div><strong>Click to choose a backup file</strong></div>
+              <div style="color:var(--slate);font-size:0.8rem;margin-top:4px">.json only, max 50 MB</div>
+              <div class="file-drop__name" id="file-name" style="display:none"></div>
+            </div>
+
+            <div style="margin-bottom:16px">
+              <label class="label" for="confirm-text">Type RESTORE to confirm</label>
+              <input class="confirm-input" type="text" id="confirm-text" placeholder="RESTORE" autocomplete="off">
+            </div>
+
+            <div class="backup-card__actions">
+              <button class="btn btn-danger" id="import-btn" type="button" disabled>
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                Restore backup
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var selectedFile = null;
+
+    function toast(msg, isError, isSuccess) {
+      var t = document.createElement('div');
+      t.className = 'toast' + (isError ? ' toast--error' : isSuccess ? ' toast--success' : '');
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 3000);
+    }
+
+    function fmtSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      var data = await res.json();
+      if (!data.user || data.user.role !== 'admin') {
+        window.location.href = '../chat.html';
+        return false;
+      }
+      return true;
+    }
+
+    // ----- Export -----
+    document.getElementById('export-btn').addEventListener('click', function () {
+      window.location.href = '/api/admin/backup/export';
+    });
+
+    // ----- File picker -----
+    document.getElementById('file-drop').addEventListener('click', function () {
+      document.getElementById('backup-file').click();
+    });
+
+    document.getElementById('backup-file').addEventListener('change', function (e) {
+      selectedFile = e.target.files[0] || null;
+      var nameEl = document.getElementById('file-name');
+      var btn = document.getElementById('import-btn');
+      if (selectedFile) {
+        nameEl.textContent = selectedFile.name + ' (' + fmtSize(selectedFile.size) + ')';
+        nameEl.style.display = 'block';
+      } else {
+        nameEl.style.display = 'none';
+      }
+      updateImportButton();
+    });
+
+    document.getElementById('confirm-text').addEventListener('input', updateImportButton);
+
+    function updateImportButton() {
+      var btn = document.getElementById('import-btn');
+      var confirmText = document.getElementById('confirm-text').value.trim();
+      btn.disabled = !(selectedFile && confirmText === 'RESTORE');
+    }
+
+    // ----- Import -----
+    document.getElementById('import-btn').addEventListener('click', async function () {
+      if (!selectedFile) return;
+      if (document.getElementById('confirm-text').value.trim() !== 'RESTORE') return;
+
+      if (!confirm('Are you absolutely sure? This will erase all current data.')) return;
+
+      var btn = this;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Restoring…';
+
+      var form = new FormData();
+      form.append('backup', selectedFile);
+
+      try {
+        var res = await fetch('/api/admin/backup/import', {
+          method: 'POST',
+          credentials: 'include',
+          body: form,
+        });
+        var data = await res.json().catch(function () { return {}; });
+
+        if (!res.ok) {
+          toast(data.error || 'Import failed.', true);
+          return;
+        }
+
+        var summary = Object.keys(data.counts || {})
+          .filter(function (k) { return data.counts[k] > 0; })
+          .map(function (k) { return k + ': ' + data.counts[k]; })
+          .join(', ');
+        toast('Restored. ' + summary, false, true);
+        setTimeout(function () { window.location.href = 'dashboard.html'; }, 2000);
+      } catch (_) {
+        toast('Network error during import.', true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Restore backup';
+      }
+    });
+
+    (async function init() {
+      await guard();
+    })();
+  })();
+</script>
+</body>
+</html>

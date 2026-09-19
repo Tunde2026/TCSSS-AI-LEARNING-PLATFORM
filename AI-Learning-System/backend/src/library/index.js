@@ -1,4 +1,3 @@
+// Public interface for the library module.
 const router = require('./routes');
-const { search } = require('./retrieval');
-
-module.exports = { router, retrieval: { search } };
+module.exports = { router };

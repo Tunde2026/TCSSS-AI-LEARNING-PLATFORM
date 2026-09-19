@@ -6,71 +6,571 @@
 <title>Settings — AI Learning Platform</title>
 <link rel="stylesheet" href="assets/shell.css">
 <style>
-  .page { flex: 1; padding: 32px; max-width: 780px; }
-  .settings-section { margin-top: 24px; }
-  .settings-section h2 { font-size: 1.05rem; margin-bottom: 10px; }
-  .row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 0; border-bottom: 1px solid var(--blush-deep);
+  .settings-inner { max-width: 760px; }
+
+  .profile-card {
+    display: flex; align-items: center; gap: 18px; padding: 24px;
   }
-  .row:last-child { border-bottom: none; }
-  .row__label { color: var(--ink); }
-  .row__hint  { font-size: 0.8rem; color: var(--slate); margin-top: 2px; }
+  .profile-avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--gold); color: var(--navy);
+    display: grid; place-items: center;
+    font-family: var(--font-head); font-weight: 700; font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  .profile-body { min-width: 0; flex: 1; }
+  .profile-name {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: 1.15rem; color: var(--navy); margin: 0 0 2px;
+  }
+  .profile-email { font-size: 0.88rem; color: var(--slate); margin: 0; word-break: break-all; }
+  .profile-role {
+    display: inline-block; margin-top: 8px;
+    font-family: var(--font-ui); font-size: 0.65rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--blush-deep); color: var(--slate);
+    padding: 3px 10px; border-radius: 999px; font-weight: 500;
+  }
+  .profile-role--admin { background: var(--red); color: var(--white); }
+
+  .settings-list { padding: 0; overflow: hidden; }
+  .settings-item {
+    display: flex; align-items: center; gap: 16px; width: 100%;
+    padding: 16px 20px; background: transparent; border: none;
+    border-bottom: 1px solid var(--border-soft);
+    text-align: left; cursor: pointer; font-family: var(--font-body);
+    transition: background var(--transition);
+  }
+  .settings-item:last-child { border-bottom: none; }
+  .settings-item:hover:not(:disabled) { background: var(--blush); }
+  .settings-item > i:first-child {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--blush); color: var(--navy);
+    display: grid; place-items: center; font-size: 0.95rem; flex-shrink: 0;
+  }
+  .settings-item__body { flex: 1; min-width: 0; }
+  .settings-item__title { font-size: 0.95rem; font-weight: 600; color: var(--ink); margin: 0 0 2px; }
+  .settings-item__sub { font-size: 0.8rem; color: var(--slate); margin: 0; line-height: 1.4; }
+  .settings-item__arrow { color: var(--slate); font-size: 0.75rem; flex-shrink: 0; }
+  .settings-item--danger .settings-item__title { color: var(--deep-red); }
+  .settings-item--danger > i:first-child { background: #FDECEC; color: var(--deep-red); }
+  .settings-item--danger:hover:not(:disabled) { background: #FCECEC; }
+
+  .soon-badge {
+    font-family: var(--font-ui); font-size: 0.6rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--blush-deep); color: var(--slate);
+    padding: 3px 8px; border-radius: 999px; font-weight: 500; flex-shrink: 0;
+  }
+
+  /* ---- Custom AI list ---- */
+  .agent-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .agent-row:last-child { border-bottom: none; }
+  .agent-avatar {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--navy); color: var(--white);
+    display: grid; place-items: center;
+    font-family: var(--font-head); font-weight: 600; font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .agent-info { flex: 1; min-width: 0; }
+  .agent-name {
+    font-weight: 600; color: var(--ink); font-size: 0.95rem;
+    margin: 0 0 2px;
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .agent-name__handle { color: var(--slate); font-family: var(--font-ui); font-size: 0.8rem; font-weight: 400; }
+  .agent-desc {
+    font-size: 0.82rem; color: var(--slate);
+    margin: 0; line-height: 1.4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .agent-actions {
+    display: flex; gap: 4px; flex-shrink: 0;
+  }
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 8px;
+    border: none; background: transparent; color: var(--slate);
+    cursor: pointer; display: grid; place-items: center;
+    transition: background var(--transition), color var(--transition);
+  }
+  .icon-btn:hover { background: var(--blush); color: var(--navy); }
+  .icon-btn--danger:hover { background: #FCECEC; color: var(--deep-red); }
+
+  /* ---- Builder ---- */
+  .builder-field { margin-bottom: 16px; }
+  .builder-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  }
+  .tool-checks {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 4px 0;
+  }
+  .tool-check {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 12px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--white);
+    font-size: 0.82rem; color: var(--slate); cursor: pointer;
+    user-select: none;
+    transition: border-color var(--transition), background var(--transition), color var(--transition);
+  }
+  .tool-check input { display: none; }
+  .tool-check.is-checked {
+    background: var(--navy); color: var(--white); border-color: var(--navy);
+  }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(17,16,74,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; padding: 24px;
+  }
+  .modal-overlay.is-open { display: flex; }
+  .modal {
+    width: 100%; max-width: 600px; background: var(--white);
+    border-radius: var(--radius); padding: 26px;
+    box-shadow: var(--shadow-lg);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal__title {
+    font-family: var(--font-head); font-size: 1.2rem;
+    color: var(--navy); margin: 0 0 6px;
+  }
+  .modal__sub {
+    color: var(--slate); font-size: 0.88rem; margin: 0 0 20px; line-height: 1.5;
+  }
+  .modal__actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  @media (max-width: 640px) {
+    .builder-row { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
-  <div class="mobile-bar">
-    <button class="mobile-bar__toggle" id="sidebar-toggle" aria-label="Open menu">☰</button>
-    <span>AI Learning Platform</span>
-  </div>
-  <div class="backdrop" id="sidebar-backdrop"></div>
-
   <div class="app">
     <div id="sidebar-mount"></div>
+
     <main class="page">
-      <h1>Settings</h1>
-      <p>Account, personalization, and AI customization.</p>
+      <div class="page-scroll">
+        <div class="page-inner settings-inner">
 
-      <div class="card settings-section">
-        <h2>Account</h2>
-        <div class="row">
-          <div>
-            <div class="row__label" id="account-email">—</div>
-            <div class="row__hint">Signed-in email</div>
-          </div>
-          <button class="btn btn-ghost" id="logout-btn">Log out</button>
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Settings</h1>
+              <p class="page-header__sub">Account, personalization, and AI preferences.</p>
+            </div>
+          </header>
+
+          <!-- Profile -->
+          <section class="section">
+            <h2 class="section__title">Profile</h2>
+            <div class="card profile-card">
+              <div class="profile-avatar" id="profile-avatar">?</div>
+              <div class="profile-body">
+                <p class="profile-name" id="profile-name">—</p>
+                <p class="profile-email" id="profile-email">—</p>
+                <span class="profile-role" id="profile-role">Loading…</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Custom AI -->
+          <section class="section">
+            <h2 class="section__title">Custom AI tutors</h2>
+
+            <div class="card" style="margin-bottom:12px">
+              <div class="agent-row" style="border-bottom:none">
+                <div class="agent-avatar" style="background:var(--gold);color:var(--navy)">
+                  <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                </div>
+                <div class="agent-info">
+                  <div class="agent-name">Create a custom AI</div>
+                  <div class="agent-desc">
+                    Give it a name, instructions, and tools — then mention it in chat with @Name.
+                  </div>
+                </div>
+                <button class="btn btn-primary" id="new-agent-btn" type="button">
+                  Create
+                </button>
+              </div>
+            </div>
+
+            <div class="card settings-list" id="agents-list">
+              <div style="padding:20px;color:var(--slate);font-size:0.9rem">Loading…</div>
+            </div>
+          </section>
+
+          <!-- Session -->
+          <section class="section">
+            <h2 class="section__title">Session</h2>
+            <div class="card settings-list">
+              <button class="settings-item settings-item--danger" id="logout-btn" type="button">
+                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+                <div class="settings-item__body">
+                  <div class="settings-item__title">Sign out</div>
+                  <p class="settings-item__sub">Log out of this device</p>
+                </div>
+                <i class="fa-solid fa-chevron-right settings-item__arrow" aria-hidden="true"></i>
+              </button>
+            </div>
+          </section>
+
         </div>
-      </div>
-
-      <div class="card settings-section">
-        <h2>Custom AI tutors</h2>
-        <p style="font-size:0.9rem;color:var(--slate);margin:0">
-          Create reusable @AI tutors. Coming soon.
-        </p>
       </div>
     </main>
   </div>
 
+  <!-- Create / edit agent modal -->
+  <div class="modal-overlay" id="agent-modal">
+    <div class="modal">
+      <h3 class="modal__title" id="agent-modal-title">Create custom AI</h3>
+      <p class="modal__sub">
+        Save this AI to reuse it in chat. Mention it with <strong>@Name</strong>.
+      </p>
+
+      <div class="builder-field">
+        <label class="label" for="ag-name">Name (mention handle)</label>
+        <input class="input" type="text" id="ag-name" maxlength="30"
+               placeholder="e.g. BiologyTeacher">
+        <div style="font-size:0.75rem;color:var(--slate);margin-top:4px">
+          Letters, numbers, underscore. No spaces. This becomes the @mention.
+        </div>
+      </div>
+
+      <div class="builder-field">
+        <label class="label" for="ag-desc">Description (optional)</label>
+        <input class="input" type="text" id="ag-desc" maxlength="200"
+               placeholder="What this AI is for">
+      </div>
+
+      <div class="builder-field">
+        <label class="label" for="ag-prompt">Instructions</label>
+        <textarea class="textarea" id="ag-prompt" rows="6"
+                  placeholder="You are my Biology teacher. Explain concepts simply. Use analogies from everyday life. Give examples. Check my understanding before moving on."></textarea>
+      </div>
+
+      <div class="builder-row">
+        <div class="builder-field">
+          <label class="label" for="ag-subject">Subject (optional)</label>
+          <input class="input" type="text" id="ag-subject" placeholder="e.g. Biology">
+        </div>
+        <div class="builder-field">
+          <label class="label" for="ag-level">Level (optional)</label>
+          <select class="input" id="ag-level">
+            <option value="">Any</option>
+            <option value="jss">JSS</option>
+            <option value="sss">SSS</option>
+            <option value="waec">WAEC</option>
+            <option value="jamb">JAMB</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="builder-field">
+        <label class="label">Allowed tools (optional)</label>
+        <div class="tool-checks" id="tool-checks"></div>
+      </div>
+
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="agent-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="agent-save" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm modal -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal" style="max-width:400px">
+      <h3 class="modal__title">Delete this AI?</h3>
+      <p class="modal__sub" id="delete-sub">This cannot be undone.</p>
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="del-cancel" type="button">Cancel</button>
+        <button class="btn btn-danger" id="del-confirm" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
 <script src="assets/shell.js"></script>
 <script>
-  // Page-specific: load current user + wire logout.
-  (async () => {
-    try {
-      const res = await fetch('/api/auth/me', { credentials: 'include' });
-      if (res.status === 401) { window.location.href = 'index.html'; return; }
-      const data = await res.json();
-      document.getElementById('account-email').textContent =
-        data.user?.email || '—';
-    } catch (_) { /* ignore */ }
-  })();
+  (function () {
+    'use strict';
 
-  document.getElementById('logout-btn').addEventListener('click', async () => {
-    await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    }).catch(() => {});
-    window.location.href = 'index.html';
-  });
+    var agents = [];
+    var editing = null;   // agent object when editing, null when creating
+    var pendingDelete = null;
+
+    var TOOL_LABELS = {
+      explain:    'Explain',
+      simplify:   'Simplify',
+      analogy:    'Analogies',
+      summary:    'Summary',
+      quiz:       'Quiz',
+      flashcards: 'Flashcards',
+      visualize:  'Visualize',
+      practice:   'Practice',
+      web_search: 'Web search',
+    };
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = [
+        'position:fixed','bottom:24px','left:50%','transform:translateX(-50%)',
+        'background:' + (isError ? 'var(--deep-red)' : 'var(--navy)'),
+        'color:#fff','padding:12px 20px','border-radius:999px',
+        'font-family:var(--font-body)','font-size:0.9rem',
+        'box-shadow:0 8px 24px rgba(17,16,74,0.2)','z-index:300'
+      ].join(';');
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+
+    // ---------- Profile ----------
+    async function loadProfile() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = 'index.html'; return; }
+      var data = await res.json();
+      var user = data.user;
+      if (!user) { window.location.href = 'index.html'; return; }
+
+      var initial = (user.name || user.email || '?').trim().charAt(0).toUpperCase();
+      document.getElementById('profile-avatar').textContent = initial;
+      document.getElementById('profile-name').textContent = user.name || 'Student';
+      document.getElementById('profile-email').textContent = user.email || '';
+      var roleEl = document.getElementById('profile-role');
+      if (user.role === 'admin') {
+        roleEl.textContent = 'Administrator';
+        roleEl.classList.add('profile-role--admin');
+      } else {
+        roleEl.textContent = 'Student';
+      }
+    }
+
+    // ---------- Agent list ----------
+    async function loadAgents() {
+      var res = await fetch('/api/agents', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      agents = data.agents || [];
+      renderAgents();
+    }
+
+    function renderAgents() {
+      var list = document.getElementById('agents-list');
+
+      if (!agents.length) {
+        list.innerHTML =
+          '<div style="padding:20px;color:var(--slate);font-size:0.9rem;line-height:1.5">' +
+            'You have no custom AIs yet. Click <strong>Create</strong> above to make your first one — for example a <em>BiologyTeacher</em> or a <em>MathsCoach</em>. ' +
+            'Then in chat, type <code style="background:var(--blush);padding:2px 6px;border-radius:4px;font-size:0.85em">@BiologyTeacher explain mitosis</code>.' +
+          '</div>';
+        return;
+      }
+
+      list.innerHTML = agents.map(function (a) {
+        var initial = (a.name || '?').charAt(0).toUpperCase();
+        return (
+          '<div class="agent-row" data-id="' + a.id + '">' +
+            '<div class="agent-avatar">' + esc(initial) + '</div>' +
+            '<div class="agent-info">' +
+              '<div class="agent-name">' +
+                esc(a.name) +
+                '<span class="agent-name__handle">@' + esc(a.name) + '</span>' +
+              '</div>' +
+              '<div class="agent-desc">' +
+                esc(a.description || a.subject || 'Custom AI tutor') +
+              '</div>' +
+            '</div>' +
+            '<div class="agent-actions">' +
+              '<button class="icon-btn" data-action="edit" title="Edit" type="button">' +
+                '<i class="fa-solid fa-pen" aria-hidden="true"></i>' +
+              '</button>' +
+              '<button class="icon-btn icon-btn--danger" data-action="delete" title="Delete" type="button">' +
+                '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
+              '</button>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      list.querySelectorAll('.agent-row').forEach(function (row) {
+        var id = row.getAttribute('data-id');
+        var agent = agents.find(function (a) { return a.id === id; });
+        row.querySelector('[data-action="edit"]').addEventListener('click', function () {
+          openBuilder(agent);
+        });
+        row.querySelector('[data-action="delete"]').addEventListener('click', function () {
+          promptDelete(agent);
+        });
+      });
+    }
+
+    // ---------- Builder ----------
+    function renderToolChecks(selected) {
+      var wrap = document.getElementById('tool-checks');
+      wrap.innerHTML = Object.keys(TOOL_LABELS).map(function (key) {
+        var isChecked = selected.indexOf(key) !== -1;
+        return (
+          '<label class="tool-check' + (isChecked ? ' is-checked' : '') + '">' +
+            '<input type="checkbox" value="' + key + '"' + (isChecked ? ' checked' : '') + '>' +
+            esc(TOOL_LABELS[key]) +
+          '</label>'
+        );
+      }).join('');
+
+      wrap.querySelectorAll('.tool-check').forEach(function (label) {
+        var input = label.querySelector('input');
+        input.addEventListener('change', function () {
+          label.classList.toggle('is-checked', input.checked);
+        });
+      });
+    }
+
+    function openBuilder(agent) {
+      editing = agent || null;
+
+      document.getElementById('agent-modal-title').textContent =
+        agent ? 'Edit custom AI' : 'Create custom AI';
+      document.getElementById('ag-name').value    = agent ? agent.name : '';
+      document.getElementById('ag-desc').value    = agent ? (agent.description || '') : '';
+      document.getElementById('ag-prompt').value  = agent ? agent.system_prompt : '';
+      document.getElementById('ag-subject').value = agent ? (agent.subject || '') : '';
+      document.getElementById('ag-level').value   = agent ? (agent.level || '') : '';
+
+      var selected = agent && Array.isArray(agent.allowed_tools) ? agent.allowed_tools : [];
+      renderToolChecks(selected);
+
+      document.getElementById('agent-modal').classList.add('is-open');
+      setTimeout(function () { document.getElementById('ag-name').focus(); }, 60);
+    }
+
+    function closeBuilder() {
+      editing = null;
+      document.getElementById('agent-modal').classList.remove('is-open');
+    }
+
+    function collectBuilderPayload() {
+      var name     = document.getElementById('ag-name').value.trim();
+      var desc     = document.getElementById('ag-desc').value.trim();
+      var prompt   = document.getElementById('ag-prompt').value.trim();
+      var subject  = document.getElementById('ag-subject').value.trim();
+      var level    = document.getElementById('ag-level').value;
+      var tools    = [];
+      document.querySelectorAll('#tool-checks input:checked').forEach(function (i) {
+        tools.push(i.value);
+      });
+      return {
+        name: name,
+        description: desc || null,
+        systemPrompt: prompt,
+        subject: subject || null,
+        level: level || null,
+        allowedTools: tools,
+      };
+    }
+
+    async function saveAgent() {
+      var payload = collectBuilderPayload();
+      var btn = document.getElementById('agent-save');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+
+      try {
+        var url    = editing ? '/api/agents/' + editing.id : '/api/agents';
+        var method = editing ? 'PATCH' : 'POST';
+
+        var res = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        var data = await res.json().catch(function () { return {}; });
+
+        if (!res.ok) {
+          toast(data.error || 'Could not save.', true);
+          return;
+        }
+
+        await loadAgents();
+        closeBuilder();
+        toast(editing ? 'AI updated.' : 'AI created. Mention it in chat with @' + data.agent.name + '.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+
+    // ---------- Delete ----------
+    function promptDelete(agent) {
+      pendingDelete = agent;
+      document.getElementById('delete-sub').textContent =
+        '@' + agent.name + ' will be permanently removed. This cannot be undone.';
+      document.getElementById('delete-modal').classList.add('is-open');
+    }
+    function closeDelete() {
+      pendingDelete = null;
+      document.getElementById('delete-modal').classList.remove('is-open');
+    }
+    async function confirmDelete() {
+      if (!pendingDelete) return;
+      var a = pendingDelete;
+      closeDelete();
+
+      var res = await fetch('/api/agents/' + a.id, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) { toast('Could not delete.', true); return; }
+      agents = agents.filter(function (x) { return x.id !== a.id; });
+      renderAgents();
+      toast('@' + a.name + ' deleted.');
+    }
+
+    // ---------- Wire up ----------
+    document.getElementById('new-agent-btn').addEventListener('click', function () {
+      openBuilder(null);
+    });
+    document.getElementById('agent-cancel').addEventListener('click', closeBuilder);
+    document.getElementById('agent-save').addEventListener('click', saveAgent);
+    document.getElementById('agent-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'agent-modal') closeBuilder();
+    });
+    document.getElementById('del-cancel').addEventListener('click', closeDelete);
+    document.getElementById('del-confirm').addEventListener('click', confirmDelete);
+    document.getElementById('delete-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'delete-modal') closeDelete();
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', async function () {
+      this.disabled = true;
+      try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch (_) {}
+      window.location.href = 'index.html';
+    });
+
+    // ---------- Boot ----------
+    (async function init() {
+      await loadProfile();
+      await loadAgents();
+    })();
+  })();
 </script>
 </body>
 </html>

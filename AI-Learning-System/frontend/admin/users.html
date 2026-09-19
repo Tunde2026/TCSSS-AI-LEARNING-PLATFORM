@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Users — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .toolbar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .search-box {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 400px;
+  }
+  .search-box i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--slate);
+    font-size: 0.85rem;
+    pointer-events: none;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+  }
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
+  }
+
+  .bulk-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: var(--navy);
+    color: var(--white);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+  }
+  .bulk-bar.is-visible { display: flex; }
+  .bulk-bar strong { font-family: var(--font-ui); }
+  .bulk-bar .btn {
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    background: rgba(255,255,255,0.15);
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .bulk-bar .btn:hover { background: rgba(255,255,255,0.25); }
+  .bulk-bar .btn--danger { background: var(--red); border-color: var(--red); }
+  .bulk-bar .btn--danger:hover { background: var(--deep-red); }
+
+  .table-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  thead { background: var(--blush); }
+  th {
+    text-align: left;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+    font-weight: 500;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--blush); }
+
+  th.col-check, td.col-check { width: 40px; padding-right: 0; }
+  input[type="checkbox"] {
+    width: 16px; height: 16px;
+    cursor: pointer;
+    accent-color: var(--red);
+  }
+
+  .user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+  .user-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    display: grid; place-items: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+  .user-avatar--admin { background: var(--red); }
+  .user-avatar--suspended { background: var(--slate); opacity: 0.6; }
+  .user-name {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .user-email {
+    font-size: 0.78rem;
+    color: var(--slate);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .role-badge, .status-badge {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .role-badge--admin   { background: var(--red); color: var(--white); }
+  .role-badge--student { background: var(--blush-deep); color: var(--slate); }
+  .status-badge--active    { background: #EAF7EE; color: #2F8F4A; }
+  .status-badge--suspended { background: #FDECEC; color: var(--deep-red); }
+
+  .row-menu-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--slate);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: background var(--transition), color var(--transition);
+  }
+  .row-menu-btn:hover { background: var(--blush-deep); color: var(--navy); }
+
+  .row-menu {
+    position: fixed;
+    z-index: 100;
+    min-width: 220px;
+    background: var(--white);
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+  }
+  .row-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 0.86rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background var(--transition);
+  }
+  .row-menu__item:hover { background: var(--blush); }
+  .row-menu__item i { width: 16px; text-align: center; font-size: 0.8rem; }
+  .row-menu__item--danger { color: var(--deep-red); }
+  .row-menu__item--danger:hover { background: #FCECEC; }
+  .row-menu__item:disabled { opacity: 0.4; cursor: not-allowed; }
+  .row-menu__sep {
+    height: 1px;
+    background: var(--border-soft);
+    margin: 4px 0;
+  }
+
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(17,16,74,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 24px;
+  }
+  .modal-overlay.is-open { display: flex; }
+  .modal {
+    width: 100%;
+    max-width: 500px;
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: var(--shadow-lg);
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+  .modal--wide { max-width: 640px; }
+  .modal__title {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .modal__sub {
+    font-size: 0.88rem;
+    color: var(--slate);
+    margin: 0 0 20px;
+    line-height: 1.5;
+  }
+  .modal__actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  /* Activity timeline */
+  .activity-list { max-height: 60vh; overflow-y: auto; padding-right: 4px; }
+  .activity-item {
+    display: flex;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-icon {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--blush);
+    color: var(--navy);
+    display: grid; place-items: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+  .activity-icon--quiz { background: #FBF3E1; color: var(--gold); }
+  .activity-icon--flashcard { background: #FDECEC; color: var(--red); }
+  .activity-body { flex: 1; min-width: 0; }
+  .activity-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--ink);
+    margin: 0 0 2px;
+  }
+  .activity-detail {
+    font-size: 0.8rem;
+    color: var(--slate);
+    margin: 0;
+    word-break: break-word;
+  }
+  .activity-time {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    color: var(--slate);
+    flex-shrink: 0;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+  }
+  .toast--error { background: var(--deep-red); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Users</h1>
+              <p class="page-header__sub">
+                Manage student and administrator accounts.
+              </p>
+            </div>
+            <button class="btn btn-primary" id="create-user-btn" type="button">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i>
+              Create user
+            </button>
+          </header>
+
+          <div class="toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+              <input type="search" id="search" placeholder="Search by name or email…">
+            </div>
+            <div class="filter-chips" id="chips">
+              <button class="chip is-active" data-filter="all" type="button">All</button>
+              <button class="chip" data-filter="student" type="button">Students</button>
+              <button class="chip" data-filter="admin" type="button">Admins</button>
+              <button class="chip" data-filter="suspended" type="button">Suspended</button>
+            </div>
+          </div>
+
+          <div class="bulk-bar" id="bulk-bar">
+            <span><strong id="bulk-count">0</strong> selected</span>
+            <button class="btn" data-bulk="make-admin" type="button">Make admin</button>
+            <button class="btn" data-bulk="make-student" type="button">Make student</button>
+            <button class="btn" data-bulk="suspend" type="button">Suspend</button>
+            <button class="btn" data-bulk="unsuspend" type="button">Unsuspend</button>
+            <button class="btn btn--danger" data-bulk="delete" type="button">Delete</button>
+            <button class="btn" data-bulk="clear" type="button" style="margin-left:auto">Clear</button>
+          </div>
+
+          <div class="table-card">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="col-check"><input type="checkbox" id="check-all"></th>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th style="width:60px"></th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody">
+                  <tr><td colspan="6" style="padding:40px;text-align:center;color:var(--slate)">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create modal -->
+  <div class="modal-overlay" id="modal-create">
+    <div class="modal">
+      <h3 class="modal__title">Create new user</h3>
+      <p class="modal__sub">The user can log in immediately with the credentials you set.</p>
+
+      <div style="margin-bottom:14px">
+        <label class="label" for="new-name">Full name</label>
+        <input class="input" type="text" id="new-name" autocomplete="off">
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="label" for="new-email">Email</label>
+        <input class="input" type="email" id="new-email" autocomplete="off">
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="label" for="new-password">Password</label>
+        <div style="display:flex;gap:8px">
+          <input class="input" type="text" id="new-password" autocomplete="off">
+          <button class="btn btn-ghost" type="button" id="gen-password" title="Generate">
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="label" for="new-role">Role</label>
+        <select class="input" id="new-role">
+          <option value="student">Student</option>
+          <option value="admin">Administrator</option>
+        </select>
+      </div>
+
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="create-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="create-confirm" type="button">Create user</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset password modal -->
+  <div class="modal-overlay" id="modal-reset">
+    <div class="modal">
+      <h3 class="modal__title">Reset password</h3>
+      <p class="modal__sub" id="reset-sub">Set a new password for this user. All their sessions will be logged out.</p>
+      <div>
+        <label class="label" for="reset-password">New password</label>
+        <div style="display:flex;gap:8px">
+          <input class="input" type="text" id="reset-password">
+          <button class="btn btn-ghost" type="button" id="gen-reset-password">
+            <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="reset-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="reset-confirm" type="button">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Suspend modal -->
+  <div class="modal-overlay" id="modal-suspend">
+    <div class="modal">
+      <h3 class="modal__title">Suspend user</h3>
+      <p class="modal__sub" id="suspend-sub">They will be logged out and unable to log in.</p>
+      <div>
+        <label class="label" for="suspend-reason">Reason (optional)</label>
+        <input class="input" type="text" id="suspend-reason" placeholder="e.g. Disciplinary action">
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="suspend-cancel" type="button">Cancel</button>
+        <button class="btn btn-danger" id="suspend-confirm" type="button">Suspend</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity modal -->
+  <div class="modal-overlay" id="modal-activity">
+    <div class="modal modal--wide">
+      <h3 class="modal__title" id="activity-title">Activity</h3>
+      <p class="modal__sub" id="activity-sub">Recent actions by this user.</p>
+      <div class="activity-list" id="activity-list">
+        <div style="padding:24px;text-align:center;color:var(--slate)">Loading…</div>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="activity-close" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm -->
+  <div class="modal-overlay" id="modal-delete">
+    <div class="modal">
+      <h3 class="modal__title">Delete user?</h3>
+      <p class="modal__body modal__sub" id="delete-body">This cannot be undone.</p>
+      <div class="modal__actions">
+        <button class="btn btn-ghost" id="delete-cancel" type="button">Cancel</button>
+        <button class="btn btn-danger" id="delete-confirm" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var currentUser = null;
+    var users = [];
+    var filterRole = 'all';
+    var searchTerm = '';
+    var openMenu = null;
+    var pendingDelete = null;
+    var pendingReset = null;
+    var pendingSuspend = null;
+    var selectedIds = {};
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.className = 'toast' + (isError ? ' toast--error' : '');
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function fmtDateTime(iso) {
+      if (!iso) return '—';
+      var d = new Date(iso);
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' +
+             d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function initialOf(name, email) {
+      return (name || email || '?').trim().charAt(0).toUpperCase();
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      var data = await res.json();
+      if (!data.user || data.user.role !== 'admin') {
+        window.location.href = '../chat.html';
+        return false;
+      }
+      currentUser = data.user;
+      return true;
+    }
+
+    async function loadUsers() {
+      var res = await fetch('/api/admin/users', { credentials: 'include' });
+      if (!res.ok) { toast('Could not load users.', true); return; }
+      var data = await res.json();
+      users = data.users || [];
+      renderTable();
+    }
+
+    function filtered() {
+      return users.filter(function (u) {
+        if (filterRole === 'suspended' && !u.suspended) return false;
+        if (filterRole !== 'all' && filterRole !== 'suspended' && u.role !== filterRole) return false;
+        if (!searchTerm) return true;
+        var t = searchTerm.toLowerCase();
+        return (u.name || '').toLowerCase().includes(t) || (u.email || '').toLowerCase().includes(t);
+      });
+    }
+
+    function selectedCount() {
+      return Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; }).length;
+    }
+
+    function updateBulkBar() {
+      var n = selectedCount();
+      document.getElementById('bulk-count').textContent = n;
+      document.getElementById('bulk-bar').classList.toggle('is-visible', n > 0);
+    }
+
+    function renderTable() {
+      var tbody = document.getElementById('users-tbody');
+      var list = filtered();
+
+      if (!list.length) {
+        tbody.innerHTML =
+          '<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--slate)">' +
+          'No users match your filter.</td></tr>';
+        updateBulkBar();
+        return;
+      }
+
+      tbody.innerHTML = list.map(function (u) {
+        var isSelf = currentUser && u.id === currentUser.id;
+        var checked = selectedIds[u.id] ? ' checked' : '';
+        var roleCls = u.role === 'admin' ? 'role-badge--admin' : 'role-badge--student';
+        var avatarCls = 'user-avatar';
+        if (u.role === 'admin') avatarCls += ' user-avatar--admin';
+        if (u.suspended) avatarCls = 'user-avatar user-avatar--suspended';
+
+        var statusBadge = u.suspended
+          ? '<span class="status-badge status-badge--suspended">Suspended</span>'
+          : '<span class="status-badge status-badge--active">Active</span>';
+
+        return (
+          '<tr data-id="' + u.id + '">' +
+            '<td class="col-check">' +
+              '<input type="checkbox" class="user-check" data-id="' + u.id + '"' + checked + '>' +
+            '</td>' +
+            '<td>' +
+              '<div class="user-cell">' +
+                '<div class="' + avatarCls + '">' + esc(initialOf(u.name, u.email)) + '</div>' +
+                '<div style="min-width:0">' +
+                  '<div class="user-name">' +
+                    esc(u.name || '—') +
+                    (isSelf ? ' <span style="font-weight:500;color:var(--slate);font-size:0.75rem">(you)</span>' : '') +
+                  '</div>' +
+                  '<div class="user-email">' + esc(u.email) + '</div>' +
+                '</div>' +
+              '</div>' +
+            '</td>' +
+            '<td><span class="role-badge ' + roleCls + '">' + esc(u.role) + '</span></td>' +
+            '<td>' + statusBadge + '</td>' +
+            '<td style="color:var(--slate);font-size:0.82rem">' + fmtDate(u.created_at) + '</td>' +
+            '<td>' +
+              '<button class="row-menu-btn" data-id="' + u.id + '" type="button" aria-label="Actions">' +
+                '<i class="fa-solid fa-ellipsis" aria-hidden="true"></i>' +
+              '</button>' +
+            '</td>' +
+          '</tr>'
+        );
+      }).join('');
+
+      tbody.querySelectorAll('.user-check').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          var id = cb.getAttribute('data-id');
+          selectedIds[id] = cb.checked;
+          updateBulkBar();
+          syncCheckAll();
+        });
+      });
+
+      tbody.querySelectorAll('.row-menu-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var id = btn.getAttribute('data-id');
+          var user = users.find(function (u) { return u.id === id; });
+          if (user) openUserMenu(btn, user);
+        });
+      });
+
+      syncCheckAll();
+      updateBulkBar();
+    }
+
+    function syncCheckAll() {
+      var visible = filtered();
+      var allChecked = visible.length > 0 && visible.every(function (u) { return selectedIds[u.id]; });
+      var someChecked = visible.some(function (u) { return selectedIds[u.id]; });
+      var el = document.getElementById('check-all');
+      el.checked = allChecked;
+      el.indeterminate = !allChecked && someChecked;
+    }
+
+    // ----- User menu -----
+    function closeMenu() {
+      if (openMenu) { openMenu.remove(); openMenu = null; }
+      document.removeEventListener('click', onDocClick);
+      document.removeEventListener('keydown', onEsc);
+    }
+    function onDocClick(e) { if (openMenu && !openMenu.contains(e.target)) closeMenu(); }
+    function onEsc(e) { if (e.key === 'Escape') closeMenu(); }
+
+    function openUserMenu(anchor, user) {
+      closeMenu();
+      var isSelf = currentUser && user.id === currentUser.id;
+
+      var menu = document.createElement('div');
+      menu.className = 'row-menu';
+
+      menu.innerHTML =
+        '<button class="row-menu__item" data-action="activity" type="button">' +
+          '<i class="fa-solid fa-clock-rotate-left"></i> View activity' +
+        '</button>' +
+        '<button class="row-menu__item" data-action="reset" type="button">' +
+          '<i class="fa-solid fa-key"></i> Reset password' +
+        '</button>' +
+        '<div class="row-menu__sep"></div>' +
+        '<button class="row-menu__item" data-action="toggle-role" type="button"' +
+          (isSelf ? ' disabled' : '') + '>' +
+          '<i class="fa-solid fa-user-shield"></i> ' +
+          (user.role === 'admin' ? 'Make student' : 'Make admin') +
+        '</button>' +
+        '<button class="row-menu__item" data-action="force-logout" type="button">' +
+          '<i class="fa-solid fa-right-from-bracket"></i> Force logout' +
+        '</button>' +
+        '<button class="row-menu__item" data-action="' + (user.suspended ? 'unsuspend' : 'suspend') + '" type="button"' +
+          (isSelf ? ' disabled' : '') + '>' +
+          '<i class="fa-solid ' + (user.suspended ? 'fa-circle-check' : 'fa-ban') + '"></i> ' +
+          (user.suspended ? 'Unsuspend' : 'Suspend') +
+        '</button>' +
+        '<div class="row-menu__sep"></div>' +
+        '<button class="row-menu__item row-menu__item--danger" data-action="delete" type="button"' +
+          (isSelf ? ' disabled' : '') + '>' +
+          '<i class="fa-solid fa-trash"></i> Delete user' +
+        '</button>';
+
+      document.body.appendChild(menu);
+      var rect = anchor.getBoundingClientRect();
+      menu.style.top = (rect.bottom + 4) + 'px';
+      menu.style.left = Math.max(8, rect.right - menu.offsetWidth) + 'px';
+
+      menu.addEventListener('click', function (e) {
+        var btn = e.target.closest('[data-action]');
+        if (!btn || btn.disabled) return;
+        var action = btn.getAttribute('data-action');
+        closeMenu();
+        if (action === 'activity')     openActivity(user);
+        if (action === 'reset')        promptReset(user);
+        if (action === 'toggle-role')  toggleRole(user);
+        if (action === 'force-logout') doForceLogout(user);
+        if (action === 'suspend')      promptSuspend(user);
+        if (action === 'unsuspend')    doUnsuspend(user);
+        if (action === 'delete')       promptDelete(user);
+      });
+
+      openMenu = menu;
+      setTimeout(function () {
+        document.addEventListener('click', onDocClick);
+        document.addEventListener('keydown', onEsc);
+      }, 0);
+    }
+
+    // ----- Actions -----
+    async function toggleRole(user) {
+      var newRole = user.role === 'admin' ? 'student' : 'admin';
+      var res = await fetch('/api/admin/users/' + user.id + '/role', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ role: newRole }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast(data.error || 'Could not update role.', true); return; }
+      var idx = users.findIndex(function (u) { return u.id === user.id; });
+      if (idx !== -1) users[idx] = data.user;
+      renderTable();
+      toast(user.name + ' is now ' + newRole + '.');
+    }
+
+    async function doForceLogout(user) {
+      var res = await fetch('/api/admin/users/' + user.id + '/force-logout', {
+        method: 'POST', credentials: 'include',
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast('Could not force logout.', true); return; }
+      toast('Removed ' + (data.removed || 0) + ' session(s).');
+    }
+
+    async function doUnsuspend(user) {
+      var res = await fetch('/api/admin/users/' + user.id + '/suspend', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ suspended: false }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast(data.error || 'Could not unsuspend.', true); return; }
+      var idx = users.findIndex(function (u) { return u.id === user.id; });
+      if (idx !== -1) users[idx] = data.user;
+      renderTable();
+      toast(user.name + ' unsuspended.');
+    }
+
+    // ----- Reset password -----
+    function promptReset(user) {
+      pendingReset = user;
+      document.getElementById('reset-sub').textContent =
+        'Set a new password for ' + (user.name || user.email) + '. All their sessions will be logged out.';
+      document.getElementById('reset-password').value = '';
+      document.getElementById('modal-reset').classList.add('is-open');
+      setTimeout(function () { document.getElementById('reset-password').focus(); }, 60);
+    }
+    function closeReset() {
+      pendingReset = null;
+      document.getElementById('modal-reset').classList.remove('is-open');
+    }
+    async function confirmReset() {
+      if (!pendingReset) return;
+      var pw = document.getElementById('reset-password').value;
+      if (!pw || pw.length < 8) { toast('Password must be at least 8 characters.', true); return; }
+      var res = await fetch('/api/admin/users/' + pendingReset.id + '/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ newPassword: pw }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast(data.error || 'Could not reset.', true); return; }
+      var name = pendingReset.name || pendingReset.email;
+      closeReset();
+      toast('Password reset for ' + name + '.');
+    }
+
+    // ----- Suspend -----
+    function promptSuspend(user) {
+      pendingSuspend = user;
+      document.getElementById('suspend-sub').textContent =
+        (user.name || user.email) + ' will be logged out and unable to log back in.';
+      document.getElementById('suspend-reason').value = '';
+      document.getElementById('modal-suspend').classList.add('is-open');
+    }
+    function closeSuspend() {
+      pendingSuspend = null;
+      document.getElementById('modal-suspend').classList.remove('is-open');
+    }
+    async function confirmSuspend() {
+      if (!pendingSuspend) return;
+      var reason = document.getElementById('suspend-reason').value.trim();
+      var res = await fetch('/api/admin/users/' + pendingSuspend.id + '/suspend', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ suspended: true, reason }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast(data.error || 'Could not suspend.', true); return; }
+      var idx = users.findIndex(function (u) { return u.id === pendingSuspend.id; });
+      if (idx !== -1) users[idx] = data.user;
+      var name = pendingSuspend.name || pendingSuspend.email;
+      closeSuspend();
+      renderTable();
+      toast(name + ' suspended.');
+    }
+
+    // ----- Delete -----
+    function promptDelete(user) {
+      pendingDelete = user;
+      document.getElementById('delete-body').textContent =
+        '"' + (user.name || user.email) + '" will be permanently removed. This cannot be undone.';
+      document.getElementById('modal-delete').classList.add('is-open');
+    }
+    function closeDelete() {
+      pendingDelete = null;
+      document.getElementById('modal-delete').classList.remove('is-open');
+    }
+    async function confirmDelete() {
+      if (!pendingDelete) return;
+      var user = pendingDelete;
+      closeDelete();
+      var res = await fetch('/api/admin/users/' + user.id, {
+        method: 'DELETE', credentials: 'include',
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast(data.error || 'Could not delete.', true); return; }
+      users = users.filter(function (u) { return u.id !== user.id; });
+      delete selectedIds[user.id];
+      renderTable();
+      toast((user.name || user.email) + ' deleted.');
+    }
+
+    // ----- Activity -----
+    async function openActivity(user) {
+      document.getElementById('activity-title').textContent = 'Activity — ' + (user.name || user.email);
+      document.getElementById('activity-sub').textContent = 'Recent actions. Newest first.';
+      document.getElementById('activity-list').innerHTML =
+        '<div style="padding:24px;text-align:center;color:var(--slate)">Loading…</div>';
+      document.getElementById('modal-activity').classList.add('is-open');
+
+      try {
+        var res = await fetch('/api/admin/users/' + user.id + '/activity?limit=40',
+          { credentials: 'include' });
+        if (!res.ok) {
+          document.getElementById('activity-list').innerHTML =
+            '<div style="padding:24px;text-align:center;color:var(--red)">Could not load activity.</div>';
+          return;
+        }
+        var data = await res.json();
+        var items = data.activity || [];
+        if (!items.length) {
+          document.getElementById('activity-list').innerHTML =
+            '<div style="padding:32px;text-align:center;color:var(--slate)">No activity recorded yet.</div>';
+          return;
+        }
+
+        document.getElementById('activity-list').innerHTML = items.map(function (it) {
+          var iconCls = 'activity-icon';
+          if (it.type === 'quiz') iconCls += ' activity-icon--quiz';
+          if (it.type === 'flashcard') iconCls += ' activity-icon--flashcard';
+          return (
+            '<div class="activity-item">' +
+              '<div class="' + iconCls + '"><i class="fa-solid ' + it.icon + '"></i></div>' +
+              '<div class="activity-body">' +
+                '<div class="activity-title">' + esc(it.title) + '</div>' +
+                '<div class="activity-detail">' + esc(it.detail || '') +
+                  (it.subtitle ? ' · ' + esc(it.subtitle) : '') +
+                '</div>' +
+              '</div>' +
+              '<div class="activity-time">' + fmtDateTime(it.at) + '</div>' +
+            '</div>'
+          );
+        }).join('');
+      } catch (_) {
+        document.getElementById('activity-list').innerHTML =
+          '<div style="padding:24px;text-align:center;color:var(--red)">Error loading activity.</div>';
+      }
+    }
+    function closeActivity() {
+      document.getElementById('modal-activity').classList.remove('is-open');
+    }
+
+    // ----- Create modal -----
+    function openCreate() {
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-email').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('new-role').value = 'student';
+      document.getElementById('modal-create').classList.add('is-open');
+      setTimeout(function () { document.getElementById('new-name').focus(); }, 50);
+    }
+    function closeCreate() {
+      document.getElementById('modal-create').classList.remove('is-open');
+    }
+    function generatePassword() {
+      var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+      var out = '';
+      for (var i = 0; i < 12; i++) out += chars.charAt(Math.floor(Math.random() * chars.length));
+      return out;
+    }
+    async function submitCreate() {
+      var name = document.getElementById('new-name').value.trim();
+      var email = document.getElementById('new-email').value.trim();
+      var password = document.getElementById('new-password').value;
+      var role = document.getElementById('new-role').value;
+
+      var btn = document.getElementById('create-confirm');
+      btn.disabled = true;
+      btn.textContent = 'Creating…';
+      try {
+        var res = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ name, email, password, role }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(data.error || 'Could not create user.', true); return; }
+        users.unshift(data.user);
+        renderTable();
+        closeCreate();
+        toast('User created.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create user';
+      }
+    }
+
+    // ----- Bulk operations -----
+    async function runBulk(action) {
+      var ids = Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; });
+      if (!ids.length) return;
+
+      if (action === 'clear') {
+        selectedIds = {};
+        renderTable();
+        return;
+      }
+
+      if (action === 'make-admin' || action === 'make-student' || action === 'suspend' || action === 'unsuspend') {
+        var role = action === 'make-admin' ? 'admin' : action === 'make-student' ? 'student' : null;
+        var suspended = action === 'suspend' ? true : action === 'unsuspend' ? false : null;
+
+        for (var i = 0; i < ids.length; i++) {
+          var id = ids[i];
+          if (id === (currentUser && currentUser.id)) continue;
+          try {
+            if (role) {
+              await fetch('/api/admin/users/' + id + '/role', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ role }),
+              });
+            } else if (suspended !== null) {
+              await fetch('/api/admin/users/' + id + '/suspend', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ suspended }),
+              });
+            }
+          } catch (_) {}
+        }
+        await loadUsers();
+        selectedIds = {};
+        toast('Updated ' + ids.length + ' user(s).');
+      }
+
+      if (action === 'delete') {
+        if (!confirm('Delete ' + ids.length + ' user(s)? This cannot be undone.')) return;
+        var count = 0;
+        for (var j = 0; j < ids.length; j++) {
+          if (ids[j] === (currentUser && currentUser.id)) continue;
+          try {
+            var r = await fetch('/api/admin/users/' + ids[j], {
+              method: 'DELETE', credentials: 'include',
+            });
+            if (r.ok) count++;
+          } catch (_) {}
+        }
+        selectedIds = {};
+        await loadUsers();
+        toast('Deleted ' + count + ' user(s).');
+      }
+    }
+
+    // ----- Wire up -----
+    document.getElementById('create-user-btn').addEventListener('click', openCreate);
+    document.getElementById('create-cancel').addEventListener('click', closeCreate);
+    document.getElementById('create-confirm').addEventListener('click', submitCreate);
+    document.getElementById('gen-password').addEventListener('click', function () {
+      document.getElementById('new-password').value = generatePassword();
+    });
+    document.getElementById('modal-create').addEventListener('click', function (e) {
+      if (e.target.id === 'modal-create') closeCreate();
+    });
+
+    document.getElementById('reset-cancel').addEventListener('click', closeReset);
+    document.getElementById('reset-confirm').addEventListener('click', confirmReset);
+    document.getElementById('gen-reset-password').addEventListener('click', function () {
+      document.getElementById('reset-password').value = generatePassword();
+    });
+    document.getElementById('modal-reset').addEventListener('click', function (e) {
+      if (e.target.id === 'modal-reset') closeReset();
+    });
+
+    document.getElementById('suspend-cancel').addEventListener('click', closeSuspend);
+    document.getElementById('suspend-confirm').addEventListener('click', confirmSuspend);
+    document.getElementById('modal-suspend').addEventListener('click', function (e) {
+      if (e.target.id === 'modal-suspend') closeSuspend();
+    });
+
+    document.getElementById('activity-close').addEventListener('click', closeActivity);
+    document.getElementById('modal-activity').addEventListener('click', function (e) {
+      if (e.target.id === 'modal-activity') closeActivity();
+    });
+
+    document.getElementById('delete-cancel').addEventListener('click', closeDelete);
+    document.getElementById('delete-confirm').addEventListener('click', confirmDelete);
+    document.getElementById('modal-delete').addEventListener('click', function (e) {
+      if (e.target.id === 'modal-delete') closeDelete();
+    });
+
+    document.getElementById('check-all').addEventListener('change', function (e) {
+      var visible = filtered();
+      for (var i = 0; i < visible.length; i++) {
+        selectedIds[visible[i].id] = e.target.checked;
+      }
+      renderTable();
+    });
+
+    document.querySelectorAll('#bulk-bar [data-bulk]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        runBulk(btn.getAttribute('data-bulk'));
+      });
+    });
+
+    document.getElementById('search').addEventListener('input', function (e) {
+      searchTerm = e.target.value;
+      renderTable();
+    });
+
+    document.querySelectorAll('#chips .chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('#chips .chip').forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        filterRole = chip.getAttribute('data-filter');
+        renderTable();
+      });
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      await loadUsers();
+    })();
+  })();
+</script>
+</body>
+</html>

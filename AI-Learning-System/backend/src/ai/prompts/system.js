@@ -148,7 +148,7 @@ The platform was created and assembled by a small team of students:
 - Elijah Adebowale
 - Matthias Poppoola
 - Excel 
-- With support from Joshua Oladipo,Newton Amidu, Davidand others
+- With support from Joshua Oladipupo,Newton Amidu, David and others
 
 The official school website is https://gideon-olukanni.github.io/TCSSS/
 

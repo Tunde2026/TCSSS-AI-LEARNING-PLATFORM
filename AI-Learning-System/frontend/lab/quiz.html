@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz — Studying Lab</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .quiz-inner { max-width: 760px; }
+
+  /* Setup form */
+  .setup-card { padding: 28px; }
+  .setup-field { margin-bottom: 18px; }
+  .setup-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .setup-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  /* Generating */
+  .generating {
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .generating__spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--blush-deep);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .generating__text {
+    font-family: var(--font-head);
+    color: var(--navy);
+    font-size: 1.1rem;
+    margin: 0;
+  }
+  .generating__sub {
+    color: var(--slate);
+    font-size: 0.88rem;
+    margin-top: 6px;
+  }
+
+  /* Question card */
+  .q-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .q-progress {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--slate);
+    text-transform: uppercase;
+  }
+  .q-progress-bar {
+    height: 4px;
+    background: var(--blush-deep);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .q-progress-bar__fill {
+    height: 100%;
+    background: var(--red);
+    transition: width 240ms var(--ease);
+  }
+
+  .q-text {
+    font-family: var(--font-head);
+    font-size: 1.25rem;
+    color: var(--navy);
+    line-height: 1.4;
+    margin: 0 0 24px;
+  }
+
+  .q-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .q-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    text-align: left;
+    transition: border-color var(--transition), background var(--transition);
+    width: 100%;
+  }
+  .q-option:hover {
+    border-color: var(--navy);
+  }
+  .q-option.is-selected {
+    border-color: var(--red);
+    background: #FDECEC;
+  }
+  .q-option.is-correct {
+    border-color: #2F8F4A;
+    background: #EAF7EE;
+  }
+  .q-option.is-wrong {
+    border-color: var(--red);
+    background: #FDECEC;
+  }
+  .q-option:disabled { cursor: default; }
+  .q-option__label {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--blush-deep);
+    color: var(--navy);
+    display: grid;
+    place-items: center;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+  .q-option.is-selected .q-option__label { background: var(--red); color: var(--white); }
+  .q-option.is-correct .q-option__label  { background: #2F8F4A; color: var(--white); }
+  .q-option.is-wrong .q-option__label    { background: var(--red); color: var(--white); }
+  .q-option__text { line-height: 1.5; padding-top: 2px; }
+
+  .q-explanation {
+    background: #EEF3FB;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    color: var(--navy);
+    line-height: 1.55;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .q-explanation.is-visible { display: block; }
+  .q-explanation strong { display: block; margin-bottom: 4px; font-family: var(--font-ui); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); }
+
+  .q-actions { display: flex; justify-content: space-between; gap: 10px; }
+  .q-actions .btn { flex: 1; justify-content: center; }
+
+  /* Results */
+  .result-card {
+    padding: 40px 28px;
+    text-align: center;
+  }
+  .result-score {
+    font-family: var(--font-head);
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .result-score span { font-size: 1.5rem; color: var(--slate); }
+  .result-label {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 20px;
+  }
+  .result-message {
+    font-family: var(--font-head);
+    font-size: 1.15rem;
+    color: var(--ink);
+    margin-bottom: 28px;
+  }
+  .result-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 860px) {
+    .setup-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner quiz-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Quiz</h1>
+              <p class="page-header__sub">Test your understanding on any topic.</p>
+            </div>
+          </header>
+
+          <!-- Stage: setup -->
+          <div id="stage-setup">
+            <div class="card setup-card">
+              <div class="setup-field">
+                <label class="label" for="topic">Topic</label>
+                <input class="input" type="text" id="topic"
+                       placeholder="e.g. Cell division, Newton's laws, Quadratic equations">
+              </div>
+              <div class="setup-row">
+                <div class="setup-field">
+                  <label class="label" for="subject">Subject (optional)</label>
+                  <input class="input" type="text" id="subject"
+                         placeholder="e.g. Biology">
+                </div>
+                <div class="setup-field">
+                  <label class="label" for="count">Number of questions</label>
+                  <select class="input" id="count">
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                  </select>
+                </div>
+              </div>
+              <div class="setup-field">
+                <label class="label" for="difficulty">Difficulty</label>
+                <select class="input" id="difficulty">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div class="setup-actions">
+                <button class="btn btn-primary" id="start-btn" type="button">
+                  <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                  Generate quiz
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage: generating -->
+          <div id="stage-generating" style="display:none">
+            <div class="card generating">
+              <div class="generating__spinner"></div>
+              <p class="generating__text">Generating your quiz…</p>
+              <p class="generating__sub">This may take a few seconds.</p>
+            </div>
+          </div>
+
+          <!-- Stage: question -->
+          <div id="stage-question" style="display:none">
+            <div class="q-header">
+              <span class="q-progress" id="q-progress">Question 1 of 5</span>
+            </div>
+            <div class="q-progress-bar"><div class="q-progress-bar__fill" id="q-progress-fill" style="width:20%"></div></div>
+
+            <div class="card">
+              <h2 class="q-text" id="q-text">—</h2>
+
+              <div class="q-options" id="q-options"></div>
+
+              <div class="q-explanation" id="q-explanation">
+                <strong>Explanation</strong>
+                <span id="q-explanation-text"></span>
+              </div>
+
+              <div class="q-actions">
+                <button class="btn btn-ghost" id="skip-btn" type="button">Skip</button>
+                <button class="btn btn-primary" id="next-btn" type="button" disabled>
+                  Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stage: result -->
+          <div id="stage-result" style="display:none">
+            <div class="card result-card">
+              <div class="result-score" id="result-score">0<span> / 5</span></div>
+              <div class="result-label">Final score</div>
+              <p class="result-message" id="result-message">—</p>
+              <div class="result-actions">
+                <button class="btn btn-ghost" id="review-btn" type="button">
+                  <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                  Review answers
+                </button>
+                <button class="btn btn-primary" id="again-btn" type="button">
+                  <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                  New quiz
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var stages = {
+      setup:      document.getElementById('stage-setup'),
+      generating: document.getElementById('stage-generating'),
+      question:   document.getElementById('stage-question'),
+      result:     document.getElementById('stage-result')
+    };
+
+    function showStage(name) {
+      Object.keys(stages).forEach(function (k) {
+        stages[k].style.display = (k === name) ? '' : 'none';
+      });
+    }
+
+    // ---- State ----
+    var quiz       = null;   // full quiz object
+    var index      = 0;      // current question index
+    var answers    = [];     // [{ questionId, selected }]
+    var graded     = null;   // filled after submit
+    var locked     = false;  // true after answering the current question
+
+    // ---- Auth guard ----
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      return true;
+    }
+
+    // ---- Generate ----
+    async function generate() {
+      var topic = document.getElementById('topic').value.trim();
+      if (!topic) { alert('Please enter a topic.'); return; }
+
+      var subject    = document.getElementById('subject').value.trim() || null;
+      var count      = parseInt(document.getElementById('count').value, 10);
+      var difficulty = document.getElementById('difficulty').value;
+
+      showStage('generating');
+
+      try {
+        var res = await fetch('/api/tools/quiz/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ topic, subject, count, difficulty }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+
+        if (!res.ok) {
+          alert(data.error || 'Could not generate quiz.');
+          showStage('setup');
+          return;
+        }
+
+        quiz = data.quiz;
+        index = 0;
+        answers = [];
+        graded = null;
+        locked = false;
+        renderQuestion();
+        showStage('question');
+      } catch (err) {
+        alert('Cannot reach the server.');
+        showStage('setup');
+      }
+    }
+
+    // ---- Render current question ----
+    function renderQuestion() {
+      var q = quiz.questions[index];
+      locked = false;
+
+      document.getElementById('q-progress').textContent =
+        'Question ' + (index + 1) + ' of ' + quiz.questions.length;
+      document.getElementById('q-progress-fill').style.width =
+        ((index + 1) / quiz.questions.length * 100) + '%';
+
+      document.getElementById('q-text').textContent = q.question;
+      document.getElementById('q-explanation').classList.remove('is-visible');
+      document.getElementById('q-explanation-text').textContent = '';
+
+      var opts = document.getElementById('q-options');
+      opts.innerHTML = '';
+
+      var existing = answers.find(function (a) { return a.questionId === q.id; });
+      var selectedLabel = existing ? existing.selected : null;
+
+      q.options.forEach(function (opt) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'q-option';
+        btn.setAttribute('data-label', opt.label);
+        if (selectedLabel === opt.label) btn.classList.add('is-selected');
+        btn.innerHTML =
+          '<span class="q-option__label">' + opt.label + '</span>' +
+          '<span class="q-option__text">' + escapeHtml(opt.text) + '</span>';
+        btn.addEventListener('click', function () { selectOption(opt.label); });
+        opts.appendChild(btn);
+      });
+
+      document.getElementById('skip-btn').style.display = '';
+      document.getElementById('next-btn').disabled = true;
+      document.getElementById('next-btn').innerHTML =
+        (index === quiz.questions.length - 1 ? 'Finish' : 'Next') +
+        ' <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+    }
+
+    function selectOption(label) {
+      if (locked) return;
+      var q = quiz.questions[index];
+      var existing = answers.find(function (a) { return a.questionId === q.id; });
+      if (existing) existing.selected = label;
+      else answers.push({ questionId: q.id, selected: label });
+
+      document.querySelectorAll('.q-option').forEach(function (el) {
+        el.classList.toggle('is-selected', el.getAttribute('data-label') === label);
+      });
+      document.getElementById('next-btn').disabled = false;
+    }
+
+    // ---- Navigation ----
+    function next() {
+      if (index < quiz.questions.length - 1) {
+        index += 1;
+        renderQuestion();
+      } else {
+        finish();
+      }
+    }
+
+    function skip() {
+      if (index < quiz.questions.length - 1) {
+        index += 1;
+        renderQuestion();
+      } else {
+        finish();
+      }
+    }
+
+    // ---- Finish and grade ----
+    async function finish() {
+      showStage('generating');
+      document.querySelector('.generating__text').textContent = 'Scoring your quiz…';
+
+      try {
+        var res = await fetch('/api/tools/quiz/' + quiz.id + '/attempt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ answers: answers }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+
+        if (!res.ok) {
+          alert(data.error || 'Could not submit quiz.');
+          showStage('question');
+          return;
+        }
+
+        graded = data.graded;
+        var s = data.attempt.score;
+        var t = data.attempt.total;
+
+        document.getElementById('result-score').innerHTML = s + '<span> / ' + t + '</span>';
+
+        var pct = s / t;
+        var msg = '';
+        if (pct === 1)       msg = 'Perfect score — outstanding work!';
+        else if (pct >= 0.8) msg = 'Great job — you have a strong grasp of this topic.';
+        else if (pct >= 0.6) msg = 'Good effort. Review the ones you missed.';
+        else if (pct >= 0.4) msg = 'Keep going — practice makes the difference.';
+        else                 msg = 'This topic needs more work. Try again after studying.';
+
+        document.getElementById('result-message').textContent = msg;
+        showStage('result');
+
+        document.querySelector('.generating__text').textContent = 'Generating your quiz…';
+      } catch (err) {
+        alert('Cannot reach the server.');
+        showStage('question');
+      }
+    }
+
+    // ---- Review ----
+    function review() {
+      if (!graded) return;
+      index = 0;
+      renderReviewQuestion();
+      showStage('question');
+    }
+
+    function renderReviewQuestion() {
+      locked = true;
+      var q = quiz.questions[index];
+      var g = graded.find(function (x) { return x.questionId === q.id; }) || {};
+
+      document.getElementById('q-progress').textContent =
+        'Review ' + (index + 1) + ' of ' + quiz.questions.length;
+      document.getElementById('q-progress-fill').style.width =
+        ((index + 1) / quiz.questions.length * 100) + '%';
+
+      document.getElementById('q-text').textContent = q.question;
+
+      var opts = document.getElementById('q-options');
+      opts.innerHTML = '';
+      q.options.forEach(function (opt) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'q-option';
+        btn.disabled = true;
+        btn.setAttribute('data-label', opt.label);
+        if (opt.label === g.correct) btn.classList.add('is-correct');
+        else if (opt.label === g.selected && !g.isCorrect) btn.classList.add('is-wrong');
+        btn.innerHTML =
+          '<span class="q-option__label">' + opt.label + '</span>' +
+          '<span class="q-option__text">' + escapeHtml(opt.text) + '</span>';
+        opts.appendChild(btn);
+      });
+
+      var ex = document.getElementById('q-explanation');
+      var exText = document.getElementById('q-explanation-text');
+      if (q.explanation) {
+        exText.textContent = q.explanation;
+        ex.classList.add('is-visible');
+      } else {
+        ex.classList.remove('is-visible');
+      }
+
+      document.getElementById('skip-btn').style.display = 'none';
+      var nextBtn = document.getElementById('next-btn');
+      nextBtn.disabled = false;
+      nextBtn.innerHTML =
+        (index === quiz.questions.length - 1 ? 'Done' : 'Next') +
+        ' <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+    }
+
+    function nextReview() {
+      if (index < quiz.questions.length - 1) {
+        index += 1;
+        renderReviewQuestion();
+      } else {
+        showStage('result');
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // ---- Wire up ----
+    document.getElementById('start-btn').addEventListener('click', generate);
+    document.getElementById('next-btn').addEventListener('click', function () {
+      if (locked && graded) nextReview();
+      else next();
+    });
+    document.getElementById('skip-btn').addEventListener('click', skip);
+    document.getElementById('again-btn').addEventListener('click', function () {
+      showStage('setup');
+    });
+    document.getElementById('review-btn').addEventListener('click', review);
+
+    document.getElementById('topic').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); generate(); }
+    });
+
+    // ---- Boot ----
+    (async function init() {
+      if (!(await guard())) return;
+      showStage('setup');
+      document.getElementById('topic').focus();
+    })();
+  })();
+</script>
+</body>
+</html>

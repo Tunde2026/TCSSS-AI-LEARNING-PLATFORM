@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System Settings — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .settings-page { max-width: 820px; }
+
+  .setting-group { margin-bottom: 32px; }
+  .setting-group h2 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .setting-group h2::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    opacity: 0.7;
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-bottom: none;
+  }
+  .setting-row:first-of-type {
+    border-top-left-radius: var(--radius);
+    border-top-right-radius: var(--radius);
+  }
+  .setting-row:last-child {
+    border-bottom: 1px solid var(--border);
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+  }
+
+  .setting-row__body { flex: 1; min-width: 0; }
+  .setting-row__label {
+    font-weight: 600; font-size: 0.9rem;
+    color: var(--ink); margin: 0 0 2px;
+  }
+  .setting-row__desc {
+    font-size: 0.78rem; color: var(--slate);
+    margin: 0; line-height: 1.4;
+  }
+  .setting-row__key {
+    font-family: var(--font-ui);
+    font-size: 0.68rem; color: var(--slate);
+    opacity: 0.6; margin-top: 4px;
+  }
+
+  .setting-row__input {
+    flex-shrink: 0;
+    min-width: 220px;
+    max-width: 320px;
+  }
+  .setting-row__input input,
+  .setting-row__input select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--ink);
+    background: var(--white);
+  }
+  .setting-row__input input:focus,
+  .setting-row__input select:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
+  }
+
+  .toggle {
+    position: relative;
+    width: 44px; height: 24px;
+    flex-shrink: 0; cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle__track {
+    position: absolute; inset: 0;
+    background: var(--slate);
+    border-radius: 12px;
+    transition: background var(--transition);
+    opacity: 0.4;
+  }
+  .toggle input:checked + .toggle__track {
+    background: var(--red);
+    opacity: 1;
+  }
+  .toggle__track::before {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    left: 3px; top: 3px;
+    background: var(--white);
+    border-radius: 50%;
+    transition: transform var(--transition);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .toggle input:checked + .toggle__track::before {
+    transform: translateX(20px);
+  }
+
+  .save-bar {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition);
+    font-size: 0.9rem;
+  }
+  .save-bar.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .save-bar .btn {
+    background: var(--red);
+    color: var(--white);
+    padding: 6px 14px;
+    font-size: 0.85rem;
+  }
+  .save-bar .btn:hover:not(:disabled) { background: var(--deep-red); }
+
+  @media (max-width: 640px) {
+    .setting-row { flex-direction: column; align-items: stretch; }
+    .setting-row__input { max-width: none; min-width: 0; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner settings-page">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">System Settings</h1>
+              <p class="page-header__sub">
+                Control how the platform behaves. Changes apply immediately.
+              </p>
+            </div>
+          </header>
+
+          <section class="setting-group">
+            <h2>Branding</h2>
+            <div class="branding-preview">
+              <div class="branding-preview__box" id="logo-box">
+                <span>NO LOGO</span>
+              </div>
+              <div class="branding-preview__body">
+                <p class="branding-preview__title">Platform logo</p>
+                <p class="branding-preview__hint">
+                  Shown in the sidebar and on the sign-in page. PNG, JPG, SVG, or WEBP. Max 2 MB.
+                </p>
+                <div class="branding-actions">
+                  <input type="file" id="logo-file" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="display:none">
+                  <button class="btn btn-primary" id="upload-logo-btn" type="button">
+                    <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                    Upload logo
+                  </button>
+                  <button class="btn btn-ghost" id="remove-logo-btn" type="button" style="display:none">
+                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="setting-group">
+            <h2>Data &amp; maintenance</h2>
+            <div class="card settings-list">
+              <a class="settings-item" href="backup.html" style="text-decoration:none;color:inherit">
+                <i class="fa-solid fa-database" aria-hidden="true"></i>
+                <div class="settings-item__body">
+                  <div class="settings-item__title">Backup &amp; restore</div>
+                  <p class="settings-item__sub">Export the database as JSON, or restore from a backup file</p>
+                </div>
+                <i class="fa-solid fa-chevron-right settings-item__arrow" aria-hidden="true"></i>
+              </a>
+              <a class="settings-item" href="audit.html" style="text-decoration:none;color:inherit">
+                <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                <div class="settings-item__body">
+                  <div class="settings-item__title">Audit log</div>
+                  <p class="settings-item__sub">Review every administrative action, filterable by admin and action type</p>
+                </div>
+                <i class="fa-solid fa-chevron-right settings-item__arrow" aria-hidden="true"></i>
+              </a>
+            </div>
+          </section>
+
+          <div id="groups"></div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="save-bar" id="save-bar">
+    <span id="save-count">0 changes</span>
+    <button class="btn" id="save-btn" type="button">Save</button>
+    <button class="btn" id="discard-btn" type="button"
+            style="background:transparent;border:1px solid rgba(255,255,255,0.3)">
+      Discard
+    </button>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var settings = [];
+    var original = {};
+    var pending  = {};
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = [
+        'position:fixed','bottom:90px','left:50%','transform:translateX(-50%)',
+        'background:' + (isError ? 'var(--deep-red)' : 'var(--navy)'),
+        'color:#fff','padding:12px 20px','border-radius:999px',
+        'font-family:var(--font-body)','font-size:0.9rem',
+        'box-shadow:0 8px 24px rgba(17,16,74,0.2)','z-index:300'
+      ].join(';');
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      var data = await res.json();
+      if (!data.user || data.user.role !== 'admin') {
+        window.location.href = '../chat.html';
+        return false;
+      }
+      return true;
+    }
+
+    async function loadSettings() {
+      var res = await fetch('/api/admin/settings', { credentials: 'include' });
+      if (!res.ok) { toast('Could not load settings.', true); return; }
+      var data = await res.json();
+      settings = data.settings || [];
+      original = {};
+      for (var i = 0; i < settings.length; i++) original[settings[i].key] = settings[i].value;
+      pending = {};
+      updateSaveBar();
+      render();
+      updateLogoPreview();
+    }
+
+    function updateLogoPreview() {
+      var logoUrl = original['platform.logo_url'] || '';
+      var box = document.getElementById('logo-box');
+      var removeBtn = document.getElementById('remove-logo-btn');
+      if (logoUrl) {
+        box.innerHTML = '<img src="' + esc(logoUrl) + '" alt="Logo">';
+        removeBtn.style.display = '';
+      } else {
+        box.innerHTML = '<span>NO LOGO</span>';
+        removeBtn.style.display = 'none';
+      }
+    }
+
+    var CATEGORY_LABELS = {
+      general: 'General',
+      ai: 'AI & Models',
+      tools: 'Tools',
+      limits: 'Limits',
+    };
+
+    function labelForKey(key) {
+      var last = key.split('.').pop();
+      return last.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    }
+
+    function rowHtml(s) {
+      var current = (s.key in pending) ? pending[s.key].value : s.value;
+      var inputHtml = '';
+
+      if (s.type === 'boolean') {
+        inputHtml =
+          '<label class="toggle">' +
+            '<input type="checkbox" data-key="' + esc(s.key) + '"' +
+                   (current ? ' checked' : '') + '>' +
+            '<span class="toggle__track"></span>' +
+          '</label>';
+      } else if (s.type === 'number') {
+        inputHtml = '<input type="number" data-key="' + esc(s.key) + '" value="' + esc(current) + '" step="any">';
+      } else if (s.type === 'json') {
+        var display = Array.isArray(current) ? current.join(', ') : String(current);
+        inputHtml = '<input type="text" data-key="' + esc(s.key) + '" value="' + esc(display) + '">';
+      } else {
+        inputHtml = '<input type="text" data-key="' + esc(s.key) + '" value="' + esc(current) + '">';
+      }
+
+      return (
+        '<div class="setting-row">' +
+          '<div class="setting-row__body">' +
+            '<div class="setting-row__label">' + esc(labelForKey(s.key)) + '</div>' +
+            '<p class="setting-row__desc">' + esc(s.description || '') + '</p>' +
+            '<div class="setting-row__key">' + esc(s.key) + '</div>' +
+          '</div>' +
+          '<div class="setting-row__input">' + inputHtml + '</div>' +
+        '</div>'
+      );
+    }
+
+    function render() {
+      var groups = document.getElementById('groups');
+      var byCat = {};
+      for (var i = 0; i < settings.length; i++) {
+        var s = settings[i];
+        if (s.key === 'platform.logo_url') continue;
+        if (!byCat[s.category]) byCat[s.category] = [];
+        byCat[s.category].push(s);
+      }
+
+      var order = ['general', 'ai', 'tools', 'limits'];
+      var html = '';
+
+      for (var j = 0; j < order.length; j++) {
+        var cat = order[j];
+        var list = byCat[cat];
+        if (!list || !list.length) continue;
+        html += '<section class="setting-group">';
+        html += '<h2>' + esc(CATEGORY_LABELS[cat] || cat) + '</h2>';
+        for (var k = 0; k < list.length; k++) html += rowHtml(list[k]);
+        html += '</section>';
+      }
+
+      groups.innerHTML = html;
+      bindInputs();
+    }
+
+    function bindInputs() {
+      document.querySelectorAll('[data-key]').forEach(function (el) {
+        el.addEventListener('change', function () {
+          var key = el.getAttribute('data-key');
+          var setting = settings.find(function (x) { return x.key === key; });
+          if (!setting) return;
+
+          var value;
+          if (setting.type === 'boolean') value = el.checked;
+          else if (setting.type === 'number') { value = Number(el.value); if (Number.isNaN(value)) value = 0; }
+          else if (setting.type === 'json') value = el.value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+          else value = el.value;
+
+          if (JSON.stringify(value) === JSON.stringify(original[key])) delete pending[key];
+          else pending[key] = { value: value, type: setting.type };
+          updateSaveBar();
+        });
+      });
+    }
+
+    function updateSaveBar() {
+      var n = Object.keys(pending).length;
+      document.getElementById('save-count').textContent = n + ' change' + (n === 1 ? '' : 's');
+      document.getElementById('save-bar').classList.toggle('is-visible', n > 0);
+    }
+
+    async function save() {
+      if (!Object.keys(pending).length) return;
+      var updates = Object.keys(pending).map(function (key) {
+        return { key: key, value: pending[key].value, type: pending[key].type };
+      });
+
+      var btn = document.getElementById('save-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+
+      try {
+        var res = await fetch('/api/admin/settings', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ updates: updates }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(data.error || 'Save failed.', true); return; }
+
+        settings = data.settings || [];
+        original = {};
+        for (var i = 0; i < settings.length; i++) original[settings[i].key] = settings[i].value;
+        pending = {};
+        updateSaveBar();
+        render();
+        updateLogoPreview();
+        toast('Settings saved.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+
+    function discard() {
+      pending = {};
+      updateSaveBar();
+      render();
+    }
+
+    var logoFile = null;
+
+    document.getElementById('upload-logo-btn').addEventListener('click', function () {
+      document.getElementById('logo-file').click();
+    });
+
+    document.getElementById('logo-file').addEventListener('change', function (e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      uploadLogo(file);
+    });
+
+    async function uploadLogo(file) {
+      var form = new FormData();
+      form.append('logo', file);
+
+      var btn = document.getElementById('upload-logo-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading…';
+
+      try {
+        var res = await fetch('/api/admin/branding/logo', {
+          method: 'POST',
+          credentials: 'include',
+          body: form,
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(data.error || 'Upload failed.', true); return; }
+
+        original['platform.logo_url'] = data.url;
+        updateLogoPreview();
+        toast('Logo updated.');
+
+        var slot = document.querySelector('.sidebar__logo-slot');
+        if (slot) {
+          slot.innerHTML = '<img src="' + data.url + '" alt="Logo">';
+          slot.classList.add('has-image');
+        }
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-upload" aria-hidden="true"></i> Upload logo';
+        document.getElementById('logo-file').value = '';
+      }
+    }
+
+    document.getElementById('remove-logo-btn').addEventListener('click', async function () {
+      if (!confirm('Remove the logo?')) return;
+      var res = await fetch('/api/admin/branding/logo', {
+        method: 'DELETE', credentials: 'include',
+      });
+      if (!res.ok) { toast('Could not remove.', true); return; }
+      original['platform.logo_url'] = '';
+      updateLogoPreview();
+      var slot = document.querySelector('.sidebar__logo-slot');
+      if (slot) {
+        slot.innerHTML = 'LOGO';
+        slot.classList.remove('has-image');
+      }
+      toast('Logo removed.');
+    });
+
+    document.getElementById('save-btn').addEventListener('click', save);
+    document.getElementById('discard-btn').addEventListener('click', discard);
+
+    (async function init() {
+      if (!(await guard())) return;
+      await loadSettings();
+    })();
+  })();
+</script>
+</body>
+</html>

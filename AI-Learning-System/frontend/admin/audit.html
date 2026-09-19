@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit Log — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .audit-toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .audit-toolbar select,
+  .audit-toolbar input[type="search"] {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    background: var(--white);
+  }
+  .audit-toolbar select:focus,
+  .audit-toolbar input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
+  }
+
+  .audit-table {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .audit-row {
+    display: grid;
+    grid-template-columns: 140px 180px 1fr 140px;
+    gap: 14px;
+    align-items: start;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 0.88rem;
+  }
+  .audit-row:last-child { border-bottom: none; }
+  .audit-row--head {
+    background: var(--blush);
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+    font-weight: 500;
+  }
+  .audit-action {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--blush);
+    color: var(--navy);
+    display: inline-block;
+  }
+  .audit-action--danger   { background: #FDECEC; color: var(--deep-red); }
+  .audit-action--warning  { background: #FBF3E1; color: #8A5A00; }
+  .audit-action--success  { background: #EAF7EE; color: #2F8F4A; }
+
+  .audit-admin {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .audit-admin__email {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 0.85rem;
+  }
+  .audit-admin__ip {
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    color: var(--slate);
+    margin-top: 2px;
+  }
+
+  .audit-target {
+    min-width: 0;
+  }
+  .audit-target__label {
+    color: var(--ink);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .audit-target__details {
+    font-size: 0.75rem;
+    color: var(--slate);
+    margin-top: 4px;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  .audit-time {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    color: var(--slate);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .audit-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--slate);
+  }
+  .audit-pager__buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .empty-state-small {
+    padding: 40px;
+    text-align: center;
+    color: var(--slate);
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Audit Log</h1>
+              <p class="page-header__sub">
+                Every administrative action, recorded with who, what, and when.
+              </p>
+            </div>
+            <button class="btn btn-ghost" id="refresh-btn" type="button">
+              <i class="fa-solid fa-rotate" aria-hidden="true"></i> Refresh
+            </button>
+          </header>
+
+          <div class="audit-toolbar">
+            <select id="filter-action">
+              <option value="">All actions</option>
+            </select>
+            <select id="filter-admin">
+              <option value="">All admins</option>
+            </select>
+            <button class="btn btn-ghost" id="cleanup-btn" type="button">
+              <i class="fa-solid fa-broom" aria-hidden="true"></i>
+              Delete entries older than 90 days
+            </button>
+          </div>
+
+          <div class="audit-table">
+            <div class="audit-row audit-row--head">
+              <div>Time</div>
+              <div>Admin</div>
+              <div>Action & target</div>
+              <div>IP</div>
+            </div>
+            <div id="rows-wrap">
+              <div class="empty-state-small">Loading…</div>
+            </div>
+          </div>
+
+          <div class="audit-pager">
+            <span id="pager-info">—</span>
+            <div class="audit-pager__buttons">
+              <button class="btn btn-ghost" id="prev-btn" type="button">Previous</button>
+              <button class="btn btn-ghost" id="next-btn" type="button">Next</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var entries = [];
+    var total = 0;
+    var limit = 100;
+    var offset = 0;
+    var filterAction = '';
+    var filterAdmin = '';
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function fmtTime(iso) {
+      if (!iso) return '—';
+      var d = new Date(iso);
+      return d.toLocaleDateString(undefined, { month:'short', day:'numeric' }) + ' ' +
+             d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+    }
+
+    function actionClass(action) {
+      if (!action) return 'audit-action';
+      if (action.indexOf('delete') !== -1)   return 'audit-action audit-action--danger';
+      if (action.indexOf('suspend') !== -1)  return 'audit-action audit-action--warning';
+      if (action.indexOf('create') !== -1)   return 'audit-action audit-action--success';
+      return 'audit-action';
+    }
+
+    function actionLabel(action) {
+      return String(action || '').replace(/\./g, ' · ');
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      var data = await res.json();
+      if (!data.user || data.user.role !== 'admin') {
+        window.location.href = '../chat.html';
+        return false;
+      }
+      return true;
+    }
+
+    async function loadMeta() {
+      try {
+        var res = await fetch('/api/admin/audit/meta', { credentials: 'include' });
+        if (!res.ok) return;
+        var d = await res.json();
+
+        var actionSelect = document.getElementById('filter-action');
+        (d.actions || []).forEach(function (a) {
+          var opt = document.createElement('option');
+          opt.value = a;
+          opt.textContent = a;
+          actionSelect.appendChild(opt);
+        });
+
+        var adminSelect = document.getElementById('filter-admin');
+        (d.admins || []).forEach(function (a) {
+          var opt = document.createElement('option');
+          opt.value = a.admin_id;
+          opt.textContent = a.admin_email || a.admin_id.slice(0, 8);
+          adminSelect.appendChild(opt);
+        });
+      } catch (_) {}
+    }
+
+    async function loadEntries() {
+      var wrap = document.getElementById('rows-wrap');
+      wrap.innerHTML = '<div class="empty-state-small">Loading…</div>';
+
+      try {
+        var url = '/api/admin/audit?limit=' + limit + '&offset=' + offset;
+        if (filterAction) url += '&action=' + encodeURIComponent(filterAction);
+        if (filterAdmin)  url += '&adminId=' + encodeURIComponent(filterAdmin);
+
+        var res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) { wrap.innerHTML = '<div class="empty-state-small">Could not load.</div>'; return; }
+        var d = await res.json();
+        entries = d.entries || [];
+        total = d.total || 0;
+        render();
+      } catch (_) {
+        wrap.innerHTML = '<div class="empty-state-small" style="color:var(--deep-red)">Error.</div>';
+      }
+    }
+
+    function render() {
+      var wrap = document.getElementById('rows-wrap');
+      if (!entries.length) {
+        wrap.innerHTML = '<div class="empty-state-small">No entries match the filter.</div>';
+        updatePager();
+        return;
+      }
+
+      wrap.innerHTML = entries.map(function (e) {
+        var details = e.details ? Object.keys(e.details).map(function (k) {
+          var v = e.details[k];
+          if (Array.isArray(v)) v = v.length + ' items';
+          else if (v && typeof v === 'object') v = JSON.stringify(v);
+          return k + ': ' + v;
+        }).join(' · ') : '';
+
+        return (
+          '<div class="audit-row">' +
+            '<div class="audit-time">' + fmtTime(e.created_at) + '</div>' +
+            '<div class="audit-admin">' +
+              '<div class="audit-admin__email">' + esc(e.admin_email || '—') + '</div>' +
+            '</div>' +
+            '<div class="audit-target">' +
+              '<span class="' + actionClass(e.action) + '">' + esc(actionLabel(e.action)) + '</span>' +
+              (e.target_label
+                ? '<div class="audit-target__label" style="margin-top:6px">' +
+                    esc(e.target_type ? e.target_type + ': ' : '') + esc(e.target_label) +
+                  '</div>'
+                : '') +
+              (details
+                ? '<div class="audit-target__details">' + esc(details) + '</div>'
+                : '') +
+            '</div>' +
+            '<div class="audit-time">' + esc(e.ip || '—') + '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      updatePager();
+    }
+
+    function updatePager() {
+      var start = total ? offset + 1 : 0;
+      var end = Math.min(offset + limit, total);
+      document.getElementById('pager-info').textContent =
+        start + '–' + end + ' of ' + total;
+      document.getElementById('prev-btn').disabled = offset === 0;
+      document.getElementById('next-btn').disabled = offset + limit >= total;
+    }
+
+    document.getElementById('filter-action').addEventListener('change', function (e) {
+      filterAction = e.target.value;
+      offset = 0;
+      loadEntries();
+    });
+
+    document.getElementById('filter-admin').addEventListener('change', function (e) {
+      filterAdmin = e.target.value;
+      offset = 0;
+      loadEntries();
+    });
+
+    document.getElementById('prev-btn').addEventListener('click', function () {
+      offset = Math.max(0, offset - limit);
+      loadEntries();
+    });
+
+    document.getElementById('next-btn').addEventListener('click', function () {
+      if (offset + limit < total) {
+        offset += limit;
+        loadEntries();
+      }
+    });
+
+    document.getElementById('refresh-btn').addEventListener('click', function () {
+      loadEntries();
+    });
+
+    document.getElementById('cleanup-btn').addEventListener('click', async function () {
+      if (!confirm('Delete all audit entries older than 90 days?')) return;
+      var res = await fetch('/api/admin/audit/old?days=90', {
+        method: 'DELETE', credentials: 'include',
+      });
+      if (!res.ok) return;
+      var d = await res.json();
+      alert('Removed ' + d.removed + ' entries.');
+      loadEntries();
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      await loadMeta();
+      await loadEntries();
+    })();
+  })();
+</script>
+</body>
+</html>

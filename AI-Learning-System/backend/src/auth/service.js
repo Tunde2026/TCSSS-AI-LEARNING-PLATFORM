@@ -1,5 +1,8 @@
+// ============================================================
+// auth/service.js
+// ------------------------------------------------------------
 // Business logic for authentication.
-// Talks to db.users and hashes/verifies passwords. Knows nothing about HTTP.
+// ============================================================
 
 const bcrypt = require('bcrypt');
 const db     = require('../db');
@@ -7,17 +10,9 @@ const logger = require('../core/logger');
 
 const SALT_ROUNDS = 10;
 
-// Return shapes used by routes.js:
-//   { ok: true, user }
-//   { ok: false, code: 'EMAIL_TAKEN' }
-//   { ok: false, code: 'NO_ACCOUNT' }
-//   { ok: false, code: 'BAD_CREDENTIALS' }
-
 async function signup({ name, email, password }) {
   const existing = await db.users.findByEmail(email);
-  if (existing) {
-    return { ok: false, code: 'EMAIL_TAKEN' };
-  }
+  if (existing) return { ok: false, code: 'EMAIL_TAKEN' };
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
   const user = await db.users.create({ name, email, passwordHash });
@@ -27,16 +22,22 @@ async function signup({ name, email, password }) {
 
 async function login({ email, password }) {
   const user = await db.users.findByEmail(email);
-  if (!user) {
-    return { ok: false, code: 'NO_ACCOUNT' };
-  }
+  if (!user) return { ok: false, code: 'NO_ACCOUNT' };
 
   const match = await bcrypt.compare(password, user.password_hash);
-  if (!match) {
-    return { ok: false, code: 'BAD_CREDENTIALS' };
+  if (!match) return { ok: false, code: 'BAD_CREDENTIALS' };
+
+  // Suspended check happens AFTER credential verification, so we don't
+  // reveal to strangers that an account exists.
+  if (user.suspended) {
+    return {
+      ok: false,
+      code: 'SUSPENDED',
+      suspendedReason: user.suspended_reason || null,
+      suspendedAt: user.suspended_at || null,
+    };
   }
 
-  // Strip the hash before returning
   const { password_hash, ...safe } = user;
   return { ok: true, user: safe };
 }

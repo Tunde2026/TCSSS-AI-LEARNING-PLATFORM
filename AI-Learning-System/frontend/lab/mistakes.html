@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Mistakes — Studying Lab</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .mk-inner { max-width: 860px; }
+
+  .topic-card {
+    padding: 0;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .topic-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    background: var(--white);
+    transition: background var(--transition);
+  }
+  .topic-head:hover { background: var(--blush); }
+  .topic-head__left { min-width: 0; flex: 1; }
+  .topic-title {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--navy);
+    margin: 0 0 4px;
+  }
+  .topic-meta {
+    font-size: 0.8rem;
+    color: var(--slate);
+    margin: 0;
+  }
+  .topic-count {
+    background: var(--red);
+    color: var(--white);
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .topic-toggle {
+    color: var(--slate);
+    transition: transform var(--transition);
+    flex-shrink: 0;
+  }
+  .topic-card.is-open .topic-toggle { transform: rotate(180deg); }
+
+  .topic-body {
+    display: none;
+    border-top: 1px solid var(--border-soft);
+    padding: 6px 20px 12px;
+    background: var(--blush);
+  }
+  .topic-card.is-open .topic-body { display: block; }
+
+  .missed-q {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .missed-q:last-child { border-bottom: none; }
+  .missed-q__text {
+    font-weight: 500;
+    color: var(--ink);
+    font-size: 0.95rem;
+    margin: 0 0 10px;
+    line-height: 1.5;
+  }
+  .missed-q__opts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .opt-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--white);
+    font-size: 0.88rem;
+    border: 1px solid var(--border-soft);
+  }
+  .opt-row.is-correct {
+    border-color: #2F8F4A;
+    background: #EAF7EE;
+  }
+  .opt-row.is-selected-wrong {
+    border-color: var(--red);
+    background: #FDECEC;
+  }
+  .opt-label {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--blush-deep); color: var(--navy);
+    display: grid; place-items: center;
+    font-family: var(--font-ui); font-weight: 600; font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+  .opt-row.is-correct .opt-label { background: #2F8F4A; color: #fff; }
+  .opt-row.is-selected-wrong .opt-label { background: var(--red); color: #fff; }
+  .missed-q__expl {
+    font-size: 0.85rem;
+    color: var(--navy);
+    line-height: 1.55;
+    background: #EEF3FB;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin: 0;
+  }
+  .missed-q__expl strong {
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner mk-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">My Mistakes</h1>
+              <p class="page-header__sub">
+                Every question you got wrong, grouped by topic.
+                Review these to close the gaps that cost you marks.
+              </p>
+            </div>
+          </header>
+
+          <section class="section">
+            <div id="groups-wrap">
+              <div style="color:var(--slate);font-size:0.9rem">Loading…</div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      return true;
+    }
+
+    async function load() {
+      var res = await fetch('/api/tools/mistakes', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      render(data.groups || []);
+    }
+
+    function render(groups) {
+      var wrap = document.getElementById('groups-wrap');
+
+      if (!groups.length) {
+        wrap.innerHTML =
+          '<div class="empty-state">' +
+            '<div class="empty-state__icon"><i class="fa-solid fa-check-circle" aria-hidden="true"></i></div>' +
+            '<h3 class="empty-state__title">No mistakes recorded yet</h3>' +
+            '<p class="empty-state__desc">Take a quiz in the Studying Lab. Any question you miss will appear here, grouped by topic.</p>' +
+            '<a class="btn btn-primary" href="quiz.html" style="margin-top:16px">' +
+              '<i class="fa-solid fa-circle-question" aria-hidden="true"></i> Take a quiz' +
+            '</a>' +
+          '</div>';
+        return;
+      }
+
+      wrap.innerHTML = groups.map(function (g, i) {
+        var questionsHtml = g.questions.map(function (q) {
+          var optsHtml = (q.options || []).map(function (o) {
+            var cls = 'opt-row';
+            if (o.label === q.correct) cls += ' is-correct';
+            else if (o.label === q.selected) cls += ' is-selected-wrong';
+            return (
+              '<div class="' + cls + '">' +
+                '<span class="opt-label">' + esc(o.label) + '</span>' +
+                '<span>' + esc(o.text) + '</span>' +
+              '</div>'
+            );
+          }).join('');
+
+          return (
+            '<div class="missed-q">' +
+              '<p class="missed-q__text">' + esc(q.question) + '</p>' +
+              '<div class="missed-q__opts">' + optsHtml + '</div>' +
+              (q.explanation
+                ? '<p class="missed-q__expl"><strong>Why</strong>' + esc(q.explanation) + '</p>'
+                : '') +
+            '</div>'
+          );
+        }).join('');
+
+        return (
+          '<div class="card topic-card" data-idx="' + i + '">' +
+            '<div class="topic-head">' +
+              '<div class="topic-head__left">' +
+                '<div class="topic-title">' + esc(g.topic) + '</div>' +
+                '<div class="topic-meta">' +
+                  g.questions.length + ' question' + (g.questions.length === 1 ? '' : 's') +
+                  (g.subject ? ' · ' + esc(g.subject) : '') +
+                '</div>' +
+              '</div>' +
+              '<span class="topic-count">' + g.questions.length + '</span>' +
+              '<i class="fa-solid fa-chevron-down topic-toggle" aria-hidden="true"></i>' +
+            '</div>' +
+            '<div class="topic-body">' + questionsHtml + '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      wrap.querySelectorAll('.topic-card').forEach(function (card) {
+        card.querySelector('.topic-head').addEventListener('click', function () {
+          card.classList.toggle('is-open');
+        });
+      });
+    }
+
+    (async function init() {
+      if (!(await guard())) return;
+      await load();
+    })();
+  })();
+</script>
+</body>
+</html>
