@@ -1,40 +1,176 @@
-// ============================================================
-// router.js
-// ------------------------------------------------------------
-// Decides what should happen for a user request.
-//
-// Project rule 9 — the LLM decides; the application executes.
-//
-// Current behaviour:
-//   1. Scan the latest user message for an @Name mention
-//   2. If found and matches one of the user's agents, load it
-//   3. Return a structured decision for ai/routes.js
-// ============================================================
+const express = require('express');
+const router  = express.Router();
+const { chat, _debugState } = require('./gateway');
+const { route } = require('./router');
+const db      = require('../db');
+const logger  = require('../core/logger');
+const { requireLogin } = require('../auth');
 
-const agentsService = require('../agents').service;
-const logger = require('../core/logger');
+const retrieval = require('../library/retrieval');
+const websearch = require('../tools/websearch/service');
 
-async function route({ user, messages, agentId }) {
-  const lastUser = [...messages].reverse().find(m => m.role === 'user');
-  const text = (lastUser && lastUser.content) || '';
+function needsWebSearch(text) {
+  const t = String(text || '').toLowerCase();
+  const triggers = [
+    'latest', 'current', 'today', 'this year', 'this week',
+    'recent', 'news', '2025', '2026', '2027',
+    'right now', 'up to date', 'update on',
+  ];
+  return triggers.some(k => t.includes(k));
+}
 
-  // Explicit agentId passed by the frontend takes priority
-  if (agentId) {
-    const agent = await agentsService.get(user.id, agentId);
-    if (agent) {
-      logger.debug(`[router] agent by id: @${agent.name}`);
-      return { kind: 'chat', agent, reason: 'explicit_id' };
+function buildSystemContext(agent) {
+  if (!agent) return null;
+  let prompt = agent.system_prompt;
+  const extras = [];
+  if (agent.subject)        extras.push(`Subject: ${agent.subject}`);
+  if (agent.level)          extras.push(`Education level: ${agent.level}`);
+  if (agent.learning_style) extras.push(`Preferred teaching style: ${agent.learning_style}`);
+  if (extras.length) prompt += '\n\n' + extras.join('\n');
+  return prompt;
+}
+
+router.post('/chat', requireLogin, async (req, res, next) => {
+  const { messages, conversationId, agentId } = req.body || {};
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: 'messages must be a non-empty array' });
+  }
+  for (const m of messages) {
+    if (!m || typeof m.role !== 'string' || typeof m.content !== 'string') {
+      return res.status(400).json({ error: 'each message needs role and content' });
     }
   }
 
-  // Detect @mention in the message text
-  const agent = await agentsService.resolveMention(user.id, text);
-  if (agent) {
-    logger.debug(`[router] agent by mention: @${agent.name}`);
-    return { kind: 'chat', agent, reason: 'mention' };
+  const lastUser = [...messages].reverse().find(m => m.role === 'user');
+  if (!lastUser) {
+    return res.status(400).json({ error: 'at least one user message is required' });
   }
 
-  return { kind: 'chat', agent: null, reason: 'default' };
-}
+  try {
+    // 1. Ensure a conversation exists
+    let conv;
+    if (conversationId) {
+      const list = await db.conversations.listByUser(req.user.id);
+      conv = list.find(c => c.id === conversationId);
+      if (!conv) return res.status(404).json({ error: 'Conversation not found' });
+    } else {
+      const title = lastUser.content.slice(0, 60) || 'New conversation';
+      conv = await db.conversations.create(req.user.id, title);
+    }
 
-module.exports = { route };
+    // 2. Save the user message
+    await db.messages.create({
+      conversationId: conv.id,
+      role: 'user',
+      content: lastUser.content,
+    });
+
+    // 3. Route (resolves @mention)
+    const decision = await route({
+      user: req.user,
+      messages,
+      agentId: agentId || null,
+    });
+
+    // 4. Build system context
+    let gatewayMessages = [...messages];
+    const injectedSystemBlocks = [];
+
+    if (decision.agent) {
+      const sys = buildSystemContext(decision.agent);
+      if (sys) injectedSystemBlocks.push(sys);
+    }
+
+    // 4a. Library retrieval (RAG)
+    let libraryUsed = false;
+    try {
+      const { contextText } = await retrieval.retrieveContext(lastUser.content);
+      if (contextText) {
+        injectedSystemBlocks.push(contextText);
+        libraryUsed = true;
+      }
+    } catch (err) {
+      logger.warn('[ai/chat] retrieval failed:', err.message);
+    }
+
+    // 4b. Web search
+    let searchMeta = null;
+    if (needsWebSearch(lastUser.content) && websearch.isEnabled()) {
+      try {
+        const r = await websearch.search(lastUser.content, { count: 5 });
+        if (r.ok && r.results.length) {
+          injectedSystemBlocks.push(
+            websearch.buildContextBlock(lastUser.content, r.results)
+          );
+          searchMeta = {
+            sources: r.results.slice(0, 5).map(x => ({
+              title: x.title,
+              url:   x.url,
+              snippet: (x.description || '').slice(0, 200),
+            })),
+            keyIndex: r.keyIndex || 1,
+            keyCount: r.keyCount || 1,
+          };
+        } else if (!r.ok && r.code) {
+          logger.warn(`[ai/chat] web search failed: ${r.code}`);
+        }
+      } catch (err) {
+        logger.warn('[ai/chat] web search threw:', err.message);
+      }
+    }
+
+    if (injectedSystemBlocks.length) {
+      const combined = injectedSystemBlocks.join('\n\n=====\n\n');
+      gatewayMessages = [
+        { role: 'system', content: combined },
+        ...gatewayMessages,
+      ];
+    }
+
+    // 5. Call the gateway
+    const result = await chat({ messages: gatewayMessages });
+
+    // 6. Save the assistant reply
+    const saved = await db.messages.create({
+      conversationId: conv.id,
+      role: 'assistant',
+      content: result.text,
+      provider: result.provider,
+    });
+
+    await db.conversations.touch(conv.id);
+
+    res.json({
+      reply: result.text,
+      provider: result.provider,
+      conversationId: conv.id,
+      messageId: saved.id,
+      agent: decision.agent
+        ? { id: decision.agent.id, name: decision.agent.name }
+        : null,
+      libraryUsed: libraryUsed,
+      webSearch: searchMeta,   // { sources: [...], keyIndex, keyCount } or null
+    });
+
+  } catch (err) {
+    logger.error('[ai/chat]', err.message, err.attempts || []);
+
+    if (err.message === 'REQUEST_REJECTED') {
+      return res.status(400).json({ error: 'The request was rejected by the model.' });
+    }
+    if (err.message === 'NO_PROVIDERS_AVAILABLE') {
+      return res.status(503).json({ error: 'No AI providers are configured.' });
+    }
+    if (err.message === 'ALL_PROVIDERS_FAILED') {
+      return res.status(503).json({ error: 'AI temporarily unavailable. Please try again.' });
+    }
+    next(err);
+  }
+});
+
+router.get('/status', requireLogin, (req, res) => {
+  res.json(_debugState());
+});
+
+module.exports = router;
