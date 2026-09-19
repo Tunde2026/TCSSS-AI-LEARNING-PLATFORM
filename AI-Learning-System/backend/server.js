@@ -1,6 +1,8 @@
 // ============================================================
 // server.js
 // ------------------------------------------------------------
+// Entry point for the AI Learning Platform backend.
+// ============================================================
 
 const path      = require('path');
 const express   = require('express');
@@ -22,7 +24,6 @@ app.set('trust proxy', 1);
 core.settings.loadFromDb().catch(() => {});
 ai.keyStore.loadAndApply().catch(() => {});
 
-// Ensure upload dirs exist at boot.
 try { require('./src/library/storage').ensureUploadDirs(); } catch (_) {}
 
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -74,7 +75,7 @@ app.get('/health/db', async (req, res) => {
   }
 });
 
-// ---- Public platform info (used by login page + sidebar) ----
+// ---- Platform info (used by login page + sidebar) ----
 app.get('/api/platform/info', async (req, res, next) => {
   try {
     const name = await core.settings.getSetting('platform.name', 'AI Learning Platform');
@@ -91,9 +92,10 @@ app.use('/api/conversations', require('./src/conversations').router);
 app.use('/api/tools',         require('./src/tools').router);
 app.use('/api/agents',        require('./src/agents').router);
 app.use('/api/library',       require('./src/library').router);
+app.use('/api/voice',         require('./src/voice').router);
 app.use('/api/admin',         require('./src/admin').router);
 
-// ---- Static uploads (logo, documents) ----
+// ---- Static uploads ----
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
   maxAge: '1d',
   fallthrough: true,

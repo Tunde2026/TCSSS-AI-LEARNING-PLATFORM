@@ -8,6 +8,6 @@ module.exports = {
   id: 'ollama',
   baseUrl: config.ollama.url,
   model: config.ollama.model,
-  timeoutMs: 120000,
-  keys: ['ollama'], // placeholder so the gateway treats it like the others
+  timeoutMs: 600000,   // 10 minutes — CPU inference is slow
+    keys: ['ollama'], // placeholder so the gateway treats it like the others
 };
