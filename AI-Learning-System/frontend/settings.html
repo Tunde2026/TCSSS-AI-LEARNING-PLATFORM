@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Settings — AI Learning Platform</title>
+<link rel="stylesheet" href="assets/shell.css">
+<style>
+  .page { flex: 1; padding: 32px; max-width: 780px; }
+  .settings-section { margin-top: 24px; }
+  .settings-section h2 { font-size: 1.05rem; margin-bottom: 10px; }
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0; border-bottom: 1px solid var(--blush-deep);
+  }
+  .row:last-child { border-bottom: none; }
+  .row__label { color: var(--ink); }
+  .row__hint  { font-size: 0.8rem; color: var(--slate); margin-top: 2px; }
+</style>
+</head>
+<body>
+  <div class="mobile-bar">
+    <button class="mobile-bar__toggle" id="sidebar-toggle" aria-label="Open menu">☰</button>
+    <span>AI Learning Platform</span>
+  </div>
+  <div class="backdrop" id="sidebar-backdrop"></div>
+
+  <div class="app">
+    <div id="sidebar-mount"></div>
+    <main class="page">
+      <h1>Settings</h1>
+      <p>Account, personalization, and AI customization.</p>
+
+      <div class="card settings-section">
+        <h2>Account</h2>
+        <div class="row">
+          <div>
+            <div class="row__label" id="account-email">—</div>
+            <div class="row__hint">Signed-in email</div>
+          </div>
+          <button class="btn btn-ghost" id="logout-btn">Log out</button>
+        </div>
+      </div>
+
+      <div class="card settings-section">
+        <h2>Custom AI tutors</h2>
+        <p style="font-size:0.9rem;color:var(--slate);margin:0">
+          Create reusable @AI tutors. Coming soon.
+        </p>
+      </div>
+    </main>
+  </div>
+
+<script src="assets/shell.js"></script>
+<script>
+  // Page-specific: load current user + wire logout.
+  (async () => {
+    try {
+      const res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = 'index.html'; return; }
+      const data = await res.json();
+      document.getElementById('account-email').textContent =
+        data.user?.email || '—';
+    } catch (_) { /* ignore */ }
+  })();
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include',
+    }).catch(() => {});
+    window.location.href = 'index.html';
+  });
+</script>
+</body>
+</html>

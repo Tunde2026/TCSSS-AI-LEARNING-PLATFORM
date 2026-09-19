@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in — AI Learning Platform</title>
+<link rel="stylesheet" href="assets/shell.css">
+<style>
+  /* Page-specific styles for the auth screen only */
+  .auth-wrap {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(201,149,46,0.10), transparent 55%),
+      var(--blush);
+  }
+  .auth-card { width: 100%; max-width: 440px; }
+  .auth-brand { text-align: center; margin-bottom: 22px; }
+  .auth-brand__mark {
+    width: 48px; height: 48px; margin: 0 auto 12px;
+    border-radius: 12px; background: var(--navy);
+    color: rgba(255,255,255,0.5);
+    display: grid; place-items: center;
+    font-family: var(--font-ui); font-size: 0.6rem;
+  }
+  .auth-brand__title {
+    font-family: var(--font-head); font-size: 1.35rem;
+    color: var(--navy); margin: 0;
+  }
+  .auth-brand__sub {
+    font-size: 0.85rem; color: var(--slate); margin-top: 4px;
+  }
+
+  /* Tab switcher */
+  .auth-tabs {
+    display: flex; gap: 4px;
+    background: var(--blush-deep);
+    border-radius: 999px;
+    padding: 4px;
+    margin-bottom: 18px;
+  }
+  .auth-tab {
+    flex: 1;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--slate);
+    cursor: pointer;
+    transition: background var(--transition), color var(--transition);
+  }
+  .auth-tab.is-active {
+    background: var(--white);
+    color: var(--navy);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .field { margin-bottom: 14px; }
+  .field-hint {
+    font-size: 0.75rem; color: var(--slate); margin-top: 4px;
+  }
+
+  .auth-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 20px;
+  }
+  .auth-actions .forgot { font-size: 0.85rem; color: var(--slate); }
+
+  .auth-alert {
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    margin-bottom: 14px;
+    display: none;
+    line-height: 1.45;
+  }
+  .auth-alert.is-visible { display: block; }
+  .auth-alert--error {
+    background: #FDECEC; color: var(--deep-red);
+  }
+  .auth-alert--info {
+    background: #EEF3FB; color: var(--navy);
+  }
+  .auth-alert__action {
+    display: inline-block;
+    margin-top: 6px;
+    font-weight: 600;
+    color: var(--red);
+    cursor: pointer;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+  }
+
+  .auth-foot {
+    text-align: center; margin-top: 22px;
+    font-size: 0.82rem; color: var(--slate);
+  }
+  .auth-foot a { color: var(--slate); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+  <main class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-brand__mark" aria-hidden="true">LOGO</div>
+        <h1 class="auth-brand__title">AI Learning Platform</h1>
+        <div class="auth-brand__sub" id="brand-sub">Sign in to continue</div>
+      </div>
+
+      <div class="card">
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab is-active" id="tab-login"  role="tab" aria-selected="true">Sign in</button>
+          <button class="auth-tab"           id="tab-signup" role="tab" aria-selected="false">Create account</button>
+        </div>
+
+        <div class="auth-alert" id="alert" role="alert"></div>
+
+        <!-- LOGIN FORM -->
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label class="label" for="login-email">Email</label>
+            <input class="input" type="email" id="login-email"
+                   autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label class="label" for="login-password">Password</label>
+            <input class="input" type="password" id="login-password"
+                   autocomplete="current-password" required>
+          </div>
+          <div class="auth-actions">
+            <a href="#" class="forgot">Forgot password?</a>
+            <button class="btn btn-primary" type="submit" id="login-submit">
+              Sign in
+            </button>
+          </div>
+        </form>
+
+        <!-- SIGNUP FORM (hidden by default) -->
+        <form id="signup-form" class="hidden" novalidate>
+          <div class="field">
+            <label class="label" for="signup-name">Full name</label>
+            <input class="input" type="text" id="signup-name"
+                   autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label class="label" for="signup-email">Email</label>
+            <input class="input" type="email" id="signup-email"
+                   autocomplete="email" required>
+          </div>
+          <div class="field">
+            <label class="label" for="signup-password">Password</label>
+            <input class="input" type="password" id="signup-password"
+                   autocomplete="new-password" minlength="8" required>
+            <div class="field-hint">At least 8 characters.</div>
+          </div>
+          <div class="field">
+            <label class="label" for="signup-confirm">Confirm password</label>
+            <input class="input" type="password" id="signup-confirm"
+                   autocomplete="new-password" required>
+          </div>
+          <div class="auth-actions" style="justify-content:flex-end">
+            <button class="btn btn-primary" type="submit" id="signup-submit">
+              Create account
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="auth-foot">
+        <a href="https://gideon-olukanni.github.io/TCSSS/"
+           target="_blank" rel="noopener noreferrer">
+          Official School Website &#8599;
+        </a>
+      </div>
+    </div>
+  </main>
+
+<script>
+  // ---- Element refs ----
+  const tabLogin   = document.getElementById('tab-login');
+  const tabSignup  = document.getElementById('tab-signup');
+  const loginForm  = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  const brandSub   = document.getElementById('brand-sub');
+  const alertEl    = document.getElementById('alert');
+
+  // ---- Alert helpers ----
+  function clearAlert() {
+    alertEl.className = 'auth-alert';
+    alertEl.innerHTML = '';
+  }
+  function showError(msg) {
+    alertEl.className = 'auth-alert auth-alert--error is-visible';
+    alertEl.textContent = msg;
+  }
+  function showInfo(msg) {
+    alertEl.className = 'auth-alert auth-alert--info is-visible';
+    alertEl.textContent = msg;
+  }
+  // Info alert with a clickable action ("Create one now")
+  function showInfoWithAction(msg, actionLabel, onClick) {
+    alertEl.className = 'auth-alert auth-alert--info is-visible';
+    alertEl.innerHTML = '';
+    alertEl.appendChild(document.createTextNode(msg + ' '));
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'auth-alert__action';
+    btn.textContent = actionLabel;
+    btn.addEventListener('click', onClick);
+    alertEl.appendChild(btn);
+  }
+
+  // ---- Tab switching ----
+  function switchMode(mode) {
+    clearAlert();
+    const isLogin = mode === 'login';
+
+    tabLogin.classList.toggle('is-active', isLogin);
+    tabSignup.classList.toggle('is-active', !isLogin);
+    tabLogin.setAttribute('aria-selected', isLogin);
+    tabSignup.setAttribute('aria-selected', !isLogin);
+
+    loginForm.classList.toggle('hidden', !isLogin);
+    signupForm.classList.toggle('hidden', isLogin);
+    brandSub.textContent = isLogin ? 'Sign in to continue' : 'Create your account';
+
+    // Clear inputs on switch
+    loginForm.reset();
+    signupForm.reset();
+
+    // Focus first field
+    setTimeout(() => {
+      document.getElementById(isLogin ? 'login-email' : 'signup-name').focus();
+    }, 0);
+  }
+
+  tabLogin.addEventListener('click',  () => switchMode('login'));
+  tabSignup.addEventListener('click', () => switchMode('signup'));
+
+  // ---- LOGIN submit ----
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAlert();
+
+    const email    = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const submit   = document.getElementById('login-submit');
+
+    if (!email || !password) {
+      showError('Please enter both email and password.');
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = 'Signing in…';
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        window.location.href = 'chat.html';
+        return;
+      }
+
+      // Server signals "no such account" with 404 + code NO_ACCOUNT
+      if (res.status === 404 || data.code === 'NO_ACCOUNT') {
+        const typedEmail = email;
+        showInfoWithAction(
+          'No account found with that email.',
+          'Create one now',
+          () => {
+            switchMode('signup');
+            document.getElementById('signup-email').value = typedEmail;
+          }
+        );
+        return;
+      }
+
+      // Wrong password → 401
+      if (res.status === 401 || data.code === 'BAD_CREDENTIALS') {
+        showError('Incorrect password. Please try again.');
+        return;
+      }
+
+      showError(data.error || 'Sign in failed. Please try again.');
+
+    } catch (err) {
+      showError('Cannot reach the server. Please try again.');
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Sign in';
+    }
+  });
+
+  // ---- SIGNUP submit ----
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearAlert();
+
+    const name     = document.getElementById('signup-name').value.trim();
+    const email    = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const confirm  = document.getElementById('signup-confirm').value;
+    const submit   = document.getElementById('signup-submit');
+
+    // Client-side validation
+    if (!name || !email || !password || !confirm) {
+      showError('Please fill in every field.');
+      return;
+    }
+    if (password.length < 8) {
+      showError('Password must be at least 8 characters.');
+      return;
+    }
+    if (password !== confirm) {
+      showError('Passwords do not match.');
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = 'Creating account…';
+
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        // Account created and session opened → straight to chat
+        window.location.href = 'chat.html';
+        return;
+      }
+
+      if (res.status === 409 || data.code === 'EMAIL_TAKEN') {
+        const typedEmail = email;
+        showInfoWithAction(
+          'An account with that email already exists.',
+          'Sign in instead',
+          () => {
+            switchMode('login');
+            document.getElementById('login-email').value = typedEmail;
+          }
+        );
+        return;
+      }
+
+      showError(data.error || 'Could not create your account.');
+
+    } catch (err) {
+      showError('Cannot reach the server. Please try again.');
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Create account';
+    }
+  });
+
+  // Focus the first field on load
+  window.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('login-email').focus();
+  });
+</script>
+</body>
+</html>
