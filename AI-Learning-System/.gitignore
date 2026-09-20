@@ -8,3 +8,8 @@ uploads/.env
 .env.*
 uploads/
 node_modules/
+cookies.txt
+test.jpg
+*.jpg
+*.png
+*.epub
