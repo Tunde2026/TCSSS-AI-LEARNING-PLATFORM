@@ -102,6 +102,8 @@
   .provider-logo--nvidia     { background: #76B900; }
   .provider-logo--openrouter { background: #6366F1; }
   .provider-logo--tavily     { background: #0A7B83; }
+    .provider-logo--pexels       { background: #05A081; }
+  .provider-logo--pollinations { background: #7C3AED; }
 
   .provider-info { flex: 1; min-width: 0; }
   .provider-name {
@@ -367,14 +369,16 @@ ollama pull nomic-embed-text</pre>
   (function () {
     'use strict';
 
-    var PROVIDERS = [
-      { id: 'groq',       name: 'Groq',       initial: 'G',  desc: 'Fast open-model inference. Free tier: generous daily limit.' },
-      { id: 'cerebras',   name: 'Cerebras',   initial: 'C',  desc: 'Very fast inference on specialised hardware.' },
-      { id: 'google',     name: 'Google AI',  initial: 'A',  desc: 'Gemma + Gemini Flash. Note: free tier may train on data.' },
-      { id: 'nvidia',     name: 'NVIDIA NIM', initial: 'N',  desc: 'Wide model catalogue, no hard daily cap.' },
-      { id: 'openrouter', name: 'OpenRouter', initial: 'O',  desc: 'Aggregator with free-model fallbacks.' },
-      { id: 'tavily',     name: 'Tavily',     initial: 'T',  desc: 'Web search for current facts in chat.' },
-    ];
+   var PROVIDERS = [
+        { id: 'groq',          name: 'Groq',         initial: 'G',  desc: 'Fast open-model inference. Free tier: generous daily limit.' },
+        { id: 'cerebras',      name: 'Cerebras',     initial: 'C',  desc: 'Very fast inference on specialised hardware.' },
+        { id: 'google',        name: 'Google AI',    initial: 'A',  desc: 'Gemma + Gemini Flash.' },
+        { id: 'nvidia',        name: 'NVIDIA NIM',   initial: 'N',  desc: 'Wide model catalogue, no hard daily cap.' },
+        { id: 'openrouter',    name: 'OpenRouter',   initial: 'O',  desc: 'Aggregator with free-model fallbacks.' },
+        { id: 'tavily',        name: 'Tavily',       initial: 'T',  desc: 'Web search for current facts.' },
+        { id: 'pexels',        name: 'Pexels',       initial: 'P',  desc: 'Search real photos from the internet. 20,000 req/month free.' },
+        { id: 'pollinations',  name: 'Pollinations', initial: 'P',  desc: 'AI image generation. Works keyless too but a key removes limits.' },
+      ];
 
     var keys = [];
     var pendingProvider = null;   // { id, name }

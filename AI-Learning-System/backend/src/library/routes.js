@@ -64,6 +64,12 @@ router.get('/:id/download', requireLogin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Read inline (no download prompt)
+router.get('/:id/read', requireLogin, async (req, res, next) => {
+  const reader = require('./reader');
+  return reader.streamBook(req, res, next);
+});
+
 // ---- Admin ----
 
 router.get('/admin', requireAdmin, async (req, res, next) => {

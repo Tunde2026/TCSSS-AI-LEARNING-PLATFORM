@@ -4,4 +4,7 @@ node_modules/
 !.env.example
 *.log
 .DS_Store
+uploads/.env
+.env.*
 uploads/
+node_modules/

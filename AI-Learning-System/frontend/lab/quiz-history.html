@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz History — Studying Lab</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  /* Wider content area — see shell.css for the shared override */
+  .page-inner, .viz-inner, .fc-inner, .pr-inner, .sp-inner, .qh-inner, .exam-inner { max-width: 1440px; }
+  .qh-inner { max-width: 1440px; }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: var(--shadow-xs);
+  }
+  .stat-card__value {
+    font-family: var(--font-head);
+    font-size: 1.7rem;
+    font-weight: 600;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-card__label {
+    font-family: var(--font-ui);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+  }
+
+  .attempt-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .attempt-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+  }
+  .attempt-card:hover {
+    border-color: var(--gold);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .score-ring {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .score-ring--good  { background: #EAF7EE; color: #2F8F4A; border: 2px solid #B9DDC3; }
+  .score-ring--ok    { background: var(--gold-50); color: var(--warn); border: 2px solid #EFD9A6; }
+  .score-ring--poor  { background: #FDECEC; color: var(--deep-red); border: 2px solid #F3C5C5; }
+
+  .attempt-body { flex: 1; min-width: 0; }
+  .attempt-title {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 1.02rem;
+    color: var(--navy);
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .attempt-meta {
+    font-size: 0.8rem;
+    color: var(--slate);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .attempt-badge {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .attempt-badge--exam { background: var(--red); color: var(--white); }
+  .attempt-badge--quiz { background: var(--blush-deep); color: var(--slate); }
+
+  .attempt-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .empty-state-sm {
+    padding: 56px 28px;
+    text-align: center;
+    background: var(--white);
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .empty-state-sm__icon {
+    width: 60px; height: 60px;
+    border-radius: 18px;
+    background: var(--blush-deep);
+    color: var(--navy);
+    display: grid; place-items: center;
+    font-size: 1.4rem;
+    margin: 0 auto 18px;
+  }
+  .empty-state-sm__title {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    color: var(--navy);
+    margin: 0 0 8px;
+  }
+  .empty-state-sm__desc {
+    color: var(--slate);
+    font-size: 0.92rem;
+    margin: 0 auto 20px;
+    max-width: 380px;
+  }
+
+  @media (max-width: 640px) {
+    .attempt-card { flex-direction: column; align-items: stretch; }
+    .score-ring { align-self: flex-start; }
+    .attempt-actions { justify-content: flex-end; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner qh-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Quiz History</h1>
+              <p class="page-header__sub">
+                Every quiz and exam you have taken. Retake them any time.
+              </p>
+            </div>
+            <a class="btn btn-primary" href="quiz.html">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i>
+              New quiz
+            </a>
+          </header>
+
+          <section class="stat-row" id="stats">
+            <div class="stat-card">
+              <div class="stat-card__value" id="s-total">—</div>
+              <div class="stat-card__label">Total attempts</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__value" id="s-avg">—</div>
+              <div class="stat-card__label">Average score</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__value" id="s-best">—</div>
+              <div class="stat-card__label">Best score</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__value" id="s-exams">—</div>
+              <div class="stat-card__label">Exams taken</div>
+            </div>
+          </section>
+
+          <section class="section">
+            <h2 class="section__title">All attempts</h2>
+            <div class="attempt-list" id="attempts">
+              <div class="empty-state-sm">
+                <div class="empty-state-sm__icon"><i class="fa-solid fa-hourglass" aria-hidden="true"></i></div>
+                <h3 class="empty-state-sm__title">Loading…</h3>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      var d = new Date(iso);
+      return d.toLocaleDateString(undefined, { month:'short', day:'numeric', year:'numeric' }) +
+        ' · ' +
+        d.toLocaleTimeString(undefined, { hour:'2-digit', minute:'2-digit' });
+    }
+
+    function fmtTime(s) {
+      if (s == null) return null;
+      var m = Math.floor(s / 60);
+      var sec = s - m * 60;
+      return m + ':' + (sec < 10 ? '0' : '') + sec;
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      return true;
+    }
+
+    async function load() {
+      var res = await fetch('/api/tools/quiz/history/mine', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      var attempts = data.attempts || [];
+      render(attempts);
+    }
+
+    function render(attempts) {
+      var wrap = document.getElementById('attempts');
+
+      if (!attempts.length) {
+        wrap.innerHTML =
+          '<div class="empty-state-sm">' +
+            '<div class="empty-state-sm__icon"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></div>' +
+            '<h3 class="empty-state-sm__title">No attempts yet</h3>' +
+            '<p class="empty-state-sm__desc">Take your first quiz to start building your history.</p>' +
+            '<a class="btn btn-primary" href="quiz.html">' +
+              '<i class="fa-solid fa-circle-question" aria-hidden="true"></i> Take a quiz' +
+            '</a>' +
+          '</div>';
+        updateStats([]);
+        return;
+      }
+
+      wrap.innerHTML = attempts.map(function (a) {
+        var pct = a.total ? Math.round((a.score / a.total) * 100) : 0;
+        var ringCls = pct >= 80 ? 'score-ring--good'
+                    : pct >= 50 ? 'score-ring--ok'
+                    : 'score-ring--poor';
+        var badge = a.is_exam
+          ? '<span class="attempt-badge attempt-badge--exam">exam</span>'
+          : '<span class="attempt-badge attempt-badge--quiz">quiz</span>';
+        var time = fmtTime(a.time_taken_seconds);
+
+        return (
+          '<div class="attempt-card">' +
+            '<div class="score-ring ' + ringCls + '">' + a.score + '/' + a.total + '</div>' +
+            '<div class="attempt-body">' +
+              '<div class="attempt-title">' + esc(a.title || a.topic) + '</div>' +
+              '<div class="attempt-meta">' +
+                badge +
+                '<span>' + pct + '%</span>' +
+                (a.subject ? '<span>' + esc(a.subject) + '</span>' : '') +
+                (time ? '<span>' + time + '</span>' : '') +
+                '<span>' + fmtDate(a.completed_at) + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="attempt-actions">' +
+              '<a class="btn btn-ghost" href="quiz.html?retake=' + a.quiz_id + '">' +
+                '<i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Retake' +
+              '</a>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      updateStats(attempts);
+    }
+
+    function updateStats(attempts) {
+      var n = attempts.length;
+      var pcts = attempts.map(function (a) { return a.total ? (a.score / a.total) * 100 : 0; });
+      var avg = n ? Math.round(pcts.reduce(function (a, b) { return a + b; }, 0) / n) : 0;
+      var best = n ? Math.round(Math.max.apply(null, pcts)) : 0;
+      var exams = attempts.filter(function (a) { return a.is_exam; }).length;
+
+      document.getElementById('s-total').textContent = n;
+      document.getElementById('s-avg').textContent   = n ? avg + '%' : '—';
+      document.getElementById('s-best').textContent  = n ? best + '%' : '—';
+      document.getElementById('s-exams').textContent = exams;
+    }
+
+    (async function init() {
+      if (!(await guard())) return;
+      await load();
+    })();
+  })();
+</script>
+</body>
+</html>

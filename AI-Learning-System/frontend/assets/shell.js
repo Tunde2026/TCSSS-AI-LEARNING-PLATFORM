@@ -2,9 +2,152 @@
    shell.js
    ------------------------------------------------------------
    Renders sidebar, mobile bar, backdrop, user chip, admin bar,
-   lab sub-navigation bar.
+   lab sub-navigation bar, and the floating "Ask AI" panel.
+
+   Also loads the Markdown + KaTeX renderer and exposes
+   window.renderMarkdown(text, targetElement).
    ============================================================ */
 
+/* ------------------------------------------------------------------
+   Markdown + math library loader.
+   Runs first so the CDN requests start as early as possible.
+   ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+
+  if (document.getElementById('katex-css')) return;
+
+  // KaTeX stylesheet
+  var css = document.createElement('link');
+  css.id = 'katex-css';
+  css.rel = 'stylesheet';
+  css.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css';
+  css.crossOrigin = 'anonymous';
+  document.head.appendChild(css);
+
+  // Scripts load in order (async=false preserves order)
+  var sources = [
+    'https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js',
+    'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js',
+    'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js',
+    'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js',
+  ];
+
+  var loaded = 0;
+  var failed = 0;
+
+  sources.forEach(function (src) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.async = false;
+    s.crossOrigin = 'anonymous';
+    s.onload = function () {
+      loaded++;
+      if (loaded + failed === sources.length) finish();
+    };
+    s.onerror = function () {
+      failed++;
+      if (loaded + failed === sources.length) finish();
+    };
+    document.head.appendChild(s);
+  });
+
+  function finish() {
+    if (window.marked && window.DOMPurify && window.katex && window.renderMathInElement) {
+      window.__mdReady = true;
+    } else {
+      window.__mdReady = false;
+    }
+    try {
+      document.dispatchEvent(new Event('markdown-ready'));
+    } catch (_) {}
+  }
+})();
+
+/* ------------------------------------------------------------------
+   window.renderMarkdown(text, targetEl)
+   Converts Markdown + LaTeX to safe HTML and inserts into targetEl.
+   Falls back to plain text if libs haven't loaded yet.
+   ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+
+  function isReady() {
+    return !!(window.__mdReady && window.marked && window.DOMPurify);
+  }
+
+  function doRender(text, targetEl) {
+    try {
+      var html = window.marked.parse(String(text), {
+        breaks: true,
+        gfm: true,
+        headerIds: false,
+        mangle: false,
+      });
+
+      html = window.DOMPurify.sanitize(html, {
+        ADD_ATTR: ['target'],
+        FORBID_TAGS: ['style', 'iframe', 'object', 'embed', 'form', 'input', 'button'],
+        FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'style'],
+      });
+
+      targetEl.innerHTML = html;
+
+      // Render math
+      if (window.renderMathInElement) {
+        try {
+          window.renderMathInElement(targetEl, {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '\\[', right: '\\]', display: true },
+              { left: '$', right: '$', display: false },
+              { left: '\\(', right: '\\)', display: false },
+            ],
+            throwOnError: false,
+            errorColor: '#B80F1A',
+            ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+          });
+        } catch (_) {}
+      }
+
+      // External links
+      targetEl.querySelectorAll('a[href]').forEach(function (a) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      });
+    } catch (err) {
+      targetEl.textContent = String(text);
+    }
+  }
+
+  window.renderMarkdown = function (text, targetEl) {
+    if (!targetEl) return;
+    if (text == null || text === '') { targetEl.textContent = ''; return; }
+
+    if (isReady()) {
+      doRender(text, targetEl);
+      return;
+    }
+
+    // Libs not ready — show plain text now, upgrade once loaded.
+    targetEl.textContent = String(text);
+    var upgraded = false;
+    function upgrade() {
+      if (upgraded) return;
+      upgraded = true;
+      if (targetEl.isConnected && isReady()) {
+        doRender(text, targetEl);
+      }
+    }
+    document.addEventListener('markdown-ready', upgrade);
+    // Safety net: also try again shortly
+    setTimeout(upgrade, 1500);
+  };
+})();
+
+/* ------------------------------------------------------------------
+   App shell — sidebar, mobile bar, user chip, admin bar, lab bar
+   ------------------------------------------------------------------ */
 (function () {
   'use strict';
 
@@ -41,6 +184,9 @@
     { href: 'quiz.html',          icon: 'fa-circle-question',  label: 'Quiz' },
     { href: 'practice.html',      icon: 'fa-dumbbell',         label: 'Practice' },
     { href: 'visualization.html', icon: 'fa-diagram-project',  label: 'Visualization' },
+    { href: 'study-plans.html',   icon: 'fa-calendar-days',    label: 'Plans' },
+    { href: 'exam.html',          icon: 'fa-stopwatch',        label: 'Exam' },
+    { href: 'quiz-history.html',  icon: 'fa-clock-rotate-left', label: 'History' },
     { href: 'mistakes.html',      icon: 'fa-clipboard-list',   label: 'Mistakes' }
   ];
 
@@ -318,4 +464,212 @@
   } else {
     render();
   }
+})();
+
+/* ------------------------------------------------------------------
+   Floating "Ask AI" panel — appears on every page.
+   Uses window.renderMarkdown for AI replies.
+   ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+
+  if (window.__askAiLoaded) return;
+  window.__askAiLoaded = true;
+
+  var path = location.pathname;
+  var sectionName = 'Chat';
+  if (path.indexOf('/lab/') !== -1) {
+    var file = path.split('/').pop().replace('.html', '').replace(/-/g, ' ');
+    sectionName = 'Studying Lab › ' + file.charAt(0).toUpperCase() + file.slice(1);
+  } else if (path.indexOf('/admin/') !== -1) {
+    sectionName = 'Admin';
+  } else if (path.indexOf('/chat.html') !== -1) {
+    sectionName = 'Chat';
+  } else if (path.indexOf('/library') !== -1) {
+    sectionName = 'Library';
+  } else if (path.indexOf('/settings') !== -1) {
+    sectionName = 'Settings';
+  }
+
+  if (path === '/' || path.endsWith('/index.html')) return;
+
+  var open = false;
+  var messages = [];
+  var busy = false;
+
+  var fab = document.createElement('button');
+  fab.id = 'ask-ai-fab';
+  fab.type = 'button';
+  fab.setAttribute('aria-label', 'Ask AI');
+  fab.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Ask AI</span>';
+
+  var panel = document.createElement('div');
+  panel.id = 'ask-ai-panel';
+  panel.innerHTML =
+    '<div class="ask-ai__head">' +
+      '<div class="ask-ai__title">' +
+        '<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>' +
+        'Ask AI <small>' + sectionName + '</small>' +
+      '</div>' +
+      '<div class="ask-ai__head-actions">' +
+        '<button id="ask-ai-new" type="button" title="New question"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button>' +
+        '<button id="ask-ai-close" type="button" title="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="ask-ai__body" id="ask-ai-body"></div>' +
+    '<form class="ask-ai__form" id="ask-ai-form">' +
+      '<textarea id="ask-ai-input" rows="1" placeholder="Ask anything about what you are doing…"></textarea>' +
+      '<button id="ask-ai-send" type="submit" aria-label="Send">' +
+        '<i class="fa-solid fa-arrow-up" aria-hidden="true"></i>' +
+      '</button>' +
+    '</form>';
+
+  document.body.appendChild(fab);
+  document.body.appendChild(panel);
+
+  var body = document.getElementById('ask-ai-body');
+  var form = document.getElementById('ask-ai-form');
+  var input = document.getElementById('ask-ai-input');
+  var sendBtn = document.getElementById('ask-ai-send');
+
+  function renderEmpty() {
+    body.innerHTML =
+      '<div class="ask-ai__empty">' +
+        '<div class="ask-ai__empty-icon"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i></div>' +
+        '<p><strong>Stuck on something?</strong></p>' +
+        '<p>Ask a quick question about what you are working on. Nothing is saved — this is just for the moment.</p>' +
+        '<div class="ask-ai__suggest">' +
+          '<button type="button" data-q="Can you explain that in a simpler way?">Explain simpler</button>' +
+          '<button type="button" data-q="Can you give me an example?">Give an example</button>' +
+          '<button type="button" data-q="Why is this important?">Why does this matter?</button>' +
+        '</div>' +
+      '</div>';
+    body.querySelectorAll('.ask-ai__suggest button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        input.value = b.getAttribute('data-q');
+        input.focus();
+      });
+    });
+  }
+
+  function renderMessage(role, content) {
+    var wrap = document.createElement('div');
+    wrap.className = 'ask-ai__msg ask-ai__msg--' + (role === 'user' ? 'user' : 'ai');
+    if (role === 'ai') wrap.classList.add('md-content');
+    body.appendChild(wrap);
+    if (role === 'ai' && window.renderMarkdown) {
+      window.renderMarkdown(content, wrap);
+    } else {
+      wrap.textContent = content;
+    }
+    body.scrollTop = body.scrollHeight;
+    return wrap;
+  }
+
+  function addTyping() {
+    var wrap = document.createElement('div');
+    wrap.className = 'ask-ai__msg ask-ai__msg--ai';
+    wrap.id = 'ask-ai-typing';
+    wrap.innerHTML = '<span class="ask-ai__dots"><span></span><span></span><span></span></span>';
+    body.appendChild(wrap);
+    body.scrollTop = body.scrollHeight;
+  }
+  function removeTyping() {
+    var el = document.getElementById('ask-ai-typing');
+    if (el) el.remove();
+  }
+
+  function autoGrow() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  }
+
+  async function send() {
+    var text = input.value.trim();
+    if (!text || busy) return;
+
+    busy = true;
+    sendBtn.disabled = true;
+    input.disabled = true;
+
+    var empty = body.querySelector('.ask-ai__empty');
+    if (empty) empty.remove();
+
+    renderMessage('user', text);
+    messages.push({ role: 'user', content: text });
+    input.value = '';
+    autoGrow();
+    addTyping();
+
+    try {
+      var res = await fetch('/api/ai/quick', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          messages: messages,
+          context: { section: sectionName },
+        }),
+      });
+      var data = await res.json().catch(function () { return {}; });
+      removeTyping();
+      if (!res.ok) {
+        renderMessage('ai', data.error || 'Something went wrong.');
+        return;
+      }
+      renderMessage('ai', data.reply);
+      messages.push({ role: 'assistant', content: data.reply });
+    } catch (err) {
+      removeTyping();
+      renderMessage('ai', 'Cannot reach the server.');
+    } finally {
+      busy = false;
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+  }
+
+  function openPanel() {
+    open = true;
+    panel.classList.add('is-open');
+    fab.classList.add('is-hidden');
+    setTimeout(function () { input.focus(); }, 250);
+  }
+
+  function closePanel() {
+    open = false;
+    panel.classList.remove('is-open');
+    fab.classList.remove('is-hidden');
+  }
+
+  function reset() {
+    messages = [];
+    renderEmpty();
+    input.value = '';
+  }
+
+  fab.addEventListener('click', openPanel);
+  document.getElementById('ask-ai-close').addEventListener('click', closePanel);
+  document.getElementById('ask-ai-new').addEventListener('click', reset);
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    send();
+  });
+
+  input.addEventListener('input', autoGrow);
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && open) closePanel();
+  });
+
+  // Initial empty state
+  renderEmpty();
 })();

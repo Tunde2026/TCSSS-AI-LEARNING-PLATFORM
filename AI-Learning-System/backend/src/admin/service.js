@@ -12,7 +12,7 @@ const storage = require('../library/storage');
 const SALT_ROUNDS = 10;
 const EMAIL_RE    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VALID_ROLES = ['student', 'admin'];
-const VALID_PROVIDERS = ['groq', 'cerebras', 'google', 'nvidia', 'openrouter', 'tavily'];
+const VALID_PROVIDERS = ['groq', 'cerebras', 'google', 'nvidia', 'openrouter', 'tavily', 'pexels', 'pollinations'];
 
 // ---------- Users ----------
 

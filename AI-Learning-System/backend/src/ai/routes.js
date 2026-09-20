@@ -6,11 +6,12 @@ const db      = require('../db');
 const logger  = require('../core/logger');
 const { requireLogin } = require('../auth');
 
-const retrieval = require('../library/retrieval');
-const websearch = require('../tools/websearch/service');
+const retrieval   = require('../library/retrieval');
+const websearch   = require('../tools/websearch/service');
+const attachments = require('../chat/attachments');
+const imagegen    = require('../tools/imagegen/service');
+const imagesearch = require('../tools/imagesearch/service');
 
-// Decide if the message likely needs current web info.
-// Simple keyword heuristic — fast, deterministic, no AI call.
 function needsWebSearch(text) {
   const t = String(text || '').toLowerCase();
   const triggers = [
@@ -18,22 +19,53 @@ function needsWebSearch(text) {
     'recent', 'news', '2025', '2026', '2027',
     'right now', 'up to date', 'update on',
   ];
-  return triggers.some(k => t.includes(k));
+  return triggers.some(function (k) { return t.indexOf(k) !== -1; });
+}
+
+function detectGenerateIntent(text) {
+  const t = String(text || '').toLowerCase();
+  const verbs = ['draw', 'generate image', 'generate an image', 'create image',
+                 'create an image', 'make an image', 'make a picture',
+                 'illustrate', 'picture of', 'image of', 'render'];
+  const nouns = ['image', 'picture', 'illustration', 'drawing', 'artwork', 'diagram'];
+  return verbs.some(function (v) { return t.indexOf(v) !== -1; }) &&
+         nouns.some(function (n) { return t.indexOf(n) !== -1; });
+}
+
+function detectSearchIntent(text) {
+  const t = String(text || '').toLowerCase();
+  const verbs = ['show me a photo', 'show me photos', 'find a photo', 'find photos',
+                 'real photo', 'real picture', 'actual photo', 'actual picture',
+                 'photos of', 'pictures of', 'real images of'];
+  return verbs.some(function (v) { return t.indexOf(v) !== -1; });
+}
+
+function extractImagePrompt(text) {
+  return String(text || '')
+    .replace(/^(please\s+)?(can you\s+)?(draw|generate|create|make|render|illustrate)\s+(me\s+)?(an?\s+)?/i, '')
+    .replace(/\b(image|picture|illustration|drawing|artwork|photo)\b\s*(of|showing)?/gi, '')
+    .replace(/\bfor me\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function buildSystemContext(agent) {
   if (!agent) return null;
   let prompt = agent.system_prompt;
   const extras = [];
-  if (agent.subject)        extras.push(`Subject: ${agent.subject}`);
-  if (agent.level)          extras.push(`Education level: ${agent.level}`);
-  if (agent.learning_style) extras.push(`Preferred teaching style: ${agent.learning_style}`);
+  if (agent.subject)        extras.push('Subject: ' + agent.subject);
+  if (agent.level)          extras.push('Education level: ' + agent.level);
+  if (agent.learning_style) extras.push('Preferred teaching style: ' + agent.learning_style);
   if (extras.length) prompt += '\n\n' + extras.join('\n');
   return prompt;
 }
 
 router.post('/chat', requireLogin, async (req, res, next) => {
-  const { messages, conversationId, agentId } = req.body || {};
+  const body = req.body || {};
+  const messages = body.messages;
+  const conversationId = body.conversationId;
+  const agentId = body.agentId;
+  const attachmentIds = body.attachmentIds;
 
   if (!Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages must be a non-empty array' });
@@ -44,57 +76,116 @@ router.post('/chat', requireLogin, async (req, res, next) => {
     }
   }
 
-  const lastUser = [...messages].reverse().find(m => m.role === 'user');
+  const lastUser = messages.slice().reverse().find(function (m) { return m.role === 'user'; });
   if (!lastUser) {
     return res.status(400).json({ error: 'at least one user message is required' });
   }
 
   try {
-    // 1. Ensure a conversation exists
     let conv;
     if (conversationId) {
       const list = await db.conversations.listByUser(req.user.id);
-      conv = list.find(c => c.id === conversationId);
+      conv = list.find(function (c) { return c.id === conversationId; });
       if (!conv) return res.status(404).json({ error: 'Conversation not found' });
     } else {
       const title = lastUser.content.slice(0, 60) || 'New conversation';
       conv = await db.conversations.create(req.user.id, title);
     }
 
-    // 2. Save the user message
+    if (Array.isArray(attachmentIds) && attachmentIds.length) {
+      await db.chatAttachments.linkToConversation(attachmentIds, conv.id);
+    }
+
     await db.messages.create({
       conversationId: conv.id,
       role: 'user',
       content: lastUser.content,
     });
 
-    // 3. Route — resolve @mention if present
     const decision = await route({
       user: req.user,
-      messages,
+      messages: messages,
       agentId: agentId || null,
     });
 
-    // 4. Build the message list to send to the gateway
-    let gatewayMessages = [...messages];
+    let gatewayMessages = messages.slice();
     const injectedSystemBlocks = [];
+    const responseImages = [];
 
     if (decision.agent) {
       const sys = buildSystemContext(decision.agent);
       if (sys) injectedSystemBlocks.push(sys);
     }
 
-    // 4a. Library retrieval (RAG)
-    try {
-      const { contextText } = await retrieval.retrieveContext(lastUser.content);
-      if (contextText) {
-        injectedSystemBlocks.push(contextText);
+    if (Array.isArray(attachmentIds) && attachmentIds.length) {
+      try {
+        const attCtx = await attachments.buildContextFor(attachmentIds, req.user.id);
+        if (attCtx) injectedSystemBlocks.push(attCtx);
+      } catch (err) {
+        logger.warn('[ai/chat] attachment context failed: ' + err.message);
       }
-    } catch (err) {
-      logger.warn('[ai/chat] retrieval failed:', err.message);
     }
 
-    // 4b. Web search (when the message looks like it needs current info)
+    const userText = lastUser.content;
+
+    if (detectSearchIntent(userText) && imagesearch.isEnabled()) {
+      const query = extractImagePrompt(userText) || userText;
+      try {
+        const r = await imagesearch.search(query, { count: 6 });
+        if (r.ok && r.images.length) {
+          r.images.forEach(function (img) {
+            responseImages.push({
+              url: img.url,
+              thumb: img.thumb,
+              source: 'pexels',
+              author: img.author,
+              sourceUrl: img.sourceUrl,
+              alt: img.alt,
+            });
+          });
+          injectedSystemBlocks.push(
+            'The student asked for real photos of "' + query + '". ' +
+            'You have retrieved ' + r.images.length + ' images. ' +
+            'Briefly introduce them in one or two sentences.'
+          );
+        }
+      } catch (err) {
+        logger.warn('[ai/chat] image search failed: ' + err.message);
+      }
+    } else if (detectGenerateIntent(userText)) {
+      const prompt = extractImagePrompt(userText) || userText;
+      try {
+        const r = await imagegen.generate({ prompt: prompt, model: 'flux', width: 1024, height: 1024 });
+        if (r.ok) {
+          responseImages.push({
+            url: r.image.url,
+            source: 'pollinations',
+            prompt: r.image.prompt,
+            width: r.image.width,
+            height: r.image.height,
+            alt: r.image.prompt,
+          });
+          injectedSystemBlocks.push(
+            'The student asked you to draw "' + prompt + '". ' +
+            'You have created an image. Introduce it in one or two sentences.'
+          );
+        }
+      } catch (err) {
+        logger.warn('[ai/chat] image generation failed: ' + err.message);
+      }
+    }
+
+    let libraryUsed = false;
+    try {
+      const rc = await retrieval.retrieveContext(lastUser.content);
+      if (rc.contextText) {
+        injectedSystemBlocks.push(rc.contextText);
+        libraryUsed = true;
+      }
+    } catch (err) {
+      logger.warn('[ai/chat] retrieval failed: ' + err.message);
+    }
+
     let searchMeta = null;
     if (needsWebSearch(lastUser.content) && websearch.isEnabled()) {
       try {
@@ -103,31 +194,43 @@ router.post('/chat', requireLogin, async (req, res, next) => {
           injectedSystemBlocks.push(
             websearch.buildContextBlock(lastUser.content, r.results)
           );
-          searchMeta = { count: r.results.length };
+          searchMeta = {
+            sources: r.results.slice(0, 5).map(function (x) {
+              return {
+                title: x.title, url: x.url,
+                snippet: (x.description || '').slice(0, 200),
+              };
+            }),
+            keyIndex: r.keyIndex || 1,
+            keyCount: r.keyCount || 1,
+          };
         }
       } catch (err) {
-        logger.warn('[ai/chat] web search failed:', err.message);
+        logger.warn('[ai/chat] web search threw: ' + err.message);
       }
     }
 
-    // Prepend any system blocks we produced
     if (injectedSystemBlocks.length) {
       const combined = injectedSystemBlocks.join('\n\n=====\n\n');
-      gatewayMessages = [
-        { role: 'system', content: combined },
-        ...gatewayMessages,
-      ];
+      gatewayMessages = [{ role: 'system', content: combined }].concat(gatewayMessages);
     }
 
-    // 5. Call the gateway
     const result = await chat({ messages: gatewayMessages });
 
-    // 6. Save the assistant reply
+    // Build media object for storage
+    var media = null;
+    if (responseImages.length || searchMeta) {
+      media = {};
+      if (responseImages.length) media.images = responseImages;
+      if (searchMeta) media.webSearch = searchMeta;
+    }
+
     const saved = await db.messages.create({
       conversationId: conv.id,
       role: 'assistant',
       content: result.text,
       provider: result.provider,
+      media: media,
     });
 
     await db.conversations.touch(conv.id);
@@ -137,16 +240,13 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       provider: result.provider,
       conversationId: conv.id,
       messageId: saved.id,
-      agent: decision.agent
-        ? { id: decision.agent.id, name: decision.agent.name }
-        : null,
-      usedLibrary: injectedSystemBlocks.length > 0 && !decision.agent,
-      usedWebSearch: !!searchMeta,
+      agent: decision.agent ? { id: decision.agent.id, name: decision.agent.name } : null,
+      libraryUsed: libraryUsed,
+      webSearch: searchMeta,
+      images: responseImages.length ? responseImages : null,
     });
-
   } catch (err) {
-    logger.error('[ai/chat]', err.message, err.attempts || []);
-
+    logger.error('[ai/chat] ' + err.message, err.attempts || []);
     if (err.message === 'REQUEST_REJECTED') {
       return res.status(400).json({ error: 'The request was rejected by the model.' });
     }
@@ -160,7 +260,7 @@ router.post('/chat', requireLogin, async (req, res, next) => {
   }
 });
 
-router.get('/status', requireLogin, (req, res) => {
+router.get('/status', requireLogin, function (req, res) {
   res.json(_debugState());
 });
 

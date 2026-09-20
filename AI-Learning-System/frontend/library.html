@@ -6,150 +6,80 @@
 <title>Library — AI Learning Platform</title>
 <link rel="stylesheet" href="assets/shell.css">
 <style>
-  .library-toolbar {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-bottom: 28px;
-  }
-  .search-box {
-    position: relative;
-    max-width: 480px;
-  }
-  .search-box i {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--slate);
-    font-size: 0.85rem;
-    pointer-events: none;
-  }
-  .search-box input {
-    width: 100%;
-    padding: 12px 16px 12px 42px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--white);
-    font-family: var(--font-body);
-    font-size: 0.92rem;
-    color: var(--ink);
-    transition: border-color var(--transition), box-shadow var(--transition);
-  }
-  .search-box input:focus {
-    outline: none;
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
-  }
-  .filter-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .resource-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 16px;
-  }
-  .resource-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
-  }
-  .resource-card:hover {
-    border-color: var(--gold);
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-2px);
-  }
-  .resource-card__cover {
-    height: 140px;
-    background: linear-gradient(135deg, var(--navy) 0%, var(--soft-navy) 100%);
-    display: grid;
-    place-items: center;
-    color: rgba(255,255,255,0.55);
-    font-size: 2rem;
-    position: relative;
-  }
-  .resource-card__subject {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    font-family: var(--font-ui);
-    font-size: 0.62rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    background: var(--gold);
-    color: var(--navy);
-    padding: 3px 8px;
-    border-radius: 999px;
-    font-weight: 500;
-  }
-  .resource-card__body {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-  }
-  .resource-card__title {
-    font-family: var(--font-head);
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--navy);
-    line-height: 1.3;
-    margin: 0;
-  }
-  .resource-card__meta {
-    font-size: 0.78rem;
-    color: var(--slate);
-    margin: 0;
-  }
-  .resource-card__actions {
-    margin-top: auto;
-    padding-top: 12px;
-    display: flex;
-    gap: 8px;
-  }
-  .resource-card__actions .btn {
-    font-size: 0.82rem;
-    padding: 0.55em 1em;
-    flex: 1;
-    justify-content: center;
-  }
-  .admin-cta {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 20px 24px;
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 28px;
-  }
-  .admin-cta__icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: var(--blush-deep);
-    color: var(--navy);
-    display: grid;
-    place-items: center;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-  }
+  .library-toolbar { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+  .search-box { position: relative; max-width: 480px; }
+  .search-box i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--slate); font-size: 0.85rem; pointer-events: none; }
+  .search-box input { width: 100%; padding: 12px 16px 12px 42px; border: 1px solid var(--border); border-radius: 999px; background: var(--white); font-family: var(--font-body); font-size: 0.92rem; color: var(--ink); transition: border-color var(--transition), box-shadow var(--transition); }
+  .search-box input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
+  .filter-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .library-stats { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; font-family: var(--font-ui); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--slate); text-transform: uppercase; flex-wrap: wrap; }
+  .library-stats__sync { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: var(--blush); color: var(--navy); font-weight: 600; cursor: pointer; border: none; font-family: inherit; font-size: inherit; letter-spacing: inherit; text-transform: inherit; }
+  .library-stats__sync:hover { background: var(--blush-deep); }
+  .library-stats__sync:disabled { opacity: 0.5; cursor: not-allowed; }
+  .library-stats__sync i { font-size: 0.72rem; }
+  .library-stats__sync.is-spinning i { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .category-section { margin-bottom: 36px; }
+  .category-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .category-header__left { display: flex; align-items: center; gap: 12px; }
+  .category-header__icon { width: 36px; height: 36px; border-radius: 10px; background: var(--blush-deep); color: var(--navy); display: grid; place-items: center; font-size: 0.95rem; }
+  .category-header__title { font-family: var(--font-head); font-size: 1.15rem; font-weight: 600; color: var(--navy); margin: 0; }
+  .category-header__count { font-family: var(--font-ui); font-size: 0.7rem; color: var(--slate); letter-spacing: 0.06em; text-transform: uppercase; }
+
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .resource-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition); }
+  .resource-card:hover { border-color: var(--gold); box-shadow: var(--shadow-sm); transform: translateY(-2px); }
+
+  .resource-card__cover { height: 150px; background: linear-gradient(135deg, var(--navy) 0%, var(--soft-navy) 100%); display: grid; place-items: center; color: rgba(255,255,255,0.55); font-size: 2rem; position: relative; overflow: hidden; }
+  .resource-card__subject { position: absolute; top: 12px; left: 12px; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; background: var(--gold); color: var(--navy); padding: 3px 8px; border-radius: 999px; font-weight: 500; z-index: 2; }
+  .resource-card__quick-dl { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 10px; background: rgba(17,16,74,0.75); color: var(--white); border: none; cursor: pointer; display: grid; place-items: center; font-size: 0.85rem; text-decoration: none; transition: background var(--transition), transform 120ms var(--ease); backdrop-filter: blur(6px); z-index: 3; }
+  .resource-card__quick-dl:hover { background: var(--red); transform: scale(1.08); }
+  .resource-card__quick-dl:active { transform: scale(0.95); }
+
+  .resource-card__body { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .resource-card__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; color: var(--navy); line-height: 1.3; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .resource-card__meta { font-size: 0.76rem; color: var(--slate); margin: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .resource-card__actions { margin-top: auto; padding-top: 10px; display: flex; gap: 6px; }
+  .resource-card__actions .btn { font-size: 0.82rem; padding: 0.55em 1em; flex: 1; justify-content: center; }
+
+  .admin-cta { display: flex; align-items: center; gap: 16px; padding: 20px 24px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 28px; }
+  .admin-cta__icon { width: 44px; height: 44px; border-radius: 12px; background: var(--blush-deep); color: var(--navy); display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }
   .admin-cta__body { flex: 1; min-width: 0; }
-  .admin-cta__title {
-    font-family: var(--font-head);
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--navy);
-    margin: 0 0 2px;
-  }
+  .admin-cta__title { font-family: var(--font-head); font-weight: 600; font-size: 1rem; color: var(--navy); margin: 0 0 2px; }
   .admin-cta__sub { font-size: 0.83rem; color: var(--slate); margin: 0; }
+
+  .loading-skeleton { padding: 60px 20px; text-align: center; color: var(--slate); font-size: 0.9rem; }
+
+  /* ---------- Reader modal ---------- */
+  .reader-overlay { position: fixed; inset: 0; background: rgba(17,16,74,0.85); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 500; padding: 24px; }
+  .reader-overlay.is-open { display: flex; animation: reader-in 220ms var(--ease-out); }
+  @keyframes reader-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .reader { width: 100%; height: 100%; max-width: 1100px; background: var(--white); border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,0.4); }
+  .reader__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; background: linear-gradient(135deg, var(--navy), var(--soft-navy)); color: var(--white); flex-shrink: 0; }
+  .reader__title { font-family: var(--font-head); font-weight: 600; font-size: 1rem; margin: 0; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .reader__sub { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; display: block; margin-top: 2px; }
+  .reader__actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .reader__actions button, .reader__actions a { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.12); color: var(--white); border: none; cursor: pointer; display: grid; place-items: center; font-size: 0.85rem; text-decoration: none; transition: background var(--transition); }
+  .reader__actions button:hover, .reader__actions a:hover { background: rgba(255,255,255,0.24); }
+  .reader__body { flex: 1; overflow: hidden; background: #F5F4F9; position: relative; }
+  .reader__body iframe { width: 100%; height: 100%; border: none; display: block; }
+  .reader__body #epub-viewer { width: 100%; height: 100%; }
+  .reader__loading { display: grid; place-items: center; height: 100%; color: var(--slate); font-size: 0.9rem; padding: 40px; text-align: center; }
+
+  .reader__nav { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: var(--white); border-top: 1px solid var(--border); flex-shrink: 0; gap: 12px; }
+  .reader__nav button { padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--white); color: var(--navy); font-family: var(--font-body); font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+  .reader__nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .reader__nav button:hover:not(:disabled) { border-color: var(--navy); background: var(--blush); }
+  .reader__location { font-family: var(--font-ui); font-size: 0.7rem; color: var(--slate); letter-spacing: 0.06em; }
+
+  @media (max-width: 720px) {
+    .reader-overlay { padding: 0; }
+    .reader { border-radius: 0; max-width: none; }
+    .resource-card__actions .btn span { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -164,60 +94,68 @@
             <div>
               <h1 class="page-header__title">Library</h1>
               <p class="page-header__sub">
-                Trusted educational resources, added by your school administrators.
-                Click any card to download.
+                Read books right in your browser, or download them for offline study.
               </p>
             </div>
           </header>
 
           <div class="admin-cta" id="admin-cta" style="display:none">
-            <div class="admin-cta__icon">
-              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
-            </div>
+            <div class="admin-cta__icon"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i></div>
             <div class="admin-cta__body">
               <div class="admin-cta__title">You are an administrator</div>
-              <p class="admin-cta__sub">Add books and resources from the Admin panel.</p>
+              <p class="admin-cta__sub">Add books and manage the library from the Admin panel.</p>
             </div>
             <a class="btn btn-primary" href="admin/library.html">
-              <i class="fa-solid fa-plus" aria-hidden="true"></i>
-              Add resource
+              <i class="fa-solid fa-plus" aria-hidden="true"></i> Add resource
             </a>
           </div>
 
           <div class="library-toolbar">
             <div class="search-box">
               <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-              <input type="search" id="search" placeholder="Search by title, subject, or author…">
+              <input type="search" id="search" placeholder="Search by title or author…">
             </div>
-            <div class="filter-chips" id="chips">
-              <button class="chip is-active" data-subject="all" type="button">All</button>
-              <button class="chip" data-subject="Mathematics" type="button">Mathematics</button>
-              <button class="chip" data-subject="Biology" type="button">Biology</button>
-              <button class="chip" data-subject="Chemistry" type="button">Chemistry</button>
-              <button class="chip" data-subject="Physics" type="button">Physics</button>
-              <button class="chip" data-subject="English" type="button">English</button>
-            </div>
+            <div class="filter-chips" id="chips"></div>
           </div>
 
-          <section class="section">
-            <div id="resource-area">
-              <div class="empty-state">
-                <div class="empty-state__icon">
-                  <i class="fa-solid fa-book-open" aria-hidden="true"></i>
-                </div>
-                <h3 class="empty-state__title">No resources yet</h3>
-                <p class="empty-state__desc">
-                  Your school administrators will add books, textbooks, and study materials here.
-                </p>
-              </div>
-            </div>
-          </section>
+          <div class="library-stats" id="library-stats"></div>
+
+          <div id="library-content">
+            <div class="loading-skeleton">Loading library…</div>
+          </div>
 
         </div>
       </div>
     </main>
   </div>
 
+  <!-- Reader modal -->
+  <div class="reader-overlay" id="reader-overlay">
+    <div class="reader">
+      <div class="reader__head">
+        <div style="min-width:0;flex:1">
+          <h3 class="reader__title" id="reader-title">Book</h3>
+          <span class="reader__sub" id="reader-sub">—</span>
+        </div>
+        <div class="reader__actions">
+          <a id="reader-download" href="#" title="Download"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
+          <a id="reader-open" href="#" target="_blank" rel="noopener noreferrer" title="Open in new tab"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+          <button id="reader-close" type="button" title="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="reader__body" id="reader-body">
+        <div class="reader__loading">Loading book…</div>
+      </div>
+      <div class="reader__nav" id="reader-nav" style="display:none">
+        <button id="reader-prev" type="button"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+        <span class="reader__location" id="reader-location">—</span>
+        <button id="reader-next" type="button">Next <i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
 <script src="assets/shell.js"></script>
 <script>
   (function () {
@@ -226,6 +164,24 @@
     var allDocs = [];
     var activeSubject = 'all';
     var searchTerm = '';
+    var isAdmin = false;
+
+    var CATEGORY_META = {
+      'Mathematics': { icon: 'fa-square-root-variable', order: 1 },
+      'Physics':     { icon: 'fa-atom',                 order: 2 },
+      'Chemistry':   { icon: 'fa-flask-vial',           order: 3 },
+      'Biology':     { icon: 'fa-dna',                  order: 4 },
+      'Astronomy':   { icon: 'fa-star',                 order: 5 },
+      'Science':     { icon: 'fa-microscope',           order: 6 },
+      'Geography':   { icon: 'fa-earth-africa',         order: 7 },
+      'History':     { icon: 'fa-landmark',             order: 8 },
+      'Literature':  { icon: 'fa-feather',              order: 9 },
+      'English':     { icon: 'fa-book',                 order: 10 },
+      'Economics':   { icon: 'fa-chart-line',           order: 11 },
+      'Philosophy':  { icon: 'fa-brain',                order: 12 },
+      'Technology':  { icon: 'fa-microchip',            order: 13 },
+      'Other':       { icon: 'fa-book-open',            order: 99 }
+    };
 
     function esc(s) {
       return String(s == null ? '' : s)
@@ -233,97 +189,394 @@
         .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    async function loadDocs() {
-      var res = await fetch('/api/library', { credentials: 'include' });
-      if (res.status === 401) { window.location.href = 'index.html'; return; }
-      if (!res.ok) return;
-      var data = await res.json();
-      allDocs = data.documents || [];
-      render();
+    function getCategory(doc) {
+      var subject = (doc.subject || '').trim();
+      if (!subject) return 'Other';
+      var keys = Object.keys(CATEGORY_META);
+      for (var i = 0; i < keys.length; i++) {
+        if (subject.toLowerCase() === keys[i].toLowerCase()) return keys[i];
+      }
+      return subject;
     }
 
-    function filtered() {
+    async function loadDocs() {
+      try {
+        var res = await fetch('/api/library', { credentials: 'include' });
+        if (res.status === 401) { window.location.href = 'index.html'; return; }
+        var data = await res.json();
+        allDocs = data.documents || [];
+        render();
+        renderStats();
+      } catch (_) {
+        document.getElementById('library-content').innerHTML =
+          '<div class="empty-state">' +
+            '<div class="empty-state__icon"><i class="fa-solid fa-triangle-exclamation"></i></div>' +
+            '<h3 class="empty-state__title">Could not load library</h3>' +
+            '<p class="empty-state__desc">Try refreshing the page.</p>' +
+          '</div>';
+      }
+    }
+
+    function filteredDocs() {
       return allDocs.filter(function (d) {
         if (activeSubject !== 'all') {
-          if ((d.subject || '').toLowerCase() !== activeSubject.toLowerCase()) return false;
+          if (getCategory(d).toLowerCase() !== activeSubject.toLowerCase()) return false;
         }
         if (!searchTerm) return true;
         var t = searchTerm.toLowerCase();
-        return (d.title || '').toLowerCase().includes(t)
-            || (d.subject || '').toLowerCase().includes(t)
-            || (d.author || '').toLowerCase().includes(t);
+        return (d.title || '').toLowerCase().indexOf(t) !== -1
+            || (d.subject || '').toLowerCase().indexOf(t) !== -1
+            || (d.author || '').toLowerCase().indexOf(t) !== -1;
       });
     }
 
-    function render() {
-      var area = document.getElementById('resource-area');
-      var list = filtered();
+    function renderChips() {
+      var chips = document.getElementById('chips');
+      var counts = {};
+      allDocs.forEach(function (d) {
+        var cat = getCategory(d);
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
 
-      if (!list.length) {
-        area.innerHTML =
+      var cats = Object.keys(counts).sort(function (a, b) {
+        var oa = (CATEGORY_META[a] && CATEGORY_META[a].order) || 50;
+        var ob = (CATEGORY_META[b] && CATEGORY_META[b].order) || 50;
+        if (oa !== ob) return oa - ob;
+        return a.localeCompare(b);
+      });
+
+      var html = '<button class="chip' + (activeSubject === 'all' ? ' is-active' : '') +
+                 '" data-subject="all" type="button">All (' + allDocs.length + ')</button>';
+      cats.forEach(function (cat) {
+        var active = activeSubject.toLowerCase() === cat.toLowerCase() ? ' is-active' : '';
+        html += '<button class="chip' + active + '" data-subject="' + esc(cat) + '" type="button">' +
+                esc(cat) + ' (' + counts[cat] + ')</button>';
+      });
+      chips.innerHTML = html;
+
+      chips.querySelectorAll('.chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          activeSubject = chip.getAttribute('data-subject');
+          render();
+        });
+      });
+    }
+
+    function renderStats() {
+      var wrap = document.getElementById('library-stats');
+      var html = '<span>' + allDocs.length + ' book' + (allDocs.length === 1 ? '' : 's') + ' available</span>';
+      if (isAdmin) {
+        html += '<button class="library-stats__sync" id="sync-btn" type="button">' +
+                  '<i class="fa-solid fa-rotate" aria-hidden="true"></i> Sync now' +
+                '</button>';
+      }
+      wrap.innerHTML = html;
+
+      var btn = document.getElementById('sync-btn');
+      if (btn) {
+        btn.addEventListener('click', async function () {
+          btn.disabled = true;
+          btn.classList.add('is-spinning');
+          btn.innerHTML = '<i class="fa-solid fa-rotate" aria-hidden="true"></i> Syncing…';
+          try {
+            await fetch('/api/admin/library/sync', { method: 'POST', credentials: 'include' });
+          } catch (_) {}
+          setTimeout(function () {
+            btn.disabled = false;
+            btn.classList.remove('is-spinning');
+            btn.innerHTML = '<i class="fa-solid fa-rotate" aria-hidden="true"></i> Sync now';
+            loadDocs();
+          }, 5000);
+        });
+      }
+    }
+
+    function renderBookCard(d) {
+      var isEpub = d.mime_type && d.mime_type.indexOf('epub') !== -1;
+      var isPdf  = d.mime_type && d.mime_type.indexOf('pdf') !== -1;
+      var coverIcon = isEpub ? 'fa-book' : isPdf ? 'fa-file-pdf' : 'fa-file-lines';
+
+      var metaParts = [];
+      if (d.author) metaParts.push(esc(d.author));
+      if (d.level)  metaParts.push(esc(d.level));
+
+      var readBtn = (isEpub || isPdf)
+        ? '<button class="btn btn-primary" data-read-id="' + d.id + '" type="button">' +
+            '<i class="fa-solid fa-book-open" aria-hidden="true"></i> <span>Read</span>' +
+          '</button>'
+        : '';
+
+      return (
+        '<div class="resource-card" data-id="' + d.id + '">' +
+          '<div class="resource-card__cover">' +
+            (d.subject ? '<span class="resource-card__subject">' + esc(d.subject) + '</span>' : '') +
+            '<i class="fa-solid ' + coverIcon + '" aria-hidden="true"></i>' +
+            '<a class="resource-card__quick-dl" href="/api/library/' + d.id + '/download" ' +
+               'title="Download" aria-label="Download ' + esc(d.title) + '">' +
+              '<i class="fa-solid fa-download" aria-hidden="true"></i>' +
+            '</a>' +
+          '</div>' +
+          '<div class="resource-card__body">' +
+            '<h3 class="resource-card__title">' + esc(d.title) + '</h3>' +
+            (metaParts.length
+              ? '<p class="resource-card__meta">' + metaParts.join(' · ') + '</p>'
+              : '') +
+            '<div class="resource-card__actions">' +
+              readBtn +
+              '<a class="btn btn-ghost" href="/api/library/' + d.id + '/download">' +
+                '<i class="fa-solid fa-download" aria-hidden="true"></i> <span>Download</span>' +
+              '</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
+    }
+
+    function render() {
+      renderChips();
+      var content = document.getElementById('library-content');
+      var list = filteredDocs();
+
+      if (!allDocs.length) {
+        content.innerHTML =
           '<div class="empty-state">' +
-            '<div class="empty-state__icon"><i class="fa-solid fa-book-open" aria-hidden="true"></i></div>' +
-            '<h3 class="empty-state__title">' +
-              (allDocs.length ? 'No matches' : 'No resources yet') +
-            '</h3>' +
-            '<p class="empty-state__desc">' +
-              (allDocs.length
-                ? 'Try a different subject or search term.'
-                : 'Your school administrators will add books and study materials here.') +
-            '</p>' +
+            '<div class="empty-state__icon"><i class="fa-solid fa-book-open"></i></div>' +
+            '<h3 class="empty-state__title">No resources yet</h3>' +
+            '<p class="empty-state__desc">The library is being filled automatically. Books will appear here as they are imported.</p>' +
+          '</div>';
+        return;
+      }
+      if (!list.length) {
+        content.innerHTML =
+          '<div class="empty-state">' +
+            '<div class="empty-state__icon"><i class="fa-solid fa-magnifying-glass"></i></div>' +
+            '<h3 class="empty-state__title">No matches</h3>' +
+            '<p class="empty-state__desc">Try a different subject or search term.</p>' +
           '</div>';
         return;
       }
 
-      area.innerHTML = '<div class="resource-grid">' + list.map(function (d) {
-        return (
-          '<div class="resource-card" data-id="' + d.id + '">' +
-            '<div class="resource-card__cover">' +
-              (d.subject ? '<span class="resource-card__subject">' + esc(d.subject) + '</span>' : '') +
-              '<i class="fa-solid fa-file-pdf" aria-hidden="true"></i>' +
-            '</div>' +
-            '<div class="resource-card__body">' +
-              '<h3 class="resource-card__title">' + esc(d.title) + '</h3>' +
-              '<p class="resource-card__meta">' +
-                (d.author ? esc(d.author) + ' · ' : '') +
-                (d.level ? esc(d.level) : '') +
-              '</p>' +
-              '<div class="resource-card__actions">' +
-                '<a class="btn btn-primary" href="/api/library/' + d.id + '/download">' +
-                  '<i class="fa-solid fa-download" aria-hidden="true"></i> Download' +
-                '</a>' +
+      var groups = {};
+      list.forEach(function (d) {
+        var cat = getCategory(d);
+        if (!groups[cat]) groups[cat] = [];
+        groups[cat].push(d);
+      });
+
+      var cats = Object.keys(groups).sort(function (a, b) {
+        var oa = (CATEGORY_META[a] && CATEGORY_META[a].order) || 50;
+        var ob = (CATEGORY_META[b] && CATEGORY_META[b].order) || 50;
+        if (oa !== ob) return oa - ob;
+        return a.localeCompare(b);
+      });
+
+      var html = '';
+      cats.forEach(function (cat) {
+        var icon = (CATEGORY_META[cat] && CATEGORY_META[cat].icon) || 'fa-book-open';
+        var books = groups[cat];
+        html +=
+          '<section class="category-section">' +
+            '<div class="category-header">' +
+              '<div class="category-header__left">' +
+                '<div class="category-header__icon"><i class="fa-solid ' + icon + '"></i></div>' +
+                '<h2 class="category-header__title">' + esc(cat) + '</h2>' +
               '</div>' +
+              '<span class="category-header__count">' + books.length + ' book' +
+                (books.length === 1 ? '' : 's') + '</span>' +
             '</div>' +
-          '</div>'
-        );
-      }).join('') + '</div>';
+            '<div class="resource-grid">' +
+              books.map(renderBookCard).join('') +
+            '</div>' +
+          '</section>';
+      });
+
+      content.innerHTML = html;
+
+      content.querySelectorAll('[data-read-id]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var id = btn.getAttribute('data-read-id');
+          var doc = allDocs.find(function (d) { return d.id === id; });
+          if (doc) openReader(doc);
+        });
+      });
     }
 
-    // Load user + admin CTA
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (data) {
-        if (data && data.user && data.user.role === 'admin') {
-          document.getElementById('admin-cta').style.display = 'flex';
-        }
-      })
-      .catch(function () {});
+    /* ---------- Reader ---------- */
+    var readerOverlay = document.getElementById('reader-overlay');
+    var readerBody = document.getElementById('reader-body');
+    var readerNav = document.getElementById('reader-nav');
+    var readerLocation = document.getElementById('reader-location');
+    var epubBook = null;
+    var epubRendition = null;
 
+    function openReader(doc) {
+      document.getElementById('reader-title').textContent = doc.title;
+      var subParts = [];
+      if (doc.author) subParts.push(doc.author);
+      if (doc.subject) subParts.push(doc.subject);
+      document.getElementById('reader-sub').textContent = subParts.join(' · ') || '—';
+
+      var dlUrl = '/api/library/' + doc.id + '/download';
+      var rdUrl = '/api/library/' + doc.id + '/read';
+      document.getElementById('reader-download').href = dlUrl;
+      document.getElementById('reader-open').href = rdUrl;
+
+      readerOverlay.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+
+      var mime = doc.mime_type || '';
+
+      if (mime.indexOf('epub') !== -1) {
+        if (window.ePub) {
+          loadEpub(rdUrl);
+        } else {
+          readerBody.innerHTML =
+            '<div class="reader__loading">' +
+              'The in-browser reader could not load.<br>' +
+              'You can still download the book and open it in any e-book app.<br><br>' +
+              '<a class="btn btn-primary" href="' + dlUrl + '" style="display:inline-flex">' +
+                '<i class="fa-solid fa-download"></i> Download this book' +
+              '</a>' +
+            '</div>';
+          readerNav.style.display = 'none';
+        }
+      } else if (mime.indexOf('pdf') !== -1) {
+        loadPdf(rdUrl);
+      } else if (mime.indexOf('text/plain') !== -1) {
+        loadText(rdUrl);
+      } else {
+        readerBody.innerHTML =
+          '<div class="reader__loading">' +
+            'This file type cannot be read in the browser.<br><br>' +
+            '<a class="btn btn-primary" href="' + dlUrl + '" style="display:inline-flex">' +
+              '<i class="fa-solid fa-download"></i> Download' +
+            '</a>' +
+          '</div>';
+        readerNav.style.display = 'none';
+      }
+    }
+
+    function closeReader() {
+      readerOverlay.classList.remove('is-open');
+      document.body.style.overflow = '';
+      if (epubRendition) {
+        try { epubRendition.destroy(); } catch (_) {}
+        epubRendition = null;
+      }
+      if (epubBook) {
+        try { epubBook.destroy(); } catch (_) {}
+        epubBook = null;
+      }
+      readerBody.innerHTML = '';
+    }
+
+    async function loadEpub(url) {
+      readerBody.innerHTML = '<div class="reader__loading">Loading book…</div>';
+      readerNav.style.display = 'none';
+
+      var arrayBuffer;
+      try {
+        var res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        arrayBuffer = await res.arrayBuffer();
+      } catch (err) {
+        readerBody.innerHTML = '<div class="reader__loading">Could not load EPUB: ' + esc(err.message) + '</div>';
+        return;
+      }
+
+      try {
+        readerBody.innerHTML = '<div id="epub-viewer" style="width:100%;height:100%"></div>';
+
+        // Pass the ArrayBuffer directly — EPUB.js reads the ZIP internally
+        epubBook = window.ePub(arrayBuffer);
+
+        epubRendition = epubBook.renderTo('epub-viewer', {
+          width: '100%',
+          height: '100%',
+          spread: 'auto',
+          flow: 'paginated',
+        });
+
+        readerNav.style.display = '';
+        readerLocation.textContent = '—';
+        document.getElementById('reader-prev').disabled = false;
+        document.getElementById('reader-next').disabled = false;
+
+        await epubRendition.display();
+
+        try {
+          await epubBook.ready;
+          await epubBook.locations.generate(1600);
+        } catch (_) {}
+
+        epubRendition.on('relocated', function (loc) {
+          var start = loc && loc.start ? loc.start : null;
+          if (start && epubBook.locations && epubBook.locations.length() > 0) {
+            try {
+              var pct = Math.round(epubBook.locations.percentageFromCfi(start.cfi) * 100);
+              readerLocation.textContent = pct + '%';
+            } catch (_) {
+              readerLocation.textContent = '—';
+            }
+          }
+        });
+      } catch (err) {
+        readerBody.innerHTML = '<div class="reader__loading">Could not render EPUB: ' + esc(err.message) + '</div>';
+      }
+    }
+
+    function loadPdf(url) {
+      readerBody.innerHTML = '<iframe src="' + url + '" title="PDF"></iframe>';
+      readerNav.style.display = 'none';
+    }
+
+    function loadText(url) {
+      fetch(url, { credentials: 'include' })
+        .then(function (r) { return r.text(); })
+        .then(function (txt) {
+          readerBody.innerHTML = '<pre style="white-space:pre-wrap;padding:32px;font-family:var(--font-body);line-height:1.7;max-width:800px;margin:0 auto;background:var(--white);min-height:100%;overflow-y:auto">' +
+            esc(txt) + '</pre>';
+          readerNav.style.display = 'none';
+        })
+        .catch(function () {
+          readerBody.innerHTML = '<div class="reader__loading">Could not load text file.</div>';
+        });
+    }
+
+    document.getElementById('reader-close').addEventListener('click', closeReader);
+    readerOverlay.addEventListener('click', function (e) {
+      if (e.target === readerOverlay) closeReader();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (!readerOverlay.classList.contains('is-open')) return;
+      if (e.key === 'Escape') closeReader();
+      if (e.key === 'ArrowRight' && epubRendition) epubRendition.next();
+      if (e.key === 'ArrowLeft'  && epubRendition) epubRendition.prev();
+    });
+    document.getElementById('reader-prev').addEventListener('click', function () {
+      if (epubRendition) epubRendition.prev();
+    });
+    document.getElementById('reader-next').addEventListener('click', function () {
+      if (epubRendition) epubRendition.next();
+    });
+
+    // Search
     document.getElementById('search').addEventListener('input', function (e) {
       searchTerm = e.target.value;
       render();
     });
 
-    document.querySelectorAll('#chips .chip').forEach(function (chip) {
-      chip.addEventListener('click', function () {
-        document.querySelectorAll('#chips .chip').forEach(function (c) { c.classList.remove('is-active'); });
-        chip.classList.add('is-active');
-        activeSubject = chip.getAttribute('data-subject');
-        render();
-      });
-    });
-
-    loadDocs();
+    // Admin check + load
+    fetch('/api/auth/me', { credentials: 'include' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data && data.user && data.user.role === 'admin') {
+          isAdmin = true;
+          document.getElementById('admin-cta').style.display = 'flex';
+        }
+        loadDocs();
+      })
+      .catch(function () { loadDocs(); });
   })();
 </script>
 </body>

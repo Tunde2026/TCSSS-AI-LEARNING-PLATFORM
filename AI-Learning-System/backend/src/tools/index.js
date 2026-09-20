@@ -8,6 +8,8 @@ require('./notes');
 require('./practice');
 require('./visualization');
 require('./studyplans');
+require('./imagegen');
+require('./imagesearch');
 
 module.exports = {
   registry,

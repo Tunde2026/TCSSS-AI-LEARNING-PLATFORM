@@ -175,6 +175,29 @@
     .lib-row { grid-template-columns: 32px 1fr auto; }
     .lib-row .lib-cell-hide { display: none; }
   }
+    .resource-card__cover {
+    position: relative;
+  }
+  .resource-card__quick-dl {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: rgba(17,16,74,0.7);
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity var(--transition), background var(--transition);
+    backdrop-filter: blur(6px);
+  }
+  .resource-card:hover .resource-card__quick-dl { opacity: 1; }
+  .resource-card__quick-dl:hover { background: var(--red); }
 </style>
 </head>
 <body>

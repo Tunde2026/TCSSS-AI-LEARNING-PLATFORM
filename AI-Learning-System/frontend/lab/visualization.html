@@ -6,8 +6,9 @@
 <title>Visualization — Studying Lab</title>
 <link rel="stylesheet" href="../assets/shell.css">
 <style>
-  .viz-inner { max-width: 900px; }
-
+  /* Wider content area — see shell.css for the shared override */
+  .page-inner, .viz-inner, .fc-inner, .pr-inner, .sp-inner, .qh-inner, .exam-inner { max-width: 1440px; }
+  .viz-inner { max-width: 1440px; }
   .setup-card { padding: 28px; }
   .setup-field { margin-bottom: 18px; }
   .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -66,10 +67,7 @@
     place-items: center;
     margin-bottom: 16px;
   }
-  .viz-canvas svg {
-    max-width: 100%;
-    height: auto;
-  }
+  .viz-canvas svg { max-width: 100%; height: auto; }
 
   .viz-explanation {
     background: #EEF3FB;
@@ -98,9 +96,67 @@
     line-height: 1.5;
   }
 
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    width: 100%;
+  }
+  .photo-cell {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--blush);
+  }
+  .photo-cell img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    transition: transform 300ms var(--ease-out);
+  }
+  .photo-cell:hover img { transform: scale(1.05); }
+  .photo-cell__credit {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+    color: var(--white);
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    padding: 20px 8px 5px;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+  }
+  .photo-cell__download {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(17,16,74,0.75);
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    font-size: 0.85rem;
+    opacity: 0;
+    transition: opacity var(--transition), background var(--transition), transform 120ms var(--ease);
+    z-index: 3;
+    backdrop-filter: blur(6px);
+  }
+  .photo-cell:hover .photo-cell__download { opacity: 1; }
+  .photo-cell__download:hover { background: var(--red); transform: scale(1.08); }
+  .photo-cell__download:active { transform: scale(0.95); }
+
   @media (max-width: 860px) {
     .setup-row { grid-template-columns: 1fr; }
     .viz-canvas { padding: 20px 12px; }
+  }
+  @media (max-width: 640px) {
+    .photo-cell__download { opacity: 1; }
   }
 </style>
 </head>
@@ -116,7 +172,7 @@
             <div>
               <h1 class="page-header__title">Visualization</h1>
               <p class="page-header__sub">
-                Turn any topic into a diagram — flowcharts, sequences, mindmaps, and more.
+                Turn any topic into a diagram, a real photo, or an AI-generated illustration.
               </p>
             </div>
           </header>
@@ -129,7 +185,7 @@
                        placeholder="e.g. Mitosis, Water cycle, Photosynthesis, Newton's laws">
               </div>
               <div class="setup-field">
-                <label class="label" for="kind">Diagram type</label>
+                <label class="label" for="kind">Visualization type</label>
                 <select class="input" id="kind">
                   <option value="">Auto (AI chooses)</option>
                   <option value="flowchart">Flowchart</option>
@@ -138,12 +194,14 @@
                   <option value="class">Class diagram</option>
                   <option value="state">State diagram</option>
                   <option value="timeline">Timeline</option>
+                  <option value="__generate__">🎨 AI-generated image</option>
+                  <option value="__search__">📷 Real photos from the web</option>
                 </select>
               </div>
               <div class="setup-actions">
                 <button class="btn btn-primary" id="gen-btn" type="button">
                   <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-                  Generate diagram
+                  Generate
                 </button>
               </div>
             </div>
@@ -152,7 +210,7 @@
           <div id="stage-generating" style="display:none">
             <div class="card generating">
               <div class="generating__spinner"></div>
-              <p class="generating__text">Generating your diagram…</p>
+              <p class="generating__text">Working on it…</p>
             </div>
           </div>
 
@@ -171,7 +229,7 @@
             <div class="viz-actions">
               <button class="btn btn-ghost" id="new-btn" type="button">
                 <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
-                New diagram
+                New
               </button>
               <button class="btn btn-ghost" id="copy-btn" type="button">
                 <i class="fa-solid fa-code" aria-hidden="true"></i>
@@ -179,7 +237,7 @@
               </button>
               <button class="btn btn-primary" id="download-btn" type="button">
                 <i class="fa-solid fa-download" aria-hidden="true"></i>
-                Download SVG
+                Download
               </button>
             </div>
           </div>
@@ -209,7 +267,6 @@
 
     var current = null;
 
-    // Initialize Mermaid with a safe default theme.
     if (window.mermaid) {
       window.mermaid.initialize({
         startOnLoad: false,
@@ -228,14 +285,8 @@
 
     function toast(msg, isError) {
       var t = document.createElement('div');
+      t.className = 'toast' + (isError ? ' toast--error' : '');
       t.textContent = msg;
-      t.style.cssText = [
-        'position:fixed','bottom:24px','left:50%','transform:translateX(-50%)',
-        'background:' + (isError ? 'var(--deep-red)' : 'var(--navy)'),
-        'color:#fff','padding:12px 20px','border-radius:999px',
-        'font-family:var(--font-body)','font-size:0.9rem',
-        'box-shadow:0 8px 24px rgba(17,16,74,0.2)','z-index:300'
-      ].join(';');
       document.body.appendChild(t);
       setTimeout(function () { t.remove(); }, 2400);
     }
@@ -246,13 +297,119 @@
       return true;
     }
 
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function setHeader(title, kindLabel) {
+      document.getElementById('viz-title').textContent = title;
+      document.getElementById('viz-kind').textContent = kindLabel;
+    }
+
+    function resetCanvas() {
+      var canvas = document.getElementById('viz-canvas');
+      canvas.innerHTML = '';
+      canvas.style.display = 'grid';
+      document.getElementById('viz-error').style.display = 'none';
+      var expl = document.getElementById('viz-explanation');
+      expl.style.display = 'none';
+      expl.textContent = '';
+    }
+
+    function triggerDownload(blob, filename) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function downloadImageFromUrl(url, baseName) {
+      var name = String(baseName || 'image')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 40) || 'image';
+      var ext = (url.split('.').pop() || 'jpg').split('?')[0].toLowerCase();
+      if (ext.length > 5 || !/^[a-z]+$/.test(ext)) ext = 'jpg';
+
+      fetch(url, { credentials: 'omit' })
+        .then(function (r) {
+          if (!r.ok) throw new Error('fetch failed');
+          return r.blob();
+        })
+        .then(function (blob) {
+          triggerDownload(blob, name + '.' + ext);
+          toast('Downloading…');
+        })
+        .catch(function () {
+          window.open(url, '_blank', 'noopener');
+        });
+    }
+
     async function generate() {
       var topic = document.getElementById('topic').value.trim();
       if (!topic) { toast('Please enter a topic.', true); return; }
       var kind = document.getElementById('kind').value || null;
 
       showStage('generating');
+      document.querySelector('.generating__text').textContent = 'Working on it…';
 
+      if (kind === '__generate__') {
+        document.querySelector('.generating__text').textContent = 'Drawing your image…';
+        try {
+          var r = await fetch('/api/tools/imagegen/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ prompt: topic, model: 'flux', width: 1024, height: 1024 }),
+          });
+          var d = await r.json().catch(function () { return {}; });
+          if (!r.ok) {
+            toast(d.error || 'Could not generate image.', true);
+            showStage('setup');
+            return;
+          }
+          current = { kind: 'generated-image', title: topic, imageUrl: d.image.url };
+          renderGeneratedImage(current);
+          showStage('result');
+        } catch (_) {
+          toast('Cannot reach the server.', true);
+          showStage('setup');
+        }
+        return;
+      }
+
+      if (kind === '__search__') {
+        document.querySelector('.generating__text').textContent = 'Searching for photos…';
+        try {
+          var r2 = await fetch('/api/tools/imagesearch/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ query: topic, count: 12 }),
+          });
+          var d2 = await r2.json().catch(function () { return {}; });
+          if (!r2.ok) {
+            toast(d2.error || 'Could not search images.', true);
+            showStage('setup');
+            return;
+          }
+          current = { kind: 'search-results', title: topic, images: d2.images };
+          renderSearchResults(current);
+          showStage('result');
+        } catch (_) {
+          toast('Cannot reach the server.', true);
+          showStage('setup');
+        }
+        return;
+      }
+
+      document.querySelector('.generating__text').textContent = 'Generating your diagram…';
       try {
         var res = await fetch('/api/tools/visualization/generate', {
           method: 'POST',
@@ -267,7 +424,7 @@
           return;
         }
         current = data.visualization;
-        render(current);
+        await renderMermaid(current);
         showStage('result');
       } catch (_) {
         toast('Cannot reach the server.', true);
@@ -275,20 +432,15 @@
       }
     }
 
-    async function render(viz) {
-      document.getElementById('viz-title').textContent = viz.title || 'Diagram';
-      document.getElementById('viz-kind').textContent = viz.kind || 'flowchart';
+    async function renderMermaid(viz) {
+      resetCanvas();
+      setHeader(viz.title || 'Diagram', viz.kind || 'flowchart');
 
       var expl = document.getElementById('viz-explanation');
       if (viz.explanation) {
         expl.textContent = viz.explanation;
         expl.style.display = '';
-      } else {
-        expl.style.display = 'none';
       }
-
-      var errBox = document.getElementById('viz-error');
-      errBox.style.display = 'none';
 
       var canvas = document.getElementById('viz-canvas');
       canvas.innerHTML = '<div style="color:var(--slate);font-size:0.9rem">Rendering…</div>';
@@ -299,23 +451,67 @@
         canvas.innerHTML = result.svg;
       } catch (err) {
         canvas.innerHTML = '';
+        var errBox = document.getElementById('viz-error');
         errBox.style.display = '';
         errBox.innerHTML =
           '<strong>Could not render this diagram.</strong><br>' +
-          'The AI produced invalid Mermaid syntax. You can try generating again, ' +
-          'or copy the code below and fix it in a Mermaid editor.<br><br>' +
+          'The AI produced invalid Mermaid syntax.<br><br>' +
           '<pre style="background:#fff;padding:10px;border-radius:8px;overflow-x:auto;font-size:0.78rem;margin:0">' +
           escapeHtml(viz.mermaid) + '</pre>';
       }
     }
 
-    function escapeHtml(s) {
-      return String(s)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    function renderGeneratedImage(v) {
+      resetCanvas();
+      setHeader(v.title, 'AI image');
+      var canvas = document.getElementById('viz-canvas');
+      canvas.style.display = 'block';
+      canvas.innerHTML = '<img src="' + v.imageUrl + '" alt="' + escapeHtml(v.title) + '" ' +
+        'style="max-width:100%;border-radius:16px;box-shadow:var(--shadow-lg);display:block;margin:0 auto">';
+    }
+
+    function renderSearchResults(v) {
+      resetCanvas();
+      setHeader(v.title, 'photos');
+      var canvas = document.getElementById('viz-canvas');
+      canvas.style.display = 'block';
+
+      if (!v.images || !v.images.length) {
+        canvas.innerHTML = '<div style="color:var(--slate);padding:20px;text-align:center">No photos found. Try a different topic.</div>';
+        return;
+      }
+
+      canvas.innerHTML = '<div class="photo-grid">' + v.images.map(function (img, idx) {
+        var credit = img.author
+          ? '<div class="photo-cell__credit">Photo by ' + escapeHtml(img.author) + ' · Pexels</div>'
+          : '';
+        return (
+          '<div class="photo-cell" data-idx="' + idx + '">' +
+            '<a href="' + img.url + '" target="_blank" rel="noopener noreferrer" style="display:block">' +
+              '<img src="' + img.thumb + '" alt="' + escapeHtml(img.alt || '') + '" loading="lazy">' +
+            '</a>' +
+            '<button class="photo-cell__download" data-idx="' + idx + '" type="button" title="Download photo" aria-label="Download photo">' +
+              '<i class="fa-solid fa-download" aria-hidden="true"></i>' +
+            '</button>' +
+            credit +
+          '</div>'
+        );
+      }).join('') + '</div>';
+
+      canvas.querySelectorAll('.photo-cell__download').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var idx = parseInt(btn.getAttribute('data-idx'), 10);
+          var img = v.images[idx];
+          if (!img) return;
+          downloadImageFromUrl(img.url, img.alt || img.author || 'photo');
+        });
+      });
     }
 
     function copyCode() {
-      if (!current) return;
+      if (!current || !current.mermaid) { toast('Nothing to copy.', true); return; }
       navigator.clipboard.writeText(current.mermaid).then(function () {
         toast('Mermaid code copied.');
       }).catch(function () {
@@ -323,20 +519,37 @@
       });
     }
 
-    function downloadSVG() {
-      if (!current) return;
+    function downloadCurrent() {
+      if (!current) { toast('Nothing to download.', true); return; }
+
+      // Mermaid SVG
       var svg = document.querySelector('#viz-canvas svg');
-      if (!svg) { toast('Nothing to download.', true); return; }
-      var data = new XMLSerializer().serializeToString(svg);
-      var blob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = (current.title || 'diagram').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.svg';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      if (svg) {
+        var data = new XMLSerializer().serializeToString(svg);
+        var blob = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
+        triggerDownload(blob, (current.title || 'diagram').replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.svg');
+        toast('Downloading diagram…');
+        return;
+      }
+
+      // Single generated image
+      if (current.kind === 'generated-image' && current.imageUrl) {
+        downloadImageFromUrl(current.imageUrl, current.title || 'image');
+        return;
+      }
+
+      // Search results — download all
+      if (current.kind === 'search-results' && current.images && current.images.length) {
+        toast('Downloading ' + current.images.length + ' photos…');
+        current.images.forEach(function (img, i) {
+          setTimeout(function () {
+            downloadImageFromUrl(img.url, (current.title || 'photo') + '-' + (i + 1));
+          }, i * 300);
+        });
+        return;
+      }
+
+      toast('Nothing to download.', true);
     }
 
     document.getElementById('gen-btn').addEventListener('click', generate);
@@ -345,7 +558,7 @@
       showStage('setup');
     });
     document.getElementById('copy-btn').addEventListener('click', copyCode);
-    document.getElementById('download-btn').addEventListener('click', downloadSVG);
+    document.getElementById('download-btn').addEventListener('click', downloadCurrent);
 
     document.getElementById('topic').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); generate(); }

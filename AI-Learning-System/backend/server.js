@@ -5,6 +5,7 @@
 // ============================================================
 
 const path      = require('path');
+const fs        = require('fs');
 const express   = require('express');
 const helmet    = require('helmet');
 const cors      = require('cors');
@@ -21,16 +22,40 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-core.settings.loadFromDb().catch(() => {});
-ai.keyStore.loadAndApply().catch(() => {});
+// ---- Boot-time caches (non-blocking) ----
+core.settings.loadFromDb().catch(function () {});
+ai.keyStore.loadAndApply().catch(function () {});
 
-try { require('./src/library/storage').ensureUploadDirs(); } catch (_) {}
+// ---- Ensure upload folders exist ----
+try {
+  const storage = require('./src/library/storage');
+  if (storage && storage.ensureUploadDirs) storage.ensureUploadDirs();
+} catch (_) {}
 
+try {
+  fs.mkdirSync(path.join(__dirname, '..', 'uploads', 'generated'), { recursive: true });
+  fs.mkdirSync(path.join(__dirname, '..', 'uploads', 'chat'), { recursive: true });
+} catch (_) {}
+
+// ---- Start library auto-fetcher (background job) ----
+try {
+  const fetcher = require('./src/library/fetcher');
+  if (fetcher && fetcher.start) fetcher.start();
+} catch (err) {
+  logger.warn('Fetcher failed to start: ' + err.message);
+}
+
+// ---- Security headers ----
 app.use(helmet({ contentSecurityPolicy: false }));
+
+// ---- CORS ----
 app.use(cors({ origin: true, credentials: true }));
+
+// ---- Body parsing ----
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
+// ---- Sessions (PostgreSQL-backed) ----
 app.use(session({
   store: new PgSession({
     conString: config.db.url,
@@ -49,38 +74,40 @@ app.use(session({
   },
 }));
 
+// ---- Attach req.user if logged in ----
 app.use(auth.attachUser);
 
-app.use((req, res, next) => {
+// ---- Request logger ----
+app.use(function (req, res, next) {
   const start = Date.now();
-  res.on('finish', () => {
+  res.on('finish', function () {
     const ms = Date.now() - start;
-    logger.info(`${req.method} ${req.originalUrl} → ${res.statusCode} (${ms}ms)`);
+    logger.info(req.method + ' ' + req.originalUrl + ' → ' + res.statusCode + ' (' + ms + 'ms)');
   });
   next();
 });
 
 // ---- Health ----
-app.get('/health', (req, res) => {
+app.get('/health', function (req, res) {
   res.json({ status: 'ok', env: config.nodeEnv, time: new Date().toISOString() });
 });
 
-app.get('/health/db', async (req, res) => {
+app.get('/health/db', async function (req, res) {
   try {
     const now = await db.ping();
     res.json({ status: 'ok', db_time: now });
   } catch (err) {
-    logger.error('DB health check failed:', err.message);
+    logger.error('DB health check failed: ' + err.message);
     res.status(503).json({ status: 'db_unavailable', error: err.message });
   }
 });
 
 // ---- Platform info (used by login page + sidebar) ----
-app.get('/api/platform/info', async (req, res, next) => {
+app.get('/api/platform/info', async function (req, res, next) {
   try {
     const name = await core.settings.getSetting('platform.name', 'AI Learning Platform');
     const logoUrl = await core.settings.getSetting('platform.logo_url', '');
-    res.json({ name, logoUrl });
+    res.json({ name: name, logoUrl: logoUrl });
   } catch (err) { next(err); }
 });
 
@@ -89,13 +116,14 @@ app.use('/api', core.apiLimiter);
 app.use('/api/auth',          auth.router);
 app.use('/api/ai',            ai.router);
 app.use('/api/conversations', require('./src/conversations').router);
+app.use('/api/chat',          require('./src/chat').router);
 app.use('/api/tools',         require('./src/tools').router);
 app.use('/api/agents',        require('./src/agents').router);
 app.use('/api/library',       require('./src/library').router);
 app.use('/api/voice',         require('./src/voice').router);
 app.use('/api/admin',         require('./src/admin').router);
 
-// ---- Static uploads ----
+// ---- Static uploads (logos, documents, generated images) ----
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
   maxAge: '1d',
   fallthrough: true,
@@ -104,19 +132,20 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
 // ---- Static frontend ----
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-// ---- 404 for API ----
-app.use('/api', (req, res) => {
+// ---- 404 for unknown API routes ----
+app.use('/api', function (req, res) {
   res.status(404).json({ error: 'Not found' });
 });
 
-// ---- Error handler ----
+// ---- Error handler (must be LAST) ----
 app.use(core.errorHandler);
 
-app.listen(config.port, () => {
-  logger.info(`Server listening on http://localhost:${config.port}`);
-  logger.info(`Environment: ${config.nodeEnv}`);
+// ---- Boot ----
+app.listen(config.port, function () {
+  logger.info('Server listening on http://localhost:' + config.port);
+  logger.info('Environment: ' + config.nodeEnv);
   if (config.nodeEnv !== 'production') {
-    logger.info(`Frontend:  http://localhost:${config.port}/`);
+    logger.info('Frontend:  http://localhost:' + config.port + '/');
   }
 });
 

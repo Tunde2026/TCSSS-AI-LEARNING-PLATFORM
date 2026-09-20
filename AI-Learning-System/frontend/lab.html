@@ -6,10 +6,10 @@
 <title>Studying Lab — AI Learning Platform</title>
 <link rel="stylesheet" href="assets/shell.css">
 <style>
-  .tool-grid {
+   .tool-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
   }
   .tool-card {
     display: flex;
@@ -137,6 +137,14 @@
                 <p class="tool-card__desc">Timed practice under real exam conditions.</p>
               </button>
 
+              <button class="tool-card" type="button" data-tool="history">
+                <div class="tool-card__icon tool-card__icon--gold">
+                  <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Quiz History</h3>
+                <p class="tool-card__desc">Review every quiz you have taken. Retake any of them.</p>
+              </button>
+
               <button class="tool-card" type="button" data-tool="mistakes">
                 <div class="tool-card__icon tool-card__icon--navy">
                   <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
@@ -179,7 +187,8 @@
       practice:      'lab/practice.html',
       visualization: 'lab/visualization.html',
       studyplans:    'lab/study-plans.html',
-      exam:          'lab/exam.html'
+      exam:          'lab/exam.html',
+      history:       'lab/quiz-history.html'
     };
 
     document.querySelectorAll('.tool-card[data-tool]').forEach(function (card) {

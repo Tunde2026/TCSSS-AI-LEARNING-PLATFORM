@@ -591,4 +591,26 @@ router.post('/backup/import', requireAdmin, backupUpload.single('backup'), async
   } catch (err) { next(err); }
 });
 
+// ---------- Manual library sync ----------
+
+router.post('/library/sync', requireAdmin, async (req, res, next) => {
+  try {
+    const fetcher = require('../library/fetcher');
+    if (fetcher.isRunning && fetcher.isRunning()) {
+      return res.json({ ok: true, running: true, message: 'Sync already in progress.' });
+    }
+    fetcher.runOnce().catch(function () {});
+    res.json({ ok: true, running: true, message: 'Sync started in background.' });
+  } catch (err) { next(err); }
+});
+
+router.get('/library/sync-status', requireAdmin, async (req, res, next) => {
+  try {
+    const fetcher = require('../library/fetcher');
+    const { pool } = require('../db');
+    const r = await pool.query('SELECT COUNT(*)::int AS n FROM library_documents');
+    res.json({ running: fetcher.isRunning(), total_books: r.rows[0].n });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

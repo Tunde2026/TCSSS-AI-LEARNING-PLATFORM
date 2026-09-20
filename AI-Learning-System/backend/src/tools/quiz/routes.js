@@ -75,4 +75,25 @@ router.delete('/:id', requireLogin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.get('/history/mine', requireLogin, async (req, res, next) => {
+  try {
+    const { pool } = require('../../db');
+    const { rows } = await pool.query(
+      `SELECT
+          qa.id AS attempt_id,
+          qa.score, qa.total, qa.is_exam, qa.time_taken_seconds,
+          qa.completed_at,
+          q.id AS quiz_id,
+          q.title, q.topic, q.subject, q.difficulty
+        FROM quiz_attempts qa
+        JOIN quizzes q ON q.id = qa.quiz_id
+       WHERE qa.user_id = $1
+       ORDER BY qa.completed_at DESC
+       LIMIT 100`,
+      [req.user.id]
+    );
+    res.json({ attempts: rows });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
