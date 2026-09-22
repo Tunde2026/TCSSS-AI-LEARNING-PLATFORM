@@ -491,7 +491,7 @@
     sectionName = 'Settings';
   }
 
-  if (path === '/' || path.endsWith('/index.html')) return;
+  if (path === '/' || path.endsWith('/index.html') || path.endsWith('/chat.html')) return;
 
   var open = false;
   var messages = [];

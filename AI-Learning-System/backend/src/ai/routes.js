@@ -5,12 +5,15 @@ const { route } = require('./router');
 const db      = require('../db');
 const logger  = require('../core/logger');
 const { requireLogin } = require('../auth');
-
 const retrieval   = require('../library/retrieval');
 const websearch   = require('../tools/websearch/service');
 const attachments = require('../chat/attachments');
 const imagegen    = require('../tools/imagegen/service');
 const imagesearch = require('../tools/imagesearch/service');
+
+// --- NEW: Tool service imports ---
+const quizService      = require('../tools/quiz/service');
+const flashcardService = require('../tools/flashcards/service');
 
 function needsWebSearch(text) {
   const t = String(text || '').toLowerCase();
@@ -25,8 +28,8 @@ function needsWebSearch(text) {
 function detectGenerateIntent(text) {
   const t = String(text || '').toLowerCase();
   const verbs = ['draw', 'generate image', 'generate an image', 'create image',
-                 'create an image', 'make an image', 'make a picture',
-                 'illustrate', 'picture of', 'image of', 'render'];
+    'create an image', 'make an image', 'make a picture',
+    'illustrate', 'picture of', 'image of', 'render'];
   const nouns = ['image', 'picture', 'illustration', 'drawing', 'artwork', 'diagram'];
   return verbs.some(function (v) { return t.indexOf(v) !== -1; }) &&
          nouns.some(function (n) { return t.indexOf(n) !== -1; });
@@ -35,8 +38,8 @@ function detectGenerateIntent(text) {
 function detectSearchIntent(text) {
   const t = String(text || '').toLowerCase();
   const verbs = ['show me a photo', 'show me photos', 'find a photo', 'find photos',
-                 'real photo', 'real picture', 'actual photo', 'actual picture',
-                 'photos of', 'pictures of', 'real images of'];
+    'real photo', 'real picture', 'actual photo', 'actual picture',
+    'photos of', 'pictures of', 'real images of'];
   return verbs.some(function (v) { return t.indexOf(v) !== -1; });
 }
 
@@ -47,6 +50,27 @@ function extractImagePrompt(text) {
     .replace(/\bfor me\b/gi, '')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+// --- NEW: Tool intent detection ---
+function detectQuizIntent(text) {
+  const t = String(text || '').toLowerCase();
+  return /(?:create|make|generate|give me|start|prepare|set up)\s+(?:a\s+)?(?:quiz|test|exam|assessment|questions)/i.test(t) ||
+         /(?:quiz|test|exam|questions)\s+(?:me|on|about|for)/i.test(t);
+}
+
+function detectFlashcardIntent(text) {
+  const t = String(text || '').toLowerCase();
+  return /(?:create|make|generate|give me)\s+(?:some\s+)?flashcards?/i.test(t) ||
+         /flashcards?\s+(?:for|on|about|covering)/i.test(t);
+}
+
+function extractTopic(text) {
+  return String(text || '')
+    .replace(/^(please\s+)?(?:can you\s+)?(?:create|make|generate|give me|start|prepare|set up)\s+(?:a\s+)?(?:quiz|test|exam|assessment|some\s+flashcards?|flashcards?|questions?)\s*(?:on|about|for|covering)?\s*/i, '')
+    .replace(/\b(?:quiz|test|exam|assessment|flashcards?|questions?)\s*(?:on|about|for|covering)\s*/i, '')
+    .replace(/[?.!]+$/, '')
+    .trim() || 'general knowledge';
 }
 
 function buildSystemContext(agent) {
@@ -75,7 +99,6 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       return res.status(400).json({ error: 'each message needs role and content' });
     }
   }
-
   const lastUser = messages.slice().reverse().find(function (m) { return m.role === 'user'; });
   if (!lastUser) {
     return res.status(400).json({ error: 'at least one user message is required' });
@@ -111,6 +134,9 @@ router.post('/chat', requireLogin, async (req, res, next) => {
     let gatewayMessages = messages.slice();
     const injectedSystemBlocks = [];
     const responseImages = [];
+    
+    // --- NEW: Tool results array ---
+    const toolResults = [];
 
     if (decision.agent) {
       const sys = buildSystemContext(decision.agent);
@@ -127,6 +153,62 @@ router.post('/chat', requireLogin, async (req, res, next) => {
     }
 
     const userText = lastUser.content;
+
+    // --- NEW: Quiz tool detection and execution ---
+    if (detectQuizIntent(userText)) {
+      const topic = extractTopic(userText);
+      try {
+        const quiz = await quizService.generate({
+          topic: topic,
+          count: 5,
+          difficulty: 'medium',
+          userId: req.user.id,
+          title: 'Quiz: ' + topic
+        });
+        if (quiz && quiz.id) {
+          toolResults.push({
+            type: 'quiz',
+            id: quiz.id,
+            title: quiz.title || 'Quiz on ' + topic,
+            topic: topic,
+            count: quiz.count || 5
+          });
+          injectedSystemBlocks.push(
+            'SYSTEM ACTION: You have automatically generated a ' + (quiz.count || 5) +
+            '-question quiz on "' + topic + '". Tell the student the quiz is ready and they can click the card below to start it.'
+          );
+        }
+      } catch (err) {
+        logger.warn('[ai/chat] quiz generation failed: ' + err.message);
+      }
+    }
+
+    // --- NEW: Flashcard tool detection and execution ---
+    if (detectFlashcardIntent(userText)) {
+      const topic = extractTopic(userText);
+      try {
+        const deck = await flashcardService.generate({
+          topic: topic,
+          count: 10,
+          userId: req.user.id,
+          title: 'Flashcards: ' + topic
+        });
+        if (deck && deck.id) {
+          toolResults.push({
+            type: 'flashcards',
+            id: deck.id,
+            title: deck.title || 'Flashcards on ' + topic,
+            topic: topic,
+            count: deck.count || 10
+          });
+          injectedSystemBlocks.push(
+            'SYSTEM ACTION: You have automatically generated a flashcard deck on "' + topic + '". Tell the student it is ready below.'
+          );
+        }
+      } catch (err) {
+        logger.warn('[ai/chat] flashcard generation failed: ' + err.message);
+      }
+    }
 
     if (detectSearchIntent(userText) && imagesearch.isEnabled()) {
       const query = extractImagePrompt(userText) || userText;
@@ -244,7 +326,9 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       libraryUsed: libraryUsed,
       webSearch: searchMeta,
       images: responseImages.length ? responseImages : null,
+      tools: toolResults.length ? toolResults : null, // --- NEW: Send tools to frontend ---
     });
+
   } catch (err) {
     logger.error('[ai/chat] ' + err.message, err.attempts || []);
     if (err.message === 'REQUEST_REJECTED') {
