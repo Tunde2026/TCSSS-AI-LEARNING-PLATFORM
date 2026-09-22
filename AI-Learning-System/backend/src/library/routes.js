@@ -1,3 +1,19 @@
+// ============================================================
+// library/routes.js
+// ------------------------------------------------------------
+// Library endpoints.
+//   GET    /api/library                       (logged-in: approved docs)
+//   GET    /api/library/:id/download          (logged-in: download approved)
+//   GET    /api/library/:id/read              (logged-in: read inline)
+//   GET    /api/library/admin                 (admin: all docs)
+//   POST   /api/library/admin/upload          (admin: standard upload)
+//   POST   /api/library/admin/archive-headers (admin: get archive.org auth)
+//   POST   /api/library/admin/archive-confirm (admin: save archive.org record)
+//   PATCH  /api/library/admin/:id/approve
+//   POST   /api/library/admin/:id/reprocess
+//   DELETE /api/library/admin/:id
+// ============================================================
+
 const express = require('express');
 const multer  = require('multer');
 const fs      = require('fs');
@@ -32,17 +48,27 @@ router.get('/', requireLogin, async function (req, res, next) {
   catch (err) { next(err); }
 });
 
-router.get('/:id/read', requireLogin, function (req, res, next) {
-  return reader.streamBook(req, res, next);
-});
-
+// Download a resource
 router.get('/:id/download', requireLogin, async function (req, res, next) {
   try {
     const doc = await db.library.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (!doc.approved && req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-    if (!doc.storage_path || !fs.existsSync(doc.storage_path)) return res.status(404).json({ error: 'File missing' });
 
+    // Students can only download approved docs. Admins can download anything.
+    if (!doc.approved && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // If it's an archive.org link, redirect to it
+    if (doc.source_type === 'upload' && doc.external_id && doc.storage_path.startsWith('https://archive.org')) {
+      return res.redirect(doc.storage_path);
+    }
+
+    if (!doc.storage_path || !fs.existsSync(doc.storage_path)) {
+      return res.status(404).json({ error: 'File missing on server' });
+    }
+
+    // Robust filename handling for local downloads
     var originalName = doc.original_name || doc.filename || 'book';
     var ext = path.extname(originalName).toLowerCase();
     if (!ext) {
@@ -64,11 +90,17 @@ router.get('/:id/download', requireLogin, async function (req, res, next) {
   } catch (err) { next(err); }
 });
 
+// Read inline (no download prompt)
+router.get('/:id/read', requireLogin, function (req, res, next) {
+  return reader.streamBook(req, res, next);
+});
+
 router.get('/admin', requireAdmin, async function (req, res, next) {
   try { res.json({ documents: await db.library.listAll() }); }
   catch (err) { next(err); }
 });
 
+// Standard local upload (small files)
 router.post('/admin/upload', requireAdmin, upload.single('file'), async function (req, res, next) {
   try {
     const result = await service.saveUpload({
@@ -90,6 +122,89 @@ router.post('/admin/upload', requireAdmin, upload.single('file'), async function
   } catch (err) { next(err); }
 });
 
+// --- INTERNET ARCHIVE DIRECT UPLOAD ROUTES ---
+
+// 1. Generate secure upload URL and headers for the frontend
+router.post('/admin/archive-headers', requireAdmin, async function (req, res, next) {
+  try {
+    const accessKey = process.env.ARCHIVE_ACCESS_KEY;
+    const secretKey = process.env.ARCHIVE_SECRET_KEY;
+
+    if (!accessKey || !secretKey) {
+      return res.status(500).json({ error: 'Archive keys not configured on server.' });
+    }
+
+    const { filename, title } = req.body;
+    if (!filename) return res.status(400).json({ error: 'Filename is required.' });
+
+    // Create a unique identifier for the book
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 7);
+    const identifier = 'tcsss-' + timestamp + '-' + random;
+    
+    // Clean filename for URL
+    const cleanFilename = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const uploadUrl = 'https://s3.us.archive.org/' + identifier + '/' + cleanFilename;
+
+    // Generate the headers the frontend needs
+    const headers = {
+      'Authorization': 'LOW ' + accessKey + ':' + secretKey,
+      'x-archive-auto-make-bucket': '1',
+      'x-archive-meta-title': title || 'TCSSS Textbook',
+      'x-archive-meta-collection': 'opensource', 
+      'x-archive-meta-mediatype': 'texts',
+      'x-archive-meta-subject': 'tcsss; textbook; education',
+      'x-archive-meta-description': 'Uploaded via TCSSS AI Learning Platform'
+    };
+
+    res.json({ 
+      uploadUrl: uploadUrl, 
+      identifier: identifier, 
+      cleanFilename: cleanFilename,
+      headers: headers 
+    });
+
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 2. Confirm the upload finished and save to Database
+router.post('/admin/archive-confirm', requireAdmin, async function (req, res, next) {
+  try {
+    const { title, subject, author, archiveUrl, identifier, fileSize } = req.body;
+    
+    if (!title || !archiveUrl || !identifier) {
+      return res.status(400).json({ error: 'Missing required book details.' });
+    }
+
+    const query = `
+      INSERT INTO library_documents 
+      (title, subject, author, storage_path, approved, source_type, external_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *
+    `;
+    
+    const values = [
+      title, 
+      subject || null, 
+      author || null, 
+      archiveUrl,    // We save the public archive.org URL in storage_path
+      true,          // Auto-approved since admin uploaded it
+      'upload',      // source_type
+      identifier     // Save the archive item ID in external_id
+    ];
+
+    const result = await db.pool.query(query, values);
+
+    res.status(201).json({ document: result.rows[0] });
+
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Endpoints for approval and management
 router.patch('/admin/:id/approve', requireAdmin, async function (req, res, next) {
   try {
     const approved = Boolean(req.body && req.body.approved);
@@ -117,6 +232,7 @@ router.delete('/admin/:id', requireAdmin, async function (req, res, next) {
   } catch (err) { next(err); }
 });
 
+// Multer error handler (must be at the bottom)
 router.use(function (err, req, res, next) {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
