@@ -129,13 +129,44 @@
     text-align: center;
     cursor: pointer;
     transition: border-color var(--transition), background var(--transition);
+    position: relative;
   }
-  .file-input-wrap:hover { border-color: var(--gold); background: var(--blush); }
+  .file-input-wrap:hover, .file-input-wrap.drag-over { 
+    border-color: var(--gold); 
+    background: var(--blush); 
+  }
+  .file-input-wrap.drag-over {
+    border-color: var(--red);
+    background: #FBEFEF;
+    transform: scale(1.02);
+  }
   .file-input-wrap input { display: none; }
   .file-input-wrap i { font-size: 1.6rem; color: var(--slate); margin-bottom: 8px; display: block; }
   .file-input-wrap small { color: var(--slate); font-size: 0.78rem; }
   .file-name {
     margin-top: 10px; font-size: 0.82rem; color: var(--navy); font-weight: 500;
+  }
+  .file-list {
+    margin-top: 10px;
+    text-align: left;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+  .file-list-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--blush);
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+  }
+  .file-list-item .remove-file {
+    margin-left: auto;
+    cursor: pointer;
+    color: var(--red);
+    font-weight: bold;
   }
 
   .modal-overlay {
@@ -199,33 +230,47 @@
     text-align: center;
   }
 
+  /* Queue list for multiple files */
+  .upload-queue {
+    margin-top: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .queue-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--blush);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+  }
+  .queue-item__name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .queue-item__size {
+    color: var(--slate);
+    font-size: 0.78rem;
+  }
+  .queue-item__status {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-family: var(--font-ui);
+  }
+  .queue-item__status--pending { background: #FBF3E1; color: #B77700; }
+  .queue-item__status--uploading { background: #E3F2FD; color: #1565C0; }
+  .queue-item__status--done { background: #EAF7EE; color: #2F8F4A; }
+  .queue-item__status--error { background: #FDECEC; color: var(--deep-red); }
+
   @media (max-width: 900px) {
     .lib-row { grid-template-columns: 32px 1fr auto; }
     .lib-row .lib-cell-hide { display: none; }
   }
-    .resource-card__cover {
-    position: relative;
-  }
-  .resource-card__quick-dl {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    background: rgba(17,16,74,0.7);
-    color: var(--white);
-    border: none;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    font-size: 0.8rem;
-    opacity: 0;
-    transition: opacity var(--transition), background var(--transition);
-    backdrop-filter: blur(6px);
-  }
-  .resource-card:hover .resource-card__quick-dl { opacity: 1; }
-  .resource-card__quick-dl:hover { background: var(--red); }
 </style>
 </head>
 <body>
@@ -289,20 +334,20 @@
   <!-- Upload modal -->
   <div class="modal-overlay" id="upload-modal">
     <div class="modal">
-      <h3 class="modal__title">Upload resource</h3>
+      <h3 class="modal__title">Upload resources</h3>
       <p class="modal__sub">
-        PDF, DOCX, EPUB, or TXT. Large textbooks (up to 5GB) upload directly to cloud storage.
+        PDF, DOCX, EPUB, or TXT. Drag & drop multiple files. Large textbooks upload directly to cloud storage.
       </p>
 
       <div class="file-input-wrap" id="file-wrap">
-        <input type="file" id="file" accept=".pdf,.docx,.doc,.epub,.txt">
+        <input type="file" id="file" accept=".pdf,.docx,.doc,.epub,.txt" multiple>
         <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
-        <div><strong>Click to choose a file</strong></div>
-        <small>or drag and drop</small>
-        <div class="file-name" id="file-name" style="display:none"></div>
+        <div><strong>Click to choose files or drag & drop here</strong></div>
+        <small>Supports multiple files · PDF, DOCX, EPUB, TXT</small>
+        <div class="file-list" id="file-list"></div>
       </div>
 
-      <!-- Progress bar for large file uploads -->
+      <!-- Progress bar -->
       <div class="upload-progress-wrap" id="upload-progress-wrap">
         <div class="upload-progress-bar">
           <div class="upload-progress-bar-fill" id="upload-progress-fill"></div>
@@ -310,8 +355,11 @@
         <div class="upload-progress-text" id="upload-progress-text">Preparing upload...</div>
       </div>
 
+      <!-- Upload queue for multiple files -->
+      <div class="upload-queue" id="upload-queue" style="display:none"></div>
+
       <div style="margin-top:16px">
-        <label class="label" for="lib-title">Title</label>
+        <label class="label" for="lib-title">Title (for single file)</label>
         <input class="input" type="text" id="lib-title" placeholder="e.g. New School Chemistry">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
@@ -331,7 +379,7 @@
 
       <div class="modal__actions">
         <button class="btn btn-ghost" id="upload-cancel" type="button">Cancel</button>
-        <button class="btn btn-primary" id="upload-confirm" type="button">Upload</button>
+        <button class="btn btn-primary" id="upload-confirm" type="button">Upload All</button>
       </div>
     </div>
   </div>
@@ -358,6 +406,7 @@
     var searchTerm = '';
     var pendingDel = null;
     var selectedIds = {};
+    var selectedFiles = [];
 
     function esc(s) {
       return String(s == null ? '' : s)
@@ -384,13 +433,6 @@
       if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
       if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
       return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-    }
-
-    function processingLabel(status, chunkCount) {
-      if (status === 'ready')      return '<span style="color:#2F8F4A">' + chunkCount + ' chunks</span>';
-      if (status === 'processing') return '<span style="color:#B77700">processing…</span>';
-      if (status === 'failed')     return '<span style="color:var(--deep-red)">failed</span>';
-      return '<span style="color:var(--slate)">pending</span>';
     }
 
     async function guard() {
@@ -447,9 +489,7 @@
       var list = filtered();
 
       if (!list.length) {
-        wrap.innerHTML =
-          '<div style="padding:40px;text-align:center;color:var(--slate)">' +
-          'No documents match your filter.</div>';
+        wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--slate)">No documents match your filter.</div>';
         updateBulkBar();
         syncCheckAll();
         return;
@@ -457,8 +497,9 @@
 
       wrap.innerHTML = list.map(function (d) {
         var statusCls = 'status-pill status-pill--' + (d.status || 'pending');
-        var procCls   = 'status-pill status-pill--' + (d.processing_status || 'pending');
+        var procCls = 'status-pill status-pill--' + (d.processing_status || 'pending');
         var approved = d.approved;
+        var isArchive = d.storage_path && d.storage_path.startsWith('https://archive.org');
 
         return (
           '<div class="lib-row" data-id="' + d.id + '">' +
@@ -467,7 +508,8 @@
             '<div class="lib-row__title-wrap">' +
               '<div class="lib-row__title" data-title-id="' + d.id + '">' + esc(d.title) + '</div>' +
               '<div class="lib-row__sub">' +
-                esc(d.original_name) + ' · ' + fmtSize(Number(d.size_bytes)) +
+                (isArchive ? '<i class="fa-solid fa-cloud"></i> Cloud' : esc(d.original_name || '')) + 
+                ' · ' + fmtSize(Number(d.size_bytes || 0)) +
               '</div>' +
             '</div>' +
             '<div class="lib-cell-hide" style="font-size:0.85rem;color:var(--slate)">' +
@@ -475,21 +517,13 @@
             '</div>' +
             '<div class="lib-cell-hide"><span class="' + procCls + '">' +
               (d.processing_status || 'pending') +
-            '</span> <span style="font-size:0.75rem;color:var(--slate)">' +
-              (d.chunk_count || 0) + ' chunks</span></div>' +
+            '</span></div>' +
             '<div><span class="' + statusCls + '">' + (d.status || 'pending') + '</span></div>' +
             '<div class="row-actions">' +
               (approved
-                ? '<button data-action="reject" title="Unapprove" type="button">' +
-                    '<i class="fa-solid fa-eye-slash"></i></button>'
-                : '<button data-action="approve" title="Approve" type="button">' +
-                    '<i class="fa-solid fa-check"></i></button>') +
-              (d.processing_status === 'failed' || d.processing_status === 'pending'
-                ? '<button data-action="reprocess" title="Reprocess" type="button">' +
-                    '<i class="fa-solid fa-rotate-right"></i></button>'
-                : '') +
-              '<button class="danger" data-action="delete" title="Delete" type="button">' +
-                '<i class="fa-solid fa-trash"></i></button>' +
+                ? '<button data-action="reject" title="Unapprove" type="button"><i class="fa-solid fa-eye-slash"></i></button>'
+                : '<button data-action="approve" title="Approve" type="button"><i class="fa-solid fa-check"></i></button>') +
+              '<button class="danger" data-action="delete" title="Delete" type="button"><i class="fa-solid fa-trash"></i></button>' +
             '</div>' +
           '</div>'
         );
@@ -515,10 +549,9 @@
         row.querySelectorAll('[data-action]').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var action = btn.getAttribute('data-action');
-            if (action === 'approve')   setApproved(doc, true);
-            if (action === 'reject')    setApproved(doc, false);
-            if (action === 'reprocess') reprocess(doc);
-            if (action === 'delete')    promptDelete(doc);
+            if (action === 'approve') setApproved(doc, true);
+            if (action === 'reject') setApproved(doc, false);
+            if (action === 'delete') promptDelete(doc);
           });
         });
       });
@@ -527,7 +560,6 @@
       syncCheckAll();
     }
 
-    // ----- Inline rename -----
     function startRename(docId) {
       var el = document.querySelector('.lib-row__title[data-title-id="' + docId + '"]');
       if (!el) return;
@@ -567,7 +599,6 @@
       input.addEventListener('blur', commit);
     }
 
-    // ----- Actions -----
     async function setApproved(doc, approved) {
       var res = await fetch('/api/library/admin/' + doc.id + '/approve', {
         method: 'PATCH',
@@ -581,15 +612,6 @@
       if (i !== -1) docs[i] = data.document;
       renderRows();
       toast(approved ? 'Approved.' : 'Hidden from students.');
-    }
-
-    async function reprocess(doc) {
-      var res = await fetch('/api/library/admin/' + doc.id + '/reprocess', {
-        method: 'POST', credentials: 'include',
-      });
-      if (!res.ok) { toast('Could not reprocess.', true); return; }
-      toast('Reprocessing started. Refresh in ~30s.');
-      setTimeout(loadDocs, 8000);
     }
 
     function promptDelete(doc) {
@@ -613,17 +635,11 @@
       toast('Deleted.');
     }
 
-    // ----- Bulk -----
     async function runBulk(action) {
       var ids = Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; });
       if (!ids.length) return;
-      if (action === 'clear') {
-        selectedIds = {};
-        renderRows();
-        return;
-      }
+      if (action === 'clear') { selectedIds = {}; renderRows(); return; }
       if (action === 'delete' && !confirm('Delete ' + ids.length + ' document(s)?')) return;
-
       try {
         var res = await fetch('/api/admin/library/bulk', {
           method: 'POST',
@@ -639,13 +655,177 @@
       } catch (_) { toast('Network error.', true); }
     }
 
-    // ----- Upload -----
-    var selectedFile = null;
+    // ----- File Selection & Drag/Drop -----
+    function updateFileList() {
+      var listEl = document.getElementById('file-list');
+      if (!selectedFiles.length) {
+        listEl.innerHTML = '';
+        return;
+      }
+      listEl.innerHTML = selectedFiles.map(function (f, i) {
+        return '<div class="file-list-item">' +
+          '<i class="fa-solid fa-file-pdf" style="color:var(--red)"></i>' +
+          '<span>' + esc(f.name) + '</span>' +
+          '<span style="color:var(--slate);font-size:0.75rem">' + fmtSize(f.size) + '</span>' +
+          '<span class="remove-file" data-idx="' + i + '">✕</span>' +
+        '</div>';
+      }).join('');
 
+      listEl.querySelectorAll('.remove-file').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          selectedFiles.splice(parseInt(btn.getAttribute('data-idx')), 1);
+          updateFileList();
+        });
+      });
+    }
+
+    function addFiles(files) {
+      for (var i = 0; i < files.length; i++) {
+        selectedFiles.push(files[i]);
+      }
+      updateFileList();
+      // Auto-fill title if single file
+      if (selectedFiles.length === 1 && !document.getElementById('lib-title').value) {
+        document.getElementById('lib-title').value = selectedFiles[0].name.replace(/\.[^.]+$/, '');
+      }
+    }
+
+    // ----- Upload Logic -----
+    async function uploadToArchive(file, title, subject, author) {
+      var progressWrap = document.getElementById('upload-progress-wrap');
+      var progressFill = document.getElementById('upload-progress-fill');
+      var progressText = document.getElementById('upload-progress-text');
+      
+      progressWrap.classList.add('is-visible');
+      progressText.textContent = 'Preparing: ' + file.name;
+      
+      var headerResponse = await fetch('/api/library/admin/archive-headers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ filename: file.name, title: title })
+      });
+      
+      if (!headerResponse.ok) {
+        var err = await headerResponse.json();
+        throw new Error(err.error || 'Failed to get upload credentials');
+      }
+      
+      var headerData = await headerResponse.json();
+      
+      progressText.textContent = 'Uploading: ' + file.name;
+      
+      var xhr = new XMLHttpRequest();
+      xhr.upload.addEventListener('progress', function(e) {
+        if (e.lengthComputable) {
+          var percent = Math.round((e.loaded / e.total) * 100);
+          progressFill.style.width = percent + '%';
+          progressText.textContent = 'Uploading ' + file.name + '... ' + percent + '%';
+        }
+      });
+      
+      await new Promise(function(resolve, reject) {
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error('Upload failed: ' + xhr.status));
+        };
+        xhr.onerror = function() { reject(new Error('Network error')); };
+        xhr.open('PUT', headerData.uploadUrl);
+        Object.keys(headerData.headers).forEach(function(key) {
+          xhr.setRequestHeader(key, headerData.headers[key]);
+        });
+        xhr.send(file);
+      });
+      
+      progressText.textContent = 'Saving: ' + file.name;
+      
+      var archiveUrl = 'https://archive.org/download/' + headerData.identifier + '/' + headerData.cleanFilename;
+      
+      var confirmResponse = await fetch('/api/library/admin/archive-confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          title: title,
+          subject: subject,
+          author: author,
+          archiveUrl: archiveUrl,
+          identifier: headerData.identifier,
+          fileSize: file.size
+        })
+      });
+      
+      if (!confirmResponse.ok) {
+        var confirmErr = await confirmResponse.json();
+        throw new Error(confirmErr.error || 'Failed to save');
+      }
+      
+      return await confirmResponse.json();
+    }
+
+    async function submitUpload() {
+      if (!selectedFiles.length) { toast('Please choose files first.', true); return; }
+      
+      var btn = document.getElementById('upload-confirm');
+      btn.disabled = true;
+      btn.textContent = 'Uploading…';
+      
+      var subject = document.getElementById('lib-subject').value.trim();
+      var level = document.getElementById('lib-level').value.trim();
+      var author = document.getElementById('lib-author').value.trim();
+      var TEN_MB = 10 * 1024 * 1024;
+      var successCount = 0;
+      var failCount = 0;
+      
+      for (var i = 0; i < selectedFiles.length; i++) {
+        var file = selectedFiles[i];
+        var title = selectedFiles.length === 1 
+          ? document.getElementById('lib-title').value.trim() 
+          : file.name.replace(/\.[^.]+$/, '');
+        
+        if (!title) title = file.name;
+        
+        try {
+          if (file.size > TEN_MB) {
+            await uploadToArchive(file, title, subject, author);
+          } else {
+            var form = new FormData();
+            form.append('file', file);
+            form.append('title', title);
+            form.append('subject', subject);
+            form.append('level', level);
+            form.append('author', author);
+            
+            var res = await fetch('/api/library/admin/upload', {
+              method: 'POST', credentials: 'include', body: form
+            });
+            if (!res.ok) throw new Error('Upload failed');
+          }
+          successCount++;
+        } catch (err) {
+          failCount++;
+          console.error('Upload failed for ' + file.name + ':', err);
+        }
+      }
+      
+      btn.disabled = false;
+      btn.textContent = 'Upload All';
+      
+      if (successCount > 0) {
+        toast(successCount + ' file(s) uploaded successfully!');
+        closeUpload();
+        await loadDocs();
+      }
+      if (failCount > 0) {
+        toast(failCount + ' file(s) failed to upload.', true);
+      }
+    }
+
+    // ----- Modal Controls -----
     function openUpload() {
-      selectedFile = null;
-      document.getElementById('file').value = '';
-      document.getElementById('file-name').style.display = 'none';
+      selectedFiles = [];
+      updateFileList();
       document.getElementById('lib-title').value = '';
       document.getElementById('lib-subject').value = '';
       document.getElementById('lib-level').value = '';
@@ -653,201 +833,38 @@
       document.getElementById('upload-progress-wrap').classList.remove('is-visible');
       document.getElementById('upload-modal').classList.add('is-open');
     }
-    function closeUpload() { document.getElementById('upload-modal').classList.remove('is-open'); }
-
-    document.getElementById('file-wrap').addEventListener('click', function () {
-      document.getElementById('file').click();
-    });
-    document.getElementById('file').addEventListener('change', function (e) {
-      selectedFile = e.target.files[0] || null;
-      var nameEl = document.getElementById('file-name');
-      if (selectedFile) {
-        nameEl.textContent = selectedFile.name + ' (' + fmtSize(selectedFile.size) + ')';
-        nameEl.style.display = 'block';
-        if (!document.getElementById('lib-title').value) {
-          document.getElementById('lib-title').value = selectedFile.name.replace(/\.[^.]+$/, '');
-        }
-      } else {
-        nameEl.style.display = 'none';
-      }
-    });
-
-    // --- INTERNET ARCHIVE LARGE FILE UPLOAD ---
-    async function uploadToArchive(file, title, subject, author) {
-      var progressWrap = document.getElementById('upload-progress-wrap');
-      var progressFill = document.getElementById('upload-progress-fill');
-      var progressText = document.getElementById('upload-progress-text');
-      var uploadBtn = document.getElementById('upload-confirm');
-      
-      try {
-        // Show progress UI
-        progressWrap.classList.add('is-visible');
-        progressText.textContent = 'Preparing upload...';
-        uploadBtn.disabled = true;
-        
-        // Step 1: Get secure upload URL and headers from backend
-        var headerResponse = await fetch('/api/library/admin/archive-headers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            filename: file.name,
-            title: title
-          })
-        });
-        
-        if (!headerResponse.ok) {
-          var err = await headerResponse.json();
-          throw new Error(err.error || 'Failed to get upload credentials');
-        }
-        
-        var headerData = await headerResponse.json();
-        var uploadUrl = headerData.uploadUrl;
-        var identifier = headerData.identifier;
-        var cleanFilename = headerData.cleanFilename;
-        var headers = headerData.headers;
-        
-        // Step 2: Upload directly to Internet Archive with progress tracking
-        progressText.textContent = 'Uploading to cloud storage...';
-        
-        var xhr = new XMLHttpRequest();
-        
-        // Track upload progress
-        xhr.upload.addEventListener('progress', function(e) {
-          if (e.lengthComputable) {
-            var percent = Math.round((e.loaded / e.total) * 100);
-            progressFill.style.width = percent + '%';
-            progressText.textContent = 'Uploading... ' + percent + '% (' + fmtSize(e.loaded) + ' / ' + fmtSize(e.total) + ')';
-          }
-        });
-        
-        // Wait for upload to complete
-        await new Promise(function(resolve, reject) {
-          xhr.onload = function() {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve();
-            } else {
-              reject(new Error('Upload failed with status: ' + xhr.status));
-            }
-          };
-          xhr.onerror = function() {
-            reject(new Error('Network error during upload'));
-          };
-          
-          xhr.open('PUT', uploadUrl);
-          
-          // Add all the required headers
-          Object.keys(headers).forEach(function(key) {
-            xhr.setRequestHeader(key, headers[key]);
-          });
-          
-          // Send the file
-          xhr.send(file);
-        });
-        
-        // Step 3: Confirm upload and save to database
-        progressText.textContent = 'Saving to library...';
-        
-        var archiveUrl = 'https://archive.org/download/' + identifier + '/' + cleanFilename;
-        
-        var confirmResponse = await fetch('/api/library/admin/archive-confirm', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            title: title,
-            subject: subject,
-            author: author,
-            archiveUrl: archiveUrl,
-            identifier: identifier,
-            fileSize: file.size
-          })
-        });
-        
-        if (!confirmResponse.ok) {
-          var confirmErr = await confirmResponse.json();
-          throw new Error(confirmErr.error || 'Failed to save book to library');
-        }
-        
-        await confirmResponse.json();
-        
-        // Success!
-        progressFill.style.width = '100%';
-        progressText.textContent = '✓ Upload complete!';
-        
-        setTimeout(async function() {
-          progressWrap.classList.remove('is-visible');
-          uploadBtn.disabled = false;
-          closeUpload();
-          await loadDocs();
-          toast('Textbook uploaded successfully!');
-        }, 1500);
-        
-      } catch (err) {
-        console.error('Upload error:', err);
-        progressText.textContent = '✗ Upload failed: ' + err.message;
-        uploadBtn.disabled = false;
-        
-        setTimeout(function() {
-          progressWrap.classList.remove('is-visible');
-        }, 3000);
-        
-        toast('Upload failed: ' + err.message, true);
-      }
+    function closeUpload() { 
+      document.getElementById('upload-modal').classList.remove('is-open'); 
     }
 
-    async function submitUpload() {
-      if (!selectedFile) { toast('Please choose a file.', true); return; }
-      var title = document.getElementById('lib-title').value.trim();
-      if (!title) { toast('Please enter a title.', true); return; }
+    // ----- Wire Events -----
+    var fileWrap = document.getElementById('file-wrap');
+    var fileInput = document.getElementById('file');
 
-      var btn = document.getElementById('upload-confirm');
-      btn.disabled = true; 
-      btn.textContent = 'Uploading…';
+    fileWrap.addEventListener('click', function () { fileInput.click(); });
+    
+    fileInput.addEventListener('change', function (e) {
+      addFiles(e.target.files);
+      fileInput.value = '';
+    });
 
-      var subject = document.getElementById('lib-subject').value.trim();
-      var level = document.getElementById('lib-level').value.trim();
-      var author = document.getElementById('lib-author').value.trim();
-
-      // Check file size: if larger than 10MB, use Internet Archive direct upload
-      var TEN_MB = 10 * 1024 * 1024;
-      
-      if (selectedFile.size > TEN_MB) {
-        // Large file - use Internet Archive direct upload
-        await uploadToArchive(selectedFile, title, subject, author);
-      } else {
-        // Small file - use standard local upload
-        var form = new FormData();
-        form.append('file', selectedFile);
-        form.append('title', title);
-        form.append('subject', subject);
-        form.append('level', level);
-        form.append('author', author);
-
-        try {
-          var res = await fetch('/api/library/admin/upload', {
-            method: 'POST', credentials: 'include', body: form,
-          });
-          var data = await res.json().catch(function () { return {}; });
-          if (!res.ok) { 
-            toast(data.error || 'Upload failed.', true); 
-            btn.disabled = false;
-            btn.textContent = 'Upload';
-            return; 
-          }
-          closeUpload();
-          await loadDocs();
-          toast('Uploaded.');
-        } catch (err) {
-          toast('Upload failed: ' + err.message, true);
-        } finally {
-          btn.disabled = false; 
-          btn.textContent = 'Upload';
-        }
+    // Drag and drop
+    fileWrap.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      fileWrap.classList.add('drag-over');
+    });
+    fileWrap.addEventListener('dragleave', function (e) {
+      e.preventDefault();
+      fileWrap.classList.remove('drag-over');
+    });
+    fileWrap.addEventListener('drop', function (e) {
+      e.preventDefault();
+      fileWrap.classList.remove('drag-over');
+      if (e.dataTransfer.files.length) {
+        addFiles(e.dataTransfer.files);
       }
-    }
+    });
 
-    // ----- Wire -----
     document.getElementById('upload-btn').addEventListener('click', openUpload);
     document.getElementById('upload-cancel').addEventListener('click', closeUpload);
     document.getElementById('upload-confirm').addEventListener('click', submitUpload);

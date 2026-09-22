@@ -93,8 +93,25 @@ router.get('/:id/download', requireLogin, async function (req, res, next) {
 });
 
 // Read inline (no download prompt)
-router.get('/:id/read', requireLogin, function (req, res, next) {
-  return reader.streamBook(req, res, next);
+// Read inline (no download prompt)
+router.get('/:id/read', requireLogin, async function (req, res, next) {
+  try {
+    const doc = await db.library.findById(req.params.id);
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+
+    // Students can only read approved docs. Admins can read anything.
+    if (!doc.approved && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // If it's an archive.org link, redirect to it
+    if (doc.storage_path && doc.storage_path.startsWith('https://archive.org')) {
+      return res.redirect(doc.storage_path);
+    }
+
+    // Otherwise stream from local filesystem
+    return reader.streamBook(req, res, next);
+  } catch (err) { next(err); }
 });
 
 // ---- Admin ----
