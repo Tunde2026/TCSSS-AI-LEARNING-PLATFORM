@@ -52,8 +52,10 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: true, credentials: true }));
 
 // ---- Body parsing ----
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+// 50 MB JSON limit — helps with chat attachments metadata and
+// large API payloads. File uploads use multipart, not JSON.
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // ---- Sessions (PostgreSQL-backed) ----
 app.use(session({
@@ -102,7 +104,7 @@ app.get('/health/db', async function (req, res) {
   }
 });
 
-// ---- Platform info (used by login page + sidebar) ----
+// ---- Platform info ----
 app.get('/api/platform/info', async function (req, res, next) {
   try {
     const name = await core.settings.getSetting('platform.name', 'AI Learning Platform');
@@ -123,7 +125,7 @@ app.use('/api/library',       require('./src/library').router);
 app.use('/api/voice',         require('./src/voice').router);
 app.use('/api/admin',         require('./src/admin').router);
 
-// ---- Static uploads (logos, documents, generated images) ----
+// ---- Static uploads ----
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
   maxAge: '1d',
   fallthrough: true,
