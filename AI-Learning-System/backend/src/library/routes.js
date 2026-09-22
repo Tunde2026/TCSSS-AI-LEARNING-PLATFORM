@@ -43,6 +43,8 @@ const upload = multer({
   },
 });
 
+// ---- Public (logged-in) ----
+
 router.get('/', requireLogin, async function (req, res, next) {
   try { res.json({ documents: await db.library.listApproved() }); }
   catch (err) { next(err); }
@@ -60,7 +62,7 @@ router.get('/:id/download', requireLogin, async function (req, res, next) {
     }
 
     // If it's an archive.org link, redirect to it
-    if (doc.source_type === 'upload' && doc.external_id && doc.storage_path.startsWith('https://archive.org')) {
+    if (doc.storage_path && doc.storage_path.startsWith('https://archive.org')) {
       return res.redirect(doc.storage_path);
     }
 
@@ -94,6 +96,8 @@ router.get('/:id/download', requireLogin, async function (req, res, next) {
 router.get('/:id/read', requireLogin, function (req, res, next) {
   return reader.streamBook(req, res, next);
 });
+
+// ---- Admin ----
 
 router.get('/admin', requireAdmin, async function (req, res, next) {
   try { res.json({ documents: await db.library.listAll() }); }
@@ -178,10 +182,18 @@ router.post('/admin/archive-confirm', requireAdmin, async function (req, res, ne
       return res.status(400).json({ error: 'Missing required book details.' });
     }
 
+    // Extract filename from the URL
+    const filename = archiveUrl.split('/').pop() || 'archive-upload';
+    const mimeType = filename.endsWith('.pdf') ? 'application/pdf' 
+                   : filename.endsWith('.epub') ? 'application/epub+zip'
+                   : filename.endsWith('.txt') ? 'text/plain'
+                   : filename.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                   : 'application/octet-stream';
+
     const query = `
       INSERT INTO library_documents 
-      (title, subject, author, storage_path, approved, source_type, external_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      (title, subject, author, storage_path, approved, source_type, external_id, filename, original_name, size_bytes, mime_type, status, processing_status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'approved', 'ready')
       RETURNING *
     `;
     
@@ -189,10 +201,14 @@ router.post('/admin/archive-confirm', requireAdmin, async function (req, res, ne
       title, 
       subject || null, 
       author || null, 
-      archiveUrl,    // We save the public archive.org URL in storage_path
-      true,          // Auto-approved since admin uploaded it
-      'upload',      // source_type
-      identifier     // Save the archive item ID in external_id
+      archiveUrl,
+      true,
+      'upload',
+      identifier,
+      filename,
+      filename,
+      fileSize || 0,
+      mimeType
     ];
 
     const result = await db.pool.query(query, values);
