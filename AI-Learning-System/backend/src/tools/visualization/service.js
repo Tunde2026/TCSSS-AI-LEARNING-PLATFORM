@@ -1,5 +1,5 @@
 const logger = require('../../core/logger');
-const { chat } = require('../../ai');
+const { chat } = require('../../ai/gateway');
 const { buildVisualizationPrompt } = require('./prompt');
 
 function parseJSON(raw) {

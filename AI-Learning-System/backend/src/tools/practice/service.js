@@ -1,6 +1,6 @@
 const db     = require('../../db');
 const logger = require('../../core/logger');
-const { chat } = require('../../ai');
+const { chat } = require('../../ai/gateway');
 const { buildPracticePrompt } = require('./prompt');
 
 function parseJSON(raw) {

@@ -5,18 +5,86 @@ const { route } = require('./router');
 const db      = require('../db');
 const logger  = require('../core/logger');
 const { requireLogin } = require('../auth');
+
 const retrieval   = require('../library/retrieval');
 const websearch   = require('../tools/websearch/service');
 const attachments = require('../chat/attachments');
 const imagegen    = require('../tools/imagegen/service');
 const imagesearch = require('../tools/imagesearch/service');
-
-// --- NEW: Tool service imports ---
-const quizService      = require('../tools/quiz/service');
+const quizService = require('../tools/quiz/service');
 const flashcardService = require('../tools/flashcards/service');
 
-function needsWebSearch(text) {
-  const t = String(text || '').toLowerCase();
+// ============================================================
+// Intent detection — returns true if the message matches
+// ============================================================
+
+function detectQuizIntent(t) {
+  return /(?:create|make|generate|give me|start|prepare|set up|build)\s+(?:a\s+|an\s+)?(?:quiz|test|assessment|questions?)/i.test(t) ||
+         /(?:quiz|test)\s+(?:me|on|about|for|covering)/i.test(t) ||
+         /(?:ask me|test me)\s+(?:some\s+)?questions/i.test(t);
+}
+
+function detectFlashcardsIntent(t) {
+  return /(?:create|make|generate|give me|build)\s+(?:some\s+|a\s+)?flashcards?/i.test(t) ||
+         /flashcards?\s+(?:for|on|about|covering)/i.test(t);
+}
+
+function detectNotesIntent(t) {
+  return /(?:create|make|save|write|add)\s+(?:me\s+)?(?:a\s+)?note/i.test(t) ||
+         /save\s+(?:this|that|it)\s+to\s+(?:my\s+)?notes/i.test(t) ||
+         /add\s+(?:this|that|it)\s+to\s+(?:my\s+)?notes/i.test(t);
+}
+
+function detectPracticeIntent(t) {
+  return /(?:create|make|generate|give me|build)\s+(?:some\s+|a\s+)?practice/i.test(t) ||
+         /practice\s+(?:questions?|problems?|set)/i.test(t);
+}
+
+function detectVisualizationIntent(t) {
+  return /(?:draw|visualize|visualise|make a diagram|create a diagram|show me a diagram|explain with a diagram)/i.test(t) ||
+         /(?:diagram|flowchart|mind ?map)\s+(?:of|for|showing|about)/i.test(t);
+}
+
+function detectStudyPlanIntent(t) {
+  return /(?:create|make|build|plan)\s+(?:me\s+)?(?:a\s+)?study\s+(?:plan|schedule|timetable)/i.test(t) ||
+         /study\s+(?:plan|schedule)\s+(?:for|on|about)/i.test(t);
+}
+
+function detectExamIntent(t) {
+  return /(?:exam|timed)\s+mode/i.test(t) ||
+         /(?:give me|start|begin|take)\s+(?:an?\s+)?(?:timed\s+)?exam/i.test(t) ||
+         /test me under exam conditions/i.test(t);
+}
+
+function detectMistakesIntent(t) {
+  return /(?:my|show me my|view my|open my)\s+mistakes?/i.test(t) ||
+         /mistake\s+bank/i.test(t) ||
+         /what (?:have|did)\s+i\s+(?:got|gotten)\s+wrong/i.test(t);
+}
+
+function detectSketchIntent(t) {
+  return /(?:help me\s+)?(?:write|type|enter|compose|format)\s+(?:the\s+)?(?:formula|equation|chemical|structure)/i.test(t) ||
+         /(?:sketch|formula\s+(?:studio|editor|composer))/i.test(t) ||
+         /how do i (?:write|type|format)\s+(?:h2so4|co2|ca\(oh\)2|[a-z]+\d+)/i.test(t);
+}
+
+function detectImageGenerateIntent(t) {
+  const verbs = ['draw', 'generate image', 'generate an image', 'create image',
+                 'create an image', 'make an image', 'make a picture',
+                 'illustrate', 'picture of', 'image of', 'render'];
+  const nouns = ['image', 'picture', 'illustration', 'drawing', 'artwork'];
+  return verbs.some(function (v) { return t.indexOf(v) !== -1; }) &&
+         nouns.some(function (n) { return t.indexOf(n) !== -1; });
+}
+
+function detectPhotoSearchIntent(t) {
+  const phrases = ['show me a photo', 'show me photos', 'find a photo', 'find photos',
+                   'real photo', 'real picture', 'actual photo', 'actual picture',
+                   'photos of', 'pictures of', 'real images of'];
+  return phrases.some(function (p) { return t.indexOf(p) !== -1; });
+}
+
+function detectWebSearchIntent(t) {
   const triggers = [
     'latest', 'current', 'today', 'this year', 'this week',
     'recent', 'news', '2025', '2026', '2027',
@@ -25,64 +93,263 @@ function needsWebSearch(text) {
   return triggers.some(function (k) { return t.indexOf(k) !== -1; });
 }
 
-function detectGenerateIntent(text) {
-  const t = String(text || '').toLowerCase();
-  const verbs = ['draw', 'generate image', 'generate an image', 'create image',
-    'create an image', 'make an image', 'make a picture',
-    'illustrate', 'picture of', 'image of', 'render'];
-  const nouns = ['image', 'picture', 'illustration', 'drawing', 'artwork', 'diagram'];
-  return verbs.some(function (v) { return t.indexOf(v) !== -1; }) &&
-         nouns.some(function (n) { return t.indexOf(n) !== -1; });
-}
-
-function detectSearchIntent(text) {
-  const t = String(text || '').toLowerCase();
-  const verbs = ['show me a photo', 'show me photos', 'find a photo', 'find photos',
-    'real photo', 'real picture', 'actual photo', 'actual picture',
-    'photos of', 'pictures of', 'real images of'];
-  return verbs.some(function (v) { return t.indexOf(v) !== -1; });
-}
-
-function extractImagePrompt(text) {
-  return String(text || '')
-    .replace(/^(please\s+)?(can you\s+)?(draw|generate|create|make|render|illustrate)\s+(me\s+)?(an?\s+)?/i, '')
-    .replace(/\b(image|picture|illustration|drawing|artwork|photo)\b\s*(of|showing)?/gi, '')
-    .replace(/\bfor me\b/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-// --- NEW: Tool intent detection ---
-function detectQuizIntent(text) {
-  const t = String(text || '').toLowerCase();
-  return /(?:create|make|generate|give me|start|prepare|set up)\s+(?:a\s+)?(?:quiz|test|exam|assessment|questions)/i.test(t) ||
-         /(?:quiz|test|exam|questions)\s+(?:me|on|about|for)/i.test(t);
-}
-
-function detectFlashcardIntent(text) {
-  const t = String(text || '').toLowerCase();
-  return /(?:create|make|generate|give me)\s+(?:some\s+)?flashcards?/i.test(t) ||
-         /flashcards?\s+(?:for|on|about|covering)/i.test(t);
-}
+// ============================================================
+// Extract helpers
+// ============================================================
 
 function extractTopic(text) {
   return String(text || '')
-    .replace(/^(please\s+)?(?:can you\s+)?(?:create|make|generate|give me|start|prepare|set up)\s+(?:a\s+)?(?:quiz|test|exam|assessment|some\s+flashcards?|flashcards?|questions?)\s*(?:on|about|for|covering)?\s*/i, '')
-    .replace(/\b(?:quiz|test|exam|assessment|flashcards?|questions?)\s*(?:on|about|for|covering)\s*/i, '')
+    .replace(/^(please\s+)?(?:can you\s+)?(?:create|make|generate|give me|start|prepare|set up|build|i need you to|ask me)\s+(?:a\s+|an\s+|some\s+)?/i, '')
+    .replace(/\b(?:quiz|test|exam|assessment|flashcards?|questions?|practice|problems?|diagram|flowchart|mind ?map|image|picture|illustration|drawing|artwork|notes?|study\s+plan|study\s+schedule|formula|equation)\b\s*(?:me|on|about|for|covering|of|showing|with)?\s*/gi, '')
     .replace(/[?.!]+$/, '')
     .trim() || 'general knowledge';
 }
 
-function buildSystemContext(agent) {
-  if (!agent) return null;
-  let prompt = agent.system_prompt;
-  const extras = [];
-  if (agent.subject)        extras.push('Subject: ' + agent.subject);
-  if (agent.level)          extras.push('Education level: ' + agent.level);
-  if (agent.learning_style) extras.push('Preferred teaching style: ' + agent.learning_style);
-  if (extras.length) prompt += '\n\n' + extras.join('\n');
-  return prompt;
+function extractNumber(text, fallback) {
+  const m = String(text).match(/\b(\d{1,3})\b/);
+  if (!m) return fallback;
+  const n = parseInt(m[1], 10);
+  if (Number.isNaN(n) || n < 1) return fallback;
+  return Math.min(n, 50);
 }
+
+// ============================================================
+// Tool detection and execution
+// ============================================================
+
+async function runToolDetection({ user, userText }) {
+  const t = String(userText || '').toLowerCase();
+  const tools = [];
+  const injectedContext = [];
+
+  // Order matters — most specific first
+  // Quiz
+  if (detectQuizIntent(t)) {
+    const topic = extractTopic(userText);
+    const count = extractNumber(userText, 10);
+    try {
+      const result = await quizService.generate({
+        userId: user.id,
+        topic: topic,
+        count: count,
+        difficulty: 'medium',
+      });
+      if (result.ok) {
+        tools.push({
+          type: 'quiz',
+          title: result.quiz.title || ('Quiz on ' + topic),
+          topic: topic,
+          count: result.quiz.questions.length,
+          url: '/lab/quiz.html?id=' + result.quiz.id,
+        });
+        injectedContext.push(
+          'A quiz on "' + topic + '" with ' + result.quiz.questions.length +
+          ' questions has been created. It appears as a clickable card below. ' +
+          'Mention it in one short sentence and let the student click to start.'
+        );
+      } else {
+        logger.warn('[ai/chat] quiz tool failed: ' + result.code);
+      }
+    } catch (err) {
+      logger.warn('[ai/chat] quiz tool threw: ' + err.message);
+    }
+  }
+  // Flashcards
+  else if (detectFlashcardsIntent(t)) {
+    const topic = extractTopic(userText);
+    const count = extractNumber(userText, 10);
+    try {
+      const result = await flashcardService.generate({
+        userId: user.id,
+        topic: topic,
+        count: count,
+      });
+      if (result.ok) {
+        tools.push({
+          type: 'flashcards',
+          title: result.deck.title || ('Flashcards on ' + topic),
+          topic: topic,
+          count: result.deck.cards.length,
+          url: '/lab/flashcards.html?id=' + result.deck.id,
+        });
+        injectedContext.push(
+          'A flashcard deck on "' + topic + '" with ' + result.deck.cards.length +
+          ' cards has been created. It appears as a clickable card below. ' +
+          'Mention it briefly so the student knows to click it.'
+        );
+      }
+    } catch (err) {
+      logger.warn('[ai/chat] flashcards tool threw: ' + err.message);
+    }
+  }
+  // Notes
+  else if (detectNotesIntent(t)) {
+    tools.push({
+      type: 'notes',
+      title: 'Open Notes',
+      topic: extractTopic(userText),
+      url: '/lab/notes.html',
+    });
+    injectedContext.push(
+      'The Notes tool can be opened from the card below. Tell the student ' +
+      'briefly that they can create and save notes there.'
+    );
+  }
+  // Practice
+  else if (detectPracticeIntent(t)) {
+    const topic = extractTopic(userText);
+    tools.push({
+      type: 'practice',
+      title: 'Practice: ' + topic,
+      topic: topic,
+      url: '/lab/practice.html',
+    });
+    injectedContext.push(
+      'The Practice tool for "' + topic + '" can be opened from the card ' +
+      'below. Introduce the topic in one sentence.'
+    );
+  }
+  // Visualization
+  else if (detectVisualizationIntent(t)) {
+    const topic = extractTopic(userText);
+    tools.push({
+      type: 'visualization',
+      title: 'Diagram: ' + topic,
+      topic: topic,
+      url: '/lab/visualization.html',
+    });
+    injectedContext.push(
+      'A visualization for "' + topic + '" can be opened from the card below. ' +
+      'Introduce the topic in one or two sentences.'
+    );
+  }
+  // Study Plan
+  else if (detectStudyPlanIntent(t)) {
+    const topic = extractTopic(userText);
+    tools.push({
+      type: 'studyplan',
+      title: 'Study Plan: ' + topic,
+      topic: topic,
+      url: '/lab/study-plans.html',
+    });
+    injectedContext.push(
+      'A study plan generator for "' + topic + '" can be opened from the card ' +
+      'below. Briefly explain that the student can set the number of days there.'
+    );
+  }
+  // Exam Mode
+  else if (detectExamIntent(t)) {
+    const topic = extractTopic(userText);
+    tools.push({
+      type: 'exam',
+      title: 'Exam Mode',
+      topic: topic,
+      url: '/lab/exam.html',
+    });
+    injectedContext.push(
+      'Exam Mode can be opened from the card below. Explain briefly that it is ' +
+      'a timed mode with no hints.'
+    );
+  }
+  // Mistake Bank
+  else if (detectMistakesIntent(t)) {
+    tools.push({
+      type: 'mistakes',
+      title: 'My Mistakes',
+      url: '/lab/mistakes.html',
+    });
+    injectedContext.push(
+      'The student\'s Mistake Bank can be opened from the card below. ' +
+      'Mention briefly that it shows their weak topics.'
+    );
+  }
+  // Sketch / Formula
+  else if (detectSketchIntent(t)) {
+    tools.push({
+      type: 'sketch',
+      title: 'Sketch & Formula Studio',
+      url: '/lab/sketch.html',
+    });
+    injectedContext.push(
+      'The Sketch and Formula Studio can be opened from the card below. ' +
+      'Explain briefly that it helps write things like H₂SO₄ correctly with ' +
+      'subscripts and superscripts.'
+    );
+  }
+  // Image generation
+  else if (detectImageGenerateIntent(t)) {
+    const prompt = extractTopic(userText);
+    try {
+      const r = await imagegen.generate({ prompt: prompt, model: 'flux', width: 1024, height: 1024 });
+      if (r.ok) {
+        tools.push({
+          type: 'image',
+          url: r.image.url,
+          prompt: prompt,
+          source: 'pollinations',
+          title: prompt,
+        });
+        injectedContext.push(
+          'An image for "' + prompt + '" has been generated and appears below. ' +
+          'Introduce it in one sentence.'
+        );
+      }
+    } catch (err) {
+      logger.warn('[ai/chat] imagegen threw: ' + err.message);
+    }
+  }
+  // Photo search
+  else if (detectPhotoSearchIntent(t) && imagesearch.isEnabled()) {
+    const query = extractTopic(userText);
+    try {
+      const r = await imagesearch.search(query, { count: 6 });
+      if (r.ok && r.images.length) {
+        tools.push({
+          type: 'photos',
+          title: 'Photos: ' + query,
+          query: query,
+          images: r.images.map(function (img) {
+            return {
+              url: img.url,
+              thumb: img.thumb,
+              author: img.author,
+              sourceUrl: img.sourceUrl,
+              alt: img.alt,
+            };
+          }),
+        });
+        injectedContext.push(
+          'Real photos for "' + query + '" have been found and appear below. ' +
+          'Introduce them in one sentence.'
+        );
+      }
+    } catch (err) {
+      logger.warn('[ai/chat] imagesearch threw: ' + err.message);
+    }
+  }
+
+  // Web search runs independently of the above (only if nothing else matched)
+  if (detectWebSearchIntent(t) && websearch.isEnabled() && tools.length === 0) {
+    try {
+      const r = await websearch.search(userText, { count: 5 });
+      if (r.ok && r.results.length) {
+        const sources = r.results.slice(0, 5).map(function (x) {
+          return { title: x.title, url: x.url, snippet: (x.description || '').slice(0, 200) };
+        });
+        tools.push({ type: 'websearch', sources: sources });
+        injectedContext.push(websearch.buildContextBlock(userText, r.results));
+      }
+    } catch (err) {
+      logger.warn('[ai/chat] websearch threw: ' + err.message);
+    }
+  }
+
+  return { tools: tools, injectedContext: injectedContext };
+}
+
+// ============================================================
+// Main chat route
+// ============================================================
 
 router.post('/chat', requireLogin, async (req, res, next) => {
   const body = req.body || {};
@@ -99,6 +366,7 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       return res.status(400).json({ error: 'each message needs role and content' });
     }
   }
+
   const lastUser = messages.slice().reverse().find(function (m) { return m.role === 'user'; });
   if (!lastUser) {
     return res.status(400).json({ error: 'at least one user message is required' });
@@ -131,16 +399,18 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       agentId: agentId || null,
     });
 
+    // Detect and run tools before calling the model
+    const toolResult = await runToolDetection({
+      user: req.user,
+      userText: lastUser.content,
+    });
+    logger.info('[DEBUG] toolResult: ' + JSON.stringify(toolResult));
+
     let gatewayMessages = messages.slice();
     const injectedSystemBlocks = [];
-    const responseImages = [];
-    
-    // --- NEW: Tool results array ---
-    const toolResults = [];
 
-    if (decision.agent) {
-      const sys = buildSystemContext(decision.agent);
-      if (sys) injectedSystemBlocks.push(sys);
+    if (decision.agent && decision.agent.system_prompt) {
+      injectedSystemBlocks.push(decision.agent.system_prompt);
     }
 
     if (Array.isArray(attachmentIds) && attachmentIds.length) {
@@ -152,145 +422,18 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       }
     }
 
-    const userText = lastUser.content;
-
-    // --- NEW: Quiz tool detection and execution ---
-    if (detectQuizIntent(userText)) {
-      const topic = extractTopic(userText);
-      try {
-        const quiz = await quizService.generate({
-          topic: topic,
-          count: 5,
-          difficulty: 'medium',
-          userId: req.user.id,
-          title: 'Quiz: ' + topic
-        });
-        if (quiz && quiz.id) {
-          toolResults.push({
-            type: 'quiz',
-            id: quiz.id,
-            title: quiz.title || 'Quiz on ' + topic,
-            topic: topic,
-            count: quiz.count || 5
-          });
-          injectedSystemBlocks.push(
-            'SYSTEM ACTION: You have automatically generated a ' + (quiz.count || 5) +
-            '-question quiz on "' + topic + '". Tell the student the quiz is ready and they can click the card below to start it.'
-          );
-        }
-      } catch (err) {
-        logger.warn('[ai/chat] quiz generation failed: ' + err.message);
-      }
-    }
-
-    // --- NEW: Flashcard tool detection and execution ---
-    if (detectFlashcardIntent(userText)) {
-      const topic = extractTopic(userText);
-      try {
-        const deck = await flashcardService.generate({
-          topic: topic,
-          count: 10,
-          userId: req.user.id,
-          title: 'Flashcards: ' + topic
-        });
-        if (deck && deck.id) {
-          toolResults.push({
-            type: 'flashcards',
-            id: deck.id,
-            title: deck.title || 'Flashcards on ' + topic,
-            topic: topic,
-            count: deck.count || 10
-          });
-          injectedSystemBlocks.push(
-            'SYSTEM ACTION: You have automatically generated a flashcard deck on "' + topic + '". Tell the student it is ready below.'
-          );
-        }
-      } catch (err) {
-        logger.warn('[ai/chat] flashcard generation failed: ' + err.message);
-      }
-    }
-
-    if (detectSearchIntent(userText) && imagesearch.isEnabled()) {
-      const query = extractImagePrompt(userText) || userText;
-      try {
-        const r = await imagesearch.search(query, { count: 6 });
-        if (r.ok && r.images.length) {
-          r.images.forEach(function (img) {
-            responseImages.push({
-              url: img.url,
-              thumb: img.thumb,
-              source: 'pexels',
-              author: img.author,
-              sourceUrl: img.sourceUrl,
-              alt: img.alt,
-            });
-          });
-          injectedSystemBlocks.push(
-            'The student asked for real photos of "' + query + '". ' +
-            'You have retrieved ' + r.images.length + ' images. ' +
-            'Briefly introduce them in one or two sentences.'
-          );
-        }
-      } catch (err) {
-        logger.warn('[ai/chat] image search failed: ' + err.message);
-      }
-    } else if (detectGenerateIntent(userText)) {
-      const prompt = extractImagePrompt(userText) || userText;
-      try {
-        const r = await imagegen.generate({ prompt: prompt, model: 'flux', width: 1024, height: 1024 });
-        if (r.ok) {
-          responseImages.push({
-            url: r.image.url,
-            source: 'pollinations',
-            prompt: r.image.prompt,
-            width: r.image.width,
-            height: r.image.height,
-            alt: r.image.prompt,
-          });
-          injectedSystemBlocks.push(
-            'The student asked you to draw "' + prompt + '". ' +
-            'You have created an image. Introduce it in one or two sentences.'
-          );
-        }
-      } catch (err) {
-        logger.warn('[ai/chat] image generation failed: ' + err.message);
-      }
-    }
-
-    let libraryUsed = false;
+    // Library retrieval
     try {
       const rc = await retrieval.retrieveContext(lastUser.content);
-      if (rc.contextText) {
-        injectedSystemBlocks.push(rc.contextText);
-        libraryUsed = true;
-      }
+      if (rc.contextText) injectedSystemBlocks.push(rc.contextText);
     } catch (err) {
       logger.warn('[ai/chat] retrieval failed: ' + err.message);
     }
 
-    let searchMeta = null;
-    if (needsWebSearch(lastUser.content) && websearch.isEnabled()) {
-      try {
-        const r = await websearch.search(lastUser.content, { count: 5 });
-        if (r.ok && r.results.length) {
-          injectedSystemBlocks.push(
-            websearch.buildContextBlock(lastUser.content, r.results)
-          );
-          searchMeta = {
-            sources: r.results.slice(0, 5).map(function (x) {
-              return {
-                title: x.title, url: x.url,
-                snippet: (x.description || '').slice(0, 200),
-              };
-            }),
-            keyIndex: r.keyIndex || 1,
-            keyCount: r.keyCount || 1,
-          };
-        }
-      } catch (err) {
-        logger.warn('[ai/chat] web search threw: ' + err.message);
-      }
-    }
+    // Add tool-specific context blocks
+    toolResult.injectedContext.forEach(function (block) {
+      injectedSystemBlocks.push(block);
+    });
 
     if (injectedSystemBlocks.length) {
       const combined = injectedSystemBlocks.join('\n\n=====\n\n');
@@ -299,12 +442,53 @@ router.post('/chat', requireLogin, async (req, res, next) => {
 
     const result = await chat({ messages: gatewayMessages });
 
-    // Build media object for storage
+    // Split tools: card-style vs media-style
+    const renderableTools = toolResult.tools.filter(function (t) {
+      return t.type !== 'websearch' &&
+             t.type !== 'image' &&
+             t.type !== 'photos';
+    });
+    const inlineImages = toolResult.tools.filter(function (t) {
+      return t.type === 'image';
+    }).map(function (t) {
+      return { url: t.url, prompt: t.prompt, source: t.source };
+    });
+    const photoResults = toolResult.tools.filter(function (t) {
+      return t.type === 'photos';
+    });
+    const webSearchTool = toolResult.tools.find(function (t) { return t.type === 'websearch'; });
+
+    // Build a full list of all tools for the response
+    const responseTools = [];
+    renderableTools.forEach(function (t) { responseTools.push(t); });
+    photoResults.forEach(function (t) {
+      (t.images || []).forEach(function (img) {
+        responseTools.push({
+          type: 'image',
+          url: img.url,
+          thumb: img.thumb,
+          source: 'pexels',
+          author: img.author,
+          sourceUrl: img.sourceUrl,
+          alt: img.alt,
+        });
+      });
+    });
+    inlineImages.forEach(function (t) {
+      responseTools.push({
+        type: 'image',
+        url: t.url,
+        source: t.source || 'pollinations',
+        alt: t.prompt,
+      });
+    });
+
+    // Save to DB
     var media = null;
-    if (responseImages.length || searchMeta) {
+    if (responseTools.length || webSearchTool) {
       media = {};
-      if (responseImages.length) media.images = responseImages;
-      if (searchMeta) media.webSearch = searchMeta;
+      if (responseTools.length) media.tools = responseTools;
+      if (webSearchTool) media.webSearch = { sources: webSearchTool.sources };
     }
 
     const saved = await db.messages.create({
@@ -323,12 +507,10 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       conversationId: conv.id,
       messageId: saved.id,
       agent: decision.agent ? { id: decision.agent.id, name: decision.agent.name } : null,
-      libraryUsed: libraryUsed,
-      webSearch: searchMeta,
-      images: responseImages.length ? responseImages : null,
-      tools: toolResults.length ? toolResults : null, // --- NEW: Send tools to frontend ---
+      libraryUsed: false,
+      webSearch: webSearchTool ? { sources: webSearchTool.sources } : null,
+      tools: responseTools.length ? responseTools : null,
     });
-
   } catch (err) {
     logger.error('[ai/chat] ' + err.message, err.attempts || []);
     if (err.message === 'REQUEST_REJECTED') {
@@ -342,6 +524,34 @@ router.post('/chat', requireLogin, async (req, res, next) => {
     }
     next(err);
   }
+});
+
+// ============================================================
+// Quick Ask AI (floating panel — not saved)
+// ============================================================
+
+router.post('/quick', requireLogin, async (req, res, next) => {
+  const { messages, context } = req.body || {};
+  const quick = require('./quick');
+
+  if (!Array.isArray(messages) || !messages.length) {
+    return res.status(400).json({ error: 'messages required' });
+  }
+
+  const result = await quick.quickAsk({
+    user: req.user,
+    messages: messages,
+    context: context || null,
+  });
+
+  if (!result.ok) {
+    if (result.code === 'ALL_PROVIDERS_FAILED' || result.code === 'NO_PROVIDERS_AVAILABLE') {
+      return res.status(503).json({ error: 'AI temporarily unavailable.' });
+    }
+    return res.status(500).json({ error: 'Unexpected AI error.' });
+  }
+
+  res.json({ reply: result.text, provider: result.provider });
 });
 
 router.get('/status', requireLogin, function (req, res) {

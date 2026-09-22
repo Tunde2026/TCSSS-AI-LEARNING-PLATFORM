@@ -64,65 +64,153 @@
   .md-content .katex-display > .katex { font-size: 1.12em; }
   .md-content .katex-error { color: var(--deep-red); font-family: var(--font-ui); font-size: 0.85rem; background: #FDECEC; padding: 2px 6px; border-radius: 4px; }
 
-  /* Images with download button */
+  /* Images */
   .msg-images { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
   .msg-image { position: relative; border-radius: 14px; overflow: hidden; background: var(--blush); border: 1px solid var(--border); box-shadow: var(--shadow-xs); }
   .msg-image a.img-link { display: block; }
   .msg-image img { width: 100%; height: 200px; object-fit: cover; display: block; transition: transform 300ms var(--ease-out); }
   .msg-image:hover img { transform: scale(1.05); }
-
-  .msg-image__download {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    background: rgba(17,16,74,0.7);
-    color: var(--white);
-    border: none;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    font-size: 0.85rem;
-    opacity: 0;
-    transition: opacity var(--transition), background var(--transition), transform 120ms var(--ease);
-    z-index: 3;
-    backdrop-filter: blur(6px);
-  }
+  .msg-image__download { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 9px; background: rgba(17,16,74,0.7); color: var(--white); border: none; cursor: pointer; display: grid; place-items: center; font-size: 0.85rem; opacity: 0; transition: opacity var(--transition), background var(--transition), transform 120ms var(--ease); z-index: 3; backdrop-filter: blur(6px); }
   .msg-image:hover .msg-image__download { opacity: 1; }
   .msg-image__download:hover { background: var(--red); transform: scale(1.08); }
-  .msg-image__download:active { transform: scale(0.95); }
-
-  .msg-image__credit {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
-    color: var(--white);
-    font-family: var(--font-ui);
-    font-size: 0.6rem;
-    padding: 22px 10px 6px;
-    letter-spacing: 0.04em;
-    pointer-events: none;
-  }
-
+  .msg-image__credit { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.75), transparent); color: var(--white); font-family: var(--font-ui); font-size: 0.6rem; padding: 22px 10px 6px; letter-spacing: 0.04em; pointer-events: none; }
   .msg-image--broken { background: #FDECEC; padding: 20px; text-align: center; color: var(--deep-red); }
   .msg-image--broken i { font-size: 1.5rem; display: block; margin-bottom: 8px; }
   .msg-image--broken a { color: var(--deep-red); font-weight: 600; text-decoration: underline; word-break: break-all; font-size: 0.82rem; }
 
+  /* Tool cards */
+  .msg-tools { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+  .tool-card {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; background: var(--white);
+    border: 1.5px solid var(--border); border-radius: 14px;
+    text-decoration: none; color: inherit;
+    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    box-shadow: var(--shadow-xs);
+  }
+  .tool-card:hover { border-color: var(--gold); box-shadow: var(--shadow-md); transform: translateY(-2px); text-decoration: none; }
+  .tool-card__icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }
+  .tool-card__icon--quiz       { background: #FBF3E1; color: var(--gold); }
+  .tool-card__icon--flashcards { background: #FDECEC; color: var(--red); }
+  .tool-card__icon--notes      { background: #ECEBF5; color: var(--navy); }
+  .tool-card__icon--practice   { background: #ECEBF5; color: var(--navy); }
+  .tool-card__icon--vis        { background: #FBF3E1; color: var(--gold); }
+  .tool-card__icon--plan       { background: #FDECEC; color: var(--red); }
+  .tool-card__icon--exam       { background: var(--blush); color: var(--slate); }
+  .tool-card__icon--mistakes   { background: #ECEBF5; color: var(--navy); }
+  .tool-card__icon--sketch     { background: #FBF3E1; color: var(--gold); }
+  .tool-card__body { flex: 1; min-width: 0; }
+  .tool-card__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; color: var(--navy); margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tool-card__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.04em; color: var(--slate); margin: 0; text-transform: uppercase; }
+  .tool-card__arrow { color: var(--slate); font-size: 0.85rem; flex-shrink: 0; transition: transform var(--transition), color var(--transition); }
+  .tool-card:hover .tool-card__arrow { color: var(--red); transform: translateX(3px); }
+
+  /* Shared widget helpers */
+  .widget-loading, .widget-error { padding: 24px; text-align: center; color: var(--slate); font-size: 0.9rem; }
+  .widget-error { color: var(--deep-red); }
+
+  /* Quiz widget */
+  .quiz-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  .quiz-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: linear-gradient(135deg, var(--navy), var(--soft-navy)); color: var(--white); }
+  .quiz-widget__icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.15); color: var(--gold-300); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
+  .quiz-widget__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; margin: 0 0 2px; }
+  .quiz-widget__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; }
+  .quiz-widget__questions { max-height: 520px; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 18px; }
+  .quiz-widget__questions::-webkit-scrollbar { width: 6px; }
+  .quiz-widget__questions::-webkit-scrollbar-thumb { background: rgba(17,16,74,0.15); border-radius: 3px; }
+  .quiz-q { padding-bottom: 14px; border-bottom: 1px solid var(--border-soft); }
+  .quiz-q:last-child { border-bottom: none; padding-bottom: 0; }
+  .quiz-q__num { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); font-weight: 600; margin-bottom: 6px; }
+  .quiz-q__text { font-weight: 500; color: var(--ink); font-size: 0.94rem; line-height: 1.55; margin-bottom: 10px; }
+  .quiz-q.is-correct .quiz-q__num { color: var(--green); }
+  .quiz-q.is-wrong   .quiz-q__num { color: var(--deep-red); }
+  .quiz-q__opts { display: flex; flex-direction: column; gap: 6px; }
+  .quiz-opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; font-family: var(--font-body); font-size: 0.88rem; text-align: left; color: var(--ink); transition: border-color var(--transition), background var(--transition); width: 100%; }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--navy); background: var(--blush); }
+  .quiz-opt:disabled { cursor: default; }
+  .quiz-opt.is-selected { border-color: var(--red); background: #FDECEC; }
+  .quiz-opt.is-selected .quiz-opt__label { background: var(--red); color: var(--white); }
+  .quiz-opt.is-correct-answer { border-color: var(--green); background: var(--green-bg); }
+  .quiz-opt.is-correct-answer .quiz-opt__label { background: var(--green); color: var(--white); }
+  .quiz-opt.is-wrong-answer { border-color: var(--red); background: #FDECEC; opacity: 0.85; }
+  .quiz-opt__label { width: 24px; height: 24px; border-radius: 50%; background: var(--blush-deep); color: var(--navy); display: grid; place-items: center; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+  .quiz-opt__text { line-height: 1.45; padding-top: 3px; }
+  .quiz-explanation { margin-top: 10px; padding: 10px 12px; background: #EEF3FB; border-radius: 10px; font-size: 0.82rem; line-height: 1.55; color: var(--navy); }
+  .quiz-explanation strong { display: block; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); margin-bottom: 4px; }
+  .quiz-widget__actions { padding: 14px 18px; background: var(--blush); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .quiz-submit { padding: 10px 20px; border: none; border-radius: 999px; background: linear-gradient(135deg, var(--red), var(--deep-red)); color: var(--white); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: opacity var(--transition), transform 120ms var(--ease); }
+  .quiz-submit:hover:not(:disabled) { transform: translateY(-1px); }
+  .quiz-submit:disabled { background: var(--slate-300); cursor: not-allowed; opacity: 0.7; }
+  .quiz-widget__progress { font-family: var(--font-ui); font-size: 0.72rem; color: var(--slate); letter-spacing: 0.04em; }
+  .quiz-widget__score { display: flex; align-items: baseline; gap: 10px; }
+  .quiz-widget__score-num { font-family: var(--font-head); font-size: 1.6rem; font-weight: 700; color: var(--navy); line-height: 1; }
+  .quiz-ask-ai, .flashcard-ask-ai { padding: 10px 18px; border: none; border-radius: 999px; background: var(--navy); color: var(--white); font-family: var(--font-body); font-size: 0.86rem; font-weight: 600; cursor: pointer; transition: background var(--transition), transform 120ms var(--ease); }
+  .quiz-ask-ai:hover, .flashcard-ask-ai:hover { background: var(--soft-navy); transform: translateY(-1px); }
+
+  /* Flashcard widget */
+  .flashcard-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  .flashcard-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: linear-gradient(135deg, var(--red), var(--deep-red)); color: var(--white); }
+  .flashcard-widget__icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.15); color: var(--white); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
+  .flashcard-widget__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; margin: 0 0 2px; }
+  .flashcard-widget__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.8; }
+
+  .flashcard-widget__stage { padding: 20px; display: flex; flex-direction: column; align-items: center; background: var(--blush); }
+  .flashcard-widget__card { width: 100%; max-width: 480px; height: 220px; perspective: 1200px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+  .flashcard-widget__inner { position: relative; width: 100%; height: 100%; transition: transform 600ms cubic-bezier(0.5, 0.05, 0.2, 1); transform-style: preserve-3d; }
+  .flashcard-widget__card.is-flipped .flashcard-widget__inner { transform: rotateY(180deg); }
+  .flashcard-widget__face { position: absolute; inset: 0; border-radius: 16px; padding: 26px 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: var(--shadow-md); overflow: hidden; }
+  .flashcard-widget__face--front { background: linear-gradient(155deg, var(--navy), var(--soft-navy)); color: var(--white); }
+  .flashcard-widget__face--back { background: var(--white); color: var(--ink); border: 2px solid var(--gold); transform: rotateY(180deg); }
+  .flashcard-widget__corner { position: absolute; top: 12px; left: 14px; font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; padding: 4px 10px; border-radius: 999px; }
+  .flashcard-widget__face--front .flashcard-widget__corner { background: rgba(255,255,255,0.14); color: var(--gold-300); }
+  .flashcard-widget__face--back .flashcard-widget__corner { background: var(--gold-50); color: var(--warn); }
+  .flashcard-widget__text { font-family: var(--font-head); font-size: 1.05rem; font-weight: 600; line-height: 1.4; margin: 0; max-height: 100%; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
+  .flashcard-widget__face--front .flashcard-widget__text { font-size: 1.15rem; color: var(--white); }
+  .flashcard-widget__face--back .flashcard-widget__text { font-size: 1rem; color: var(--navy); line-height: 1.5; }
+  .flashcard-widget__hint { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; opacity: 0.7; white-space: nowrap; }
+  .flashcard-widget__face--front .flashcard-widget__hint { color: rgba(255,255,255,0.7); }
+  .flashcard-widget__face--back .flashcard-widget__hint { color: var(--slate); }
+
+  .flashcard-widget__rate { margin-top: 18px; width: 100%; max-width: 480px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; opacity: 0; transform: translateY(6px); pointer-events: none; transition: opacity 280ms var(--ease-out), transform 280ms var(--ease-out); }
+  .flashcard-widget__rate.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .flashcard-rate-btn { padding: 10px 6px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; display: flex; flex-direction: column; gap: 2px; align-items: center; transition: border-color var(--transition), background var(--transition), transform 120ms var(--ease); }
+  .flashcard-rate-btn:hover { transform: translateY(-1px); }
+  .flashcard-rate-btn:active { transform: translateY(0); }
+  .flashcard-rate-btn small { font-family: var(--font-ui); font-size: 0.58rem; color: var(--slate); font-weight: 400; letter-spacing: 0.04em; }
+  .flashcard-rate-btn--again { color: var(--deep-red); border-color: #F3C5C5; }
+  .flashcard-rate-btn--again:hover { background: #FDECEC; border-color: var(--red); }
+  .flashcard-rate-btn--hard  { color: var(--warn); border-color: #EFD9A6; }
+  .flashcard-rate-btn--hard:hover { background: var(--gold-50); border-color: var(--gold); }
+  .flashcard-rate-btn--good  { color: var(--navy); border-color: #C7C6E0; }
+  .flashcard-rate-btn--good:hover { background: var(--blush); border-color: var(--navy); }
+  .flashcard-rate-btn--easy  { color: var(--green); border-color: #B9DDC3; }
+  .flashcard-rate-btn--easy:hover { background: var(--green-bg); border-color: var(--green); }
+
+  .flashcard-widget__hint-line { margin-top: 18px; font-family: var(--font-ui); font-size: 0.7rem; letter-spacing: 0.06em; color: var(--slate); opacity: 0.75; transition: opacity var(--transition); }
+  .flashcard-widget__hint-line.is-hidden { opacity: 0; }
+
+  .flashcard-widget__progress { padding: 12px 20px; background: var(--white); border-top: 1px solid var(--border-soft); display: flex; align-items: center; gap: 12px; }
+  .flashcard-widget__progress-bar { flex: 1; height: 4px; background: var(--blush-deep); border-radius: 3px; overflow: hidden; }
+  .flashcard-widget__progress-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--deep-red)); border-radius: 3px; transition: width 320ms var(--ease-out); }
+  .flashcard-widget__progress-label { font-family: var(--font-ui); font-size: 0.68rem; color: var(--slate); letter-spacing: 0.04em; flex-shrink: 0; }
+
+  .flashcard-widget__done { padding: 36px 24px; text-align: center; }
+  .flashcard-widget__done-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--green-bg); color: var(--green); display: grid; place-items: center; font-size: 1.4rem; margin: 0 auto 16px; }
+  .flashcard-widget__done-title { font-family: var(--font-head); font-size: 1.15rem; color: var(--navy); margin: 0 0 6px; }
+  .flashcard-widget__done-desc { font-size: 0.88rem; color: var(--slate); margin: 0 0 20px; }
+  .flashcard-widget__done-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+  /* Meta */
   .msg-meta { font-family: var(--font-ui); font-size: 0.65rem; color: var(--slate); margin-top: 8px; opacity: 0.75; padding: 0 4px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .msg-row--user .msg-meta { text-align: right; justify-content: flex-end; }
-
   .meta-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.04em; font-weight: 500; }
   .meta-badge--search { background: var(--gold-50); color: var(--warn); }
   .meta-badge--library { background: var(--green-bg); color: var(--green); }
   .meta-badge--attachment { background: #EEF3FB; color: var(--navy); }
-
   .sources-toggle { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: var(--blush); color: var(--navy); font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.04em; font-weight: 500; cursor: pointer; border: none; transition: background var(--transition); }
   .sources-toggle:hover { background: var(--blush-deep); }
   .sources-toggle i { font-size: 0.6rem; transition: transform var(--transition); }
   .sources-toggle.is-open i { transform: rotate(180deg); }
-
   .sources-panel { margin-top: 10px; background: var(--blush); border-radius: 12px; padding: 14px 16px; display: none; border: 1px solid var(--border-soft); }
   .sources-panel.is-visible { display: block; }
   .sources-panel__label { font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); margin-bottom: 10px; font-weight: 600; }
@@ -205,63 +293,6 @@
   .mention-item:hover { background: var(--blush); }
   .mention-item__avatar { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, var(--navy), var(--soft-navy)); color: var(--white); display: grid; place-items: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
 
-  /* --- NEW: AI Tool Cards (Quiz/Flashcards) --- */
-  .msg-tools {
-    margin-top: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .tool-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 18px;
-    background: var(--white);
-    border: 1.5px solid var(--border);
-    border-radius: 14px;
-    transition: all 0.2s ease;
-    text-decoration: none;
-    box-shadow: var(--shadow-xs);
-  }
-  .tool-card:hover {
-    border-color: var(--gold);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-  }
-  .tool-card__icon {
-    width: 42px; height: 42px;
-    background: var(--blush);
-    border-radius: 10px;
-    display: grid; place-items: center;
-    color: var(--red);
-    font-size: 1.2rem;
-    flex-shrink: 0;
-  }
-  .tool-card__body { flex: 1; min-width: 0; }
-  .tool-card__title {
-    font-weight: 600; color: var(--navy); font-size: 0.95rem;
-    margin-bottom: 2px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .tool-card__sub {
-    font-size: 0.78rem; color: var(--slate);
-    text-transform: capitalize;
-  }
-  .tool-card__action {
-    padding: 8px 16px;
-    background: linear-gradient(135deg, var(--navy), var(--soft-navy));
-    color: var(--white);
-    border-radius: 8px;
-    font-size: 0.82rem;
-    font-weight: 500;
-    text-decoration: none;
-    display: flex; align-items: center; gap: 6px;
-    transition: background 0.2s;
-    flex-shrink: 0;
-  }
-  .tool-card__action:hover { background: linear-gradient(135deg, var(--red), var(--deep-red)); }
-
   @media (max-width: 860px) {
     .chat-scroll { padding: 20px 14px; }
     .composer-wrap { padding: 12px 14px 16px; }
@@ -271,6 +302,13 @@
     .chat-empty__grid { grid-template-columns: 1fr; }
     .msg-images { grid-template-columns: 1fr 1fr; }
     .msg-image__download { opacity: 1; }
+    .tool-card { padding: 12px 14px; }
+    .tool-card__icon { width: 38px; height: 38px; font-size: 1rem; }
+    .quiz-widget__questions { max-height: 380px; padding: 12px 14px; }
+    .quiz-widget__actions { padding: 12px 14px; }
+    .quiz-submit, .quiz-ask-ai, .flashcard-ask-ai { width: 100%; text-align: center; }
+    .flashcard-widget__card { height: 200px; }
+    .flashcard-widget__stage { padding: 16px; }
   }
 </style>
 </head>
@@ -374,25 +412,16 @@
       var ext = url.split('.').pop().split('?')[0] || 'png';
       if (ext.length > 5 || !/^[a-z]+$/i.test(ext)) ext = 'png';
       var filename = name + '.' + ext;
-
       fetch(url, { credentials: 'same-origin' })
-        .then(function (r) {
-          if (!r.ok) throw new Error('fetch failed');
-          return r.blob();
-        })
+        .then(function (r) { if (!r.ok) throw new Error('fetch failed'); return r.blob(); })
         .then(function (blob) {
           var objectUrl = URL.createObjectURL(blob);
           var a = document.createElement('a');
-          a.href = objectUrl;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          a.href = objectUrl; a.download = filename;
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
           setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 1000);
         })
-        .catch(function () {
-          window.open(url, '_blank', 'noopener');
-        });
+        .catch(function () { window.open(url, '_blank', 'noopener'); });
     }
 
     async function ensureLoggedIn() {
@@ -438,9 +467,7 @@
       return res.ok ? (await res.json()).conversation : null;
     }
     async function apiDelete(id) {
-      var res = await fetch('/api/conversations/' + id, {
-        method: 'DELETE', credentials: 'include',
-      });
+      var res = await fetch('/api/conversations/' + id, { method: 'DELETE', credentials: 'include' });
       return res.ok;
     }
 
@@ -464,8 +491,7 @@
 
     function convItemHTML(c) {
       var active = currentConversation && currentConversation.id === c.id ? ' is-active' : '';
-      var pinIcon = c.pinned
-        ? '<i class="fa-solid fa-thumbtack conv-item__pin" aria-hidden="true"></i>' : '';
+      var pinIcon = c.pinned ? '<i class="fa-solid fa-thumbtack conv-item__pin" aria-hidden="true"></i>' : '';
       return (
         '<div class="conv-item' + active + '" data-id="' + c.id + '" role="button" tabindex="0">' +
           pinIcon +
@@ -479,23 +505,14 @@
 
     function groupHTML(label, items) {
       if (!items.length) return '';
-      return (
-        '<div class="conv-group">' +
-          '<div class="sidebar__section-label">' + label + '</div>' +
-          items.map(convItemHTML).join('') +
-        '</div>'
-      );
+      return '<div class="conv-group"><div class="sidebar__section-label">' + label + '</div>' + items.map(convItemHTML).join('') + '</div>';
     }
 
     function renderSidebarSlot() {
       var slot = document.getElementById('sidebar-slot');
       if (!slot) return;
       var g = groupConversations(conversationList);
-      var html =
-        '<button class="new-chat-btn" id="new-chat" type="button">' +
-          '<i class="fa-solid fa-plus" aria-hidden="true"></i>' +
-          '<span>New chat</span>' +
-        '</button>';
+      var html = '<button class="new-chat-btn" id="new-chat" type="button"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>New chat</span></button>';
       html += groupHTML('Pinned', g.pinned);
       html += groupHTML('Today', g.today);
       html += groupHTML('Yesterday', g.yesterday);
@@ -618,8 +635,7 @@
 
     function promptDelete(conv) {
       pendingDeleteId = conv.id;
-      document.getElementById('modal-delete-body').textContent =
-        '"' + conv.title + '" will be permanently deleted. This cannot be undone.';
+      document.getElementById('modal-delete-body').textContent = '"' + conv.title + '" will be permanently deleted. This cannot be undone.';
       document.getElementById('modal-delete').classList.add('is-open');
     }
     function closeDeleteModal() {
@@ -636,10 +652,10 @@
           '<div class="chat-empty__grid">' +
             sugHTML('fa-lightbulb', 'Explain a concept', 'Explain photosynthesis in simple terms.') +
             sugHTML('fa-calculator', 'Solve a problem', 'Solve the quadratic equation $2x^2 + 5x - 3 = 0$ step by step.') +
-            sugHTML('fa-square-root-variable', 'Math formula', 'Show me the quadratic formula and give a worked example.') +
-            sugHTML('fa-circle-question', 'Practice quiz', 'Give me 5 practice questions on cell division.') +
-            sugHTML('fa-globe', 'Current information', 'What is the latest WAEC syllabus for 2026?') +
-            sugHTML('fa-palette', 'Draw a diagram', 'Draw the water cycle as a colorful diagram.') +
+            sugHTML('fa-circle-question', 'Create a quiz', 'Create a quiz on photosynthesis with 5 questions.') +
+            sugHTML('fa-clone', 'Make flashcards', 'Make 10 flashcards on cell division.') +
+            sugHTML('fa-diagram-project', 'Draw a diagram', 'Draw the water cycle as a diagram.') +
+            sugHTML('fa-book-open', 'My mistakes', 'Show me my mistakes.') +
           '</div>' +
         '</div>';
       innerEl.querySelectorAll('.suggestion-card').forEach(function (card) {
@@ -651,29 +667,22 @@
     }
 
     function sugHTML(icon, title, prompt) {
-      return (
-        '<button class="suggestion-card" type="button" data-prompt="' + esc(prompt) + '">' +
-          '<div class="suggestion-card__title"><i class="fa-solid ' + icon + '"></i>' + esc(title) + '</div>' +
-          '<div class="suggestion-card__desc">' + esc(prompt) + '</div>' +
-        '</button>'
-      );
+      return '<button class="suggestion-card" type="button" data-prompt="' + esc(prompt) + '">' +
+        '<div class="suggestion-card__title"><i class="fa-solid ' + icon + '"></i>' + esc(title) + '</div>' +
+        '<div class="suggestion-card__desc">' + esc(prompt) + '</div>' +
+      '</button>';
     }
 
     function buildImageCell(img) {
       var cell = document.createElement('div');
       cell.className = 'msg-image';
-
       var a = document.createElement('a');
       a.className = 'img-link';
-      a.href = img.url;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-
+      a.href = img.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
       var i = document.createElement('img');
       i.src = img.thumb || img.url;
       i.alt = img.alt || img.prompt || 'Image';
       i.loading = 'lazy';
-
       i.onerror = function () {
         cell.classList.add('msg-image--broken');
         cell.innerHTML = '';
@@ -686,39 +695,378 @@
         msg.style.marginBottom = '6px';
         cell.appendChild(msg);
         var link = document.createElement('a');
-        link.href = img.url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
+        link.href = img.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
         link.textContent = 'Open original';
         cell.appendChild(link);
       };
-
       a.appendChild(i);
       cell.appendChild(a);
-
       var dl = document.createElement('button');
       dl.type = 'button';
       dl.className = 'msg-image__download';
       dl.title = 'Download image';
-      dl.setAttribute('aria-label', 'Download image');
       dl.innerHTML = '<i class="fa-solid fa-download" aria-hidden="true"></i>';
       dl.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var name = img.prompt || img.alt || 'image';
-        downloadImage(img.url, name);
+        e.preventDefault(); e.stopPropagation();
+        downloadImage(img.url, img.prompt || img.alt || 'image');
       });
       cell.appendChild(dl);
-
       if (img.source === 'pexels' && img.author) {
         var credit = document.createElement('div');
         credit.className = 'msg-image__credit';
         credit.textContent = 'Photo by ' + img.author + ' · Pexels';
         cell.appendChild(credit);
       }
-
       return cell;
     }
+
+    function buildToolCard(tool) {
+      var card = document.createElement('a');
+      card.className = 'tool-card';
+      card.href = tool.url || '#';
+      var iconMap = {
+        quiz: { icon: 'fa-circle-question', mod: 'quiz' },
+        flashcards: { icon: 'fa-clone', mod: 'flashcards' },
+        notes: { icon: 'fa-note-sticky', mod: 'notes' },
+        practice: { icon: 'fa-dumbbell', mod: 'practice' },
+        visualization: { icon: 'fa-diagram-project', mod: 'vis' },
+        studyplan: { icon: 'fa-calendar-days', mod: 'plan' },
+        exam: { icon: 'fa-stopwatch', mod: 'exam' },
+        mistakes: { icon: 'fa-clipboard-list', mod: 'mistakes' },
+        sketch: { icon: 'fa-pen-ruler', mod: 'sketch' },
+      };
+      var meta = iconMap[tool.type] || iconMap.notes;
+      var metaText = '';
+      if (tool.count != null) {
+        metaText = tool.count + ' item' + (tool.count === 1 ? '' : 's');
+        if (tool.topic) metaText += ' · ' + tool.topic;
+      } else if (tool.topic) {
+        metaText = tool.topic;
+      } else {
+        metaText = 'Open tool';
+      }
+      card.innerHTML =
+        '<div class="tool-card__icon tool-card__icon--' + meta.mod + '"><i class="fa-solid ' + meta.icon + '"></i></div>' +
+        '<div class="tool-card__body">' +
+          '<div class="tool-card__title">' + esc(tool.title) + '</div>' +
+          '<div class="tool-card__meta">' + esc(metaText) + '</div>' +
+        '</div>' +
+        '<i class="fa-solid fa-arrow-right tool-card__arrow"></i>';
+      return card;
+    }
+
+    function extractIdFromUrl(tool) {
+      if (!tool || !tool.url) return null;
+      var match = tool.url.match(/[?&]id=([^&]+)/);
+      return match ? match[1] : null;
+    }
+
+    /* ============================================================
+       INTERACTIVE QUIZ
+       ============================================================ */
+
+    async function buildInteractiveQuiz(tool) {
+      var quizId = extractIdFromUrl(tool);
+      if (!quizId) return buildToolCard(tool);
+      var container = document.createElement('div');
+      container.className = 'quiz-widget';
+      container.innerHTML = '<div class="widget-loading">Loading quiz…</div>';
+      try {
+        var res = await fetch('/api/tools/quiz/' + quizId, { credentials: 'include' });
+        if (!res.ok) { container.innerHTML = '<div class="widget-error">Could not load quiz.</div>'; return container; }
+        var data = await res.json();
+        if (!data.quiz || !data.quiz.questions || !data.quiz.questions.length) {
+          container.innerHTML = '<div class="widget-error">Quiz has no questions.</div>';
+          return container;
+        }
+        renderQuizWidget(container, data.quiz);
+      } catch (_) {
+        container.innerHTML = '<div class="widget-error">Network error while loading quiz.</div>';
+      }
+      return container;
+    }
+
+    function renderQuizWidget(container, quiz) {
+      var answers = {};
+      var html =
+        '<div class="quiz-widget__head">' +
+          '<div class="quiz-widget__icon"><i class="fa-solid fa-circle-question"></i></div>' +
+          '<div>' +
+            '<div class="quiz-widget__title">' + esc(quiz.title || 'Quiz') + '</div>' +
+            '<div class="quiz-widget__meta">' + quiz.questions.length + ' question' +
+              (quiz.questions.length === 1 ? '' : 's') + ' · ' + esc(quiz.topic || 'general') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="quiz-widget__questions">';
+
+      quiz.questions.forEach(function (q, idx) {
+        html += '<div class="quiz-q" data-qid="' + q.id + '">' +
+          '<div class="quiz-q__num">Question ' + (idx + 1) + '</div>' +
+          '<div class="quiz-q__text">' + esc(q.question) + '</div>' +
+          '<div class="quiz-q__opts">';
+        (q.options || []).forEach(function (opt) {
+          html += '<button type="button" class="quiz-opt" data-label="' + esc(opt.label) + '">' +
+            '<span class="quiz-opt__label">' + esc(opt.label) + '</span>' +
+            '<span class="quiz-opt__text">' + esc(opt.text) + '</span>' +
+          '</button>';
+        });
+        html += '</div></div>';
+      });
+      html += '</div>' +
+        '<div class="quiz-widget__actions">' +
+          '<button type="button" class="quiz-submit" disabled>Answer all questions to submit</button>' +
+          '<span class="quiz-widget__progress">0 / ' + quiz.questions.length + ' answered</span>' +
+        '</div>';
+      container.innerHTML = html;
+
+      container.querySelectorAll('.quiz-q').forEach(function (qEl) {
+        var qid = qEl.getAttribute('data-qid');
+        qEl.querySelectorAll('.quiz-opt').forEach(function (optBtn) {
+          optBtn.addEventListener('click', function () {
+            qEl.querySelectorAll('.quiz-opt').forEach(function (o) { o.classList.remove('is-selected'); });
+            optBtn.classList.add('is-selected');
+            answers[qid] = optBtn.getAttribute('data-label');
+            updateQuizProgress(container, answers, quiz);
+          });
+        });
+      });
+
+      container.querySelector('.quiz-submit').addEventListener('click', function () {
+        submitQuiz(container, quiz, answers);
+      });
+    }
+
+    function updateQuizProgress(container, answers, quiz) {
+      var n = Object.keys(answers).length;
+      var total = quiz.questions.length;
+      container.querySelector('.quiz-widget__progress').textContent = n + ' / ' + total + ' answered';
+      var submitBtn = container.querySelector('.quiz-submit');
+      if (n >= total) { submitBtn.disabled = false; submitBtn.textContent = 'Submit answers'; }
+      else { submitBtn.disabled = true; submitBtn.textContent = 'Answer all questions to submit'; }
+    }
+
+    async function submitQuiz(container, quiz, answers) {
+      var submitBtn = container.querySelector('.quiz-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Scoring…';
+      var answerArray = quiz.questions.map(function (q) {
+        return { questionId: q.id, selected: answers[q.id] || null };
+      });
+      try {
+        var res = await fetch('/api/tools/quiz/' + quiz.id + '/attempt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ answers: answerArray }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { submitBtn.textContent = 'Error. Try again.'; submitBtn.disabled = false; return; }
+        showQuizResults(container, quiz, data);
+      } catch (_) { submitBtn.textContent = 'Network error.'; submitBtn.disabled = false; }
+    }
+
+    function showQuizResults(container, quiz, data) {
+      container.querySelectorAll('.quiz-q').forEach(function (qEl) {
+        var qid = qEl.getAttribute('data-qid');
+        var graded = (data.graded || []).find(function (g) { return g.questionId === qid; });
+        if (!graded) return;
+        qEl.classList.add(graded.isCorrect ? 'is-correct' : 'is-wrong');
+        qEl.querySelectorAll('.quiz-opt').forEach(function (optBtn) {
+          optBtn.disabled = true;
+          var label = optBtn.getAttribute('data-label');
+          if (label === graded.correct) optBtn.classList.add('is-correct-answer');
+          if (label === graded.selected && !graded.isCorrect) optBtn.classList.add('is-wrong-answer');
+        });
+        var q = quiz.questions.find(function (x) { return x.id === qid; });
+        if (q && q.explanation) {
+          var ex = document.createElement('div');
+          ex.className = 'quiz-explanation';
+          ex.innerHTML = '<strong>Why</strong>' + esc(q.explanation);
+          qEl.appendChild(ex);
+        }
+      });
+      var actions = container.querySelector('.quiz-widget__actions');
+      actions.innerHTML = '<div class="quiz-widget__score"><span class="quiz-widget__score-num">' +
+        data.attempt.score + ' / ' + data.attempt.total + '</span></div>' +
+        '<button type="button" class="quiz-ask-ai">Ask AI about my result</button>';
+      actions.querySelector('.quiz-ask-ai').addEventListener('click', function () {
+        sendQuizResultsToAI(quiz, data);
+      });
+    }
+
+    function sendQuizResultsToAI(quiz, data) {
+      var wrong = (data.graded || []).filter(function (g) { return !g.isCorrect; });
+      var summary = 'I just submitted the quiz "' + (quiz.title || 'quiz') + '". I scored ' +
+        data.attempt.score + ' / ' + data.attempt.total + '.';
+      if (wrong.length === 0) {
+        summary += '\n\nI got every question right. What should I study next?';
+      } else {
+        summary += '\n\nQuestions I missed:\n';
+        wrong.forEach(function (w) {
+          var q = quiz.questions.find(function (x) { return x.id === w.questionId; });
+          if (q) summary += '• "' + q.question + '" — I chose ' + (w.selected || '(nothing)') + ', correct was ' + w.correct + '\n';
+        });
+        summary += '\nPlease help me understand what I got wrong.';
+      }
+      input.value = summary;
+      autoGrow();
+      form.requestSubmit();
+    }
+
+    /* ============================================================
+       INTERACTIVE FLASHCARDS
+       ============================================================ */
+
+    async function buildInteractiveFlashcards(tool) {
+      var deckId = extractIdFromUrl(tool);
+      if (!deckId) return buildToolCard(tool);
+      var container = document.createElement('div');
+      container.className = 'flashcard-widget';
+      container.innerHTML = '<div class="widget-loading">Loading flashcards…</div>';
+      try {
+        var res = await fetch('/api/tools/flashcards/' + deckId, { credentials: 'include' });
+        if (!res.ok) { container.innerHTML = '<div class="widget-error">Could not load flashcards.</div>'; return container; }
+        var data = await res.json();
+        if (!data.deck || !data.deck.cards || !data.deck.cards.length) {
+          container.innerHTML = '<div class="widget-error">Deck has no cards.</div>';
+          return container;
+        }
+        renderFlashcardWidget(container, data.deck);
+      } catch (_) {
+        container.innerHTML = '<div class="widget-error">Network error.</div>';
+      }
+      return container;
+    }
+
+    function renderFlashcardWidget(container, deck) {
+      var index = 0;
+      var reviewed = 0;
+      var total = deck.cards.length;
+      var ratings = {};
+
+      var html =
+        '<div class="flashcard-widget__head">' +
+          '<div class="flashcard-widget__icon"><i class="fa-solid fa-clone"></i></div>' +
+          '<div>' +
+            '<div class="flashcard-widget__title">' + esc(deck.title || 'Flashcards') + '</div>' +
+            '<div class="flashcard-widget__meta">' + total + ' card' + (total === 1 ? '' : 's') +
+              ' · ' + esc(deck.topic || 'general') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="flashcard-widget__stage">' +
+          '<div class="flashcard-widget__card" id="fc-card">' +
+            '<div class="flashcard-widget__inner">' +
+              '<div class="flashcard-widget__face flashcard-widget__face--front">' +
+                '<span class="flashcard-widget__corner">Question</span>' +
+                '<p class="flashcard-widget__text" id="fc-front">—</p>' +
+                '<div class="flashcard-widget__hint">Click to flip</div>' +
+              '</div>' +
+              '<div class="flashcard-widget__face flashcard-widget__face--back">' +
+                '<span class="flashcard-widget__corner">Answer</span>' +
+                '<p class="flashcard-widget__text" id="fc-back">—</p>' +
+                '<div class="flashcard-widget__hint">Click to flip back</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="flashcard-widget__rate" id="fc-rate">' +
+            '<button type="button" class="flashcard-rate-btn flashcard-rate-btn--again" data-q="0">Again<small>&lt; 1 min</small></button>' +
+            '<button type="button" class="flashcard-rate-btn flashcard-rate-btn--hard" data-q="1">Hard<small>~1 day</small></button>' +
+            '<button type="button" class="flashcard-rate-btn flashcard-rate-btn--good" data-q="2">Good<small>days</small></button>' +
+            '<button type="button" class="flashcard-rate-btn flashcard-rate-btn--easy" data-q="3">Easy<small>longer</small></button>' +
+          '</div>' +
+          '<div class="flashcard-widget__hint-line" id="fc-hint">Flip the card to see the answer, then rate yourself</div>' +
+        '</div>' +
+        '<div class="flashcard-widget__progress">' +
+          '<div class="flashcard-widget__progress-bar"><div class="flashcard-widget__progress-fill" id="fc-progress-fill" style="width:0%"></div></div>' +
+          '<span class="flashcard-widget__progress-label" id="fc-progress-label">0 / ' + total + '</span>' +
+        '</div>';
+      container.innerHTML = html;
+
+      var card = container.querySelector('#fc-card');
+      var front = container.querySelector('#fc-front');
+      var back = container.querySelector('#fc-back');
+      var rate = container.querySelector('#fc-rate');
+      var hint = container.querySelector('#fc-hint');
+      var progressFill = container.querySelector('#fc-progress-fill');
+      var progressLabel = container.querySelector('#fc-progress-label');
+      var flipped = false;
+
+      function loadCard() {
+        if (index >= total) { showDone(); return; }
+        var c = deck.cards[index];
+        front.textContent = c.front;
+        back.textContent = c.back;
+        card.classList.remove('is-flipped');
+        rate.classList.remove('is-visible');
+        hint.classList.remove('is-hidden');
+        flipped = false;
+        progressFill.style.width = (index / total * 100) + '%';
+        progressLabel.textContent = index + ' / ' + total;
+      }
+
+      card.addEventListener('click', function () {
+        flipped = !flipped;
+        card.classList.toggle('is-flipped', flipped);
+        if (flipped) { rate.classList.add('is-visible'); hint.classList.add('is-hidden'); }
+        else { rate.classList.remove('is-visible'); hint.classList.remove('is-hidden'); }
+      });
+
+      rate.querySelectorAll('.flashcard-rate-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (!flipped) return;
+          var q = parseInt(btn.getAttribute('data-q'), 10);
+          var c = deck.cards[index];
+          fetch('/api/tools/flashcards/card/' + c.id + '/review', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ quality: q }),
+          }).catch(function () {});
+          ratings[c.id] = q;
+          reviewed++;
+          index++;
+          progressFill.style.width = (index / total * 100) + '%';
+          progressLabel.textContent = index + ' / ' + total;
+          loadCard();
+        });
+      });
+
+      function showDone() {
+        var stage = container.querySelector('.flashcard-widget__stage');
+        stage.innerHTML =
+          '<div class="flashcard-widget__done">' +
+            '<div class="flashcard-widget__done-icon"><i class="fa-solid fa-check"></i></div>' +
+            '<h3 class="flashcard-widget__done-title">Deck complete</h3>' +
+            '<p class="flashcard-widget__done-desc">You reviewed ' + reviewed + ' card' + (reviewed === 1 ? '' : 's') + '.</p>' +
+            '<div class="flashcard-widget__done-actions">' +
+              '<button type="button" class="flashcard-ask-ai">Ask AI about these</button>' +
+            '</div>' +
+          '</div>';
+        stage.querySelector('.flashcard-ask-ai').addEventListener('click', function () {
+          var hard = deck.cards.filter(function (c) {
+            return ratings[c.id] === 0 || ratings[c.id] === 1;
+          });
+          var summary;
+          if (!hard.length) {
+            summary = 'I just reviewed "' + (deck.title || 'a flashcard deck') + '" and found all cards easy. What should I study next?';
+          } else {
+            summary = 'I just reviewed the flashcard deck "' + (deck.title || '') + '". I found these cards hard:';
+            hard.forEach(function (c) { summary += '\n• ' + c.front; });
+            summary += '\n\nPlease explain these more clearly.';
+          }
+          input.value = summary;
+          autoGrow();
+          form.requestSubmit();
+        });
+      }
+
+      loadCard();
+    }
+
+    /* ============================================================
+       addMessage
+       ============================================================ */
 
     function addMessage(role, content, options) {
       options = options || {};
@@ -728,14 +1076,13 @@
       var libraryUsed = !!options.libraryUsed;
       var attachments = options.attachments || null;
       var images      = options.images || null;
-      var tools       = options.tools || null; // --- NEW ---
+      var tools       = options.tools || null;
 
       var empty = innerEl.querySelector('.chat-empty');
       if (empty) empty.remove();
 
       var row = document.createElement('div');
       row.className = 'msg-row msg-row--' + (role === 'user' ? 'user' : 'ai');
-
       var avatar = document.createElement('div');
       avatar.className = 'msg-avatar';
       avatar.innerHTML = role === 'user'
@@ -747,60 +1094,69 @@
 
       var contentEl = document.createElement('div');
       contentEl.className = 'msg-content';
-
       if (role === 'user') {
         contentEl.textContent = content;
       } else {
         contentEl.classList.add('md-content');
-        if (window.renderMarkdown) {
-          window.renderMarkdown(content, contentEl);
-        } else {
-          contentEl.textContent = content;
-        }
+        if (window.renderMarkdown) window.renderMarkdown(content, contentEl);
+        else contentEl.textContent = content;
       }
       body.appendChild(contentEl);
 
-      if (images && images.length) {
-        var imgWrap = document.createElement('div');
-        imgWrap.className = 'msg-images';
-        images.forEach(function (img) {
-          imgWrap.appendChild(buildImageCell(img));
+      // Separate tools
+      var imageTools = [];
+      var cardTools = [];
+      var quizTools = [];
+      var flashcardTools = [];
+      if (tools && tools.length) {
+        tools.forEach(function (t) {
+          if (t.type === 'image') imageTools.push(t);
+          else if (t.type === 'quiz') quizTools.push(t);
+          else if (t.type === 'flashcards') flashcardTools.push(t);
+          else cardTools.push(t);
         });
-        body.appendChild(imgWrap);
+      }
+      if (images && images.length) imageTools = imageTools.concat(images);
+
+      // Quiz widgets
+      if (quizTools.length) {
+        var quizWrap = document.createElement('div');
+        quizWrap.className = 'msg-tools';
+        body.appendChild(quizWrap);
+        quizTools.forEach(function (t) {
+          buildInteractiveQuiz(t).then(function (w) { quizWrap.appendChild(w); scrollToBottom(); });
+        });
       }
 
-      // --- NEW: Render Tool Cards ---
-      if (tools && tools.length) {
+      // Flashcard widgets
+      if (flashcardTools.length) {
+        var fcWrap = document.createElement('div');
+        fcWrap.className = 'msg-tools';
+        body.appendChild(fcWrap);
+        flashcardTools.forEach(function (t) {
+          buildInteractiveFlashcards(t).then(function (w) { fcWrap.appendChild(w); scrollToBottom(); });
+        });
+      }
+
+      // Regular tool cards
+      if (cardTools.length) {
         var toolsWrap = document.createElement('div');
         toolsWrap.className = 'msg-tools';
-        
-        tools.forEach(function(tool) {
-          var card = document.createElement('div');
-          card.className = 'tool-card tool-card--' + tool.type;
-          
-          var icon = tool.type === 'quiz' ? 'fa-circle-question' : 
-                     tool.type === 'flashcards' ? 'fa-clone' : 'fa-wand-magic-sparkles';
-                     
-          var link = tool.type === 'quiz' ? 'lab/quiz.html?id=' + tool.id :
-                     tool.type === 'flashcards' ? 'lab/flashcards.html?deck=' + tool.id : '#';
-                     
-          card.innerHTML = 
-            '<div class="tool-card__icon"><i class="fa-solid ' + icon + '"></i></div>' +
-            '<div class="tool-card__body">' +
-              '<div class="tool-card__title">' + esc(tool.title) + '</div>' +
-              '<div class="tool-card__sub">' + (tool.count || '') + ' ' + tool.type + ' · ' + esc(tool.topic) + '</div>' +
-            '</div>' +
-            '<a href="' + link + '" class="tool-card__action">Open <i class="fa-solid fa-arrow-right"></i></a>';
-            
-          toolsWrap.appendChild(card);
-        });
-        
+        cardTools.forEach(function (t) { toolsWrap.appendChild(buildToolCard(t)); });
         body.appendChild(toolsWrap);
       }
 
+      // Images
+      if (imageTools.length) {
+        var imgWrap = document.createElement('div');
+        imgWrap.className = 'msg-images';
+        imageTools.forEach(function (img) { imgWrap.appendChild(buildImageCell(img)); });
+        body.appendChild(imgWrap);
+      }
+
+      // Meta
       var meta = document.createElement('div');
       meta.className = 'msg-meta';
-
       if (attachments && attachments.length) {
         attachments.forEach(function (a) {
           var tag = document.createElement('span');
@@ -809,16 +1165,8 @@
           meta.appendChild(tag);
         });
       }
-      if (agentName) {
-        var aTag = document.createElement('span');
-        aTag.textContent = 'as @' + agentName;
-        meta.appendChild(aTag);
-      }
-      if (provider) {
-        var pTag = document.createElement('span');
-        pTag.textContent = 'via ' + provider;
-        meta.appendChild(pTag);
-      }
+      if (agentName) { var aTag = document.createElement('span'); aTag.textContent = 'as @' + agentName; meta.appendChild(aTag); }
+      if (provider)  { var pTag = document.createElement('span'); pTag.textContent = 'via ' + provider; meta.appendChild(pTag); }
       if (libraryUsed) {
         var lBadge = document.createElement('span');
         lBadge.className = 'meta-badge meta-badge--library';
@@ -832,22 +1180,17 @@
         sBadge.className = 'meta-badge meta-badge--search';
         sBadge.innerHTML = '<i class="fa-solid fa-globe" aria-hidden="true"></i> searched the web';
         meta.appendChild(sBadge);
-
         var toggleBtn = document.createElement('button');
         toggleBtn.type = 'button';
         toggleBtn.className = 'sources-toggle';
-        toggleBtn.innerHTML = webSearch.sources.length + ' source' +
-          (webSearch.sources.length === 1 ? '' : 's') +
-          ' <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
+        toggleBtn.innerHTML = webSearch.sources.length + ' source' + (webSearch.sources.length === 1 ? '' : 's') + ' <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';
         meta.appendChild(toggleBtn);
-
         panel = document.createElement('div');
         panel.className = 'sources-panel';
         var label = document.createElement('div');
         label.className = 'sources-panel__label';
         label.textContent = 'Sources used';
         panel.appendChild(label);
-
         webSearch.sources.forEach(function (src, i) {
           var item = document.createElement('div');
           item.className = 'source-item';
@@ -859,27 +1202,21 @@
           var t = document.createElement('div');
           t.className = 'source-item__title';
           var a = document.createElement('a');
-          a.href = src.url || '#';
-          a.target = '_blank';
-          a.rel = 'noopener noreferrer';
+          a.href = src.url || '#'; a.target = '_blank'; a.rel = 'noopener noreferrer';
           a.textContent = src.title || '(untitled)';
           t.appendChild(a);
           var u = document.createElement('p');
           u.className = 'source-item__url';
           u.textContent = src.url || '';
-          sBody.appendChild(t);
-          sBody.appendChild(u);
-          item.appendChild(num);
-          item.appendChild(sBody);
+          sBody.appendChild(t); sBody.appendChild(u);
+          item.appendChild(num); item.appendChild(sBody);
           panel.appendChild(item);
         });
-
         toggleBtn.addEventListener('click', function () {
           panel.classList.toggle('is-visible');
           toggleBtn.classList.toggle('is-open');
         });
       }
-
       if (meta.children.length) body.appendChild(meta);
       if (panel) body.appendChild(panel);
 
@@ -894,11 +1231,8 @@
       var row = document.createElement('div');
       row.className = 'msg-row msg-row--ai';
       row.id = 'typing-row';
-      row.innerHTML =
-        '<div class="msg-avatar"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></div>' +
-        '<div class="msg-body"><div class="msg-content">' +
-          '<span class="typing"><span></span><span></span><span></span></span>' +
-        '</div></div>';
+      row.innerHTML = '<div class="msg-avatar"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i></div>' +
+        '<div class="msg-body"><div class="msg-content"><span class="typing"><span></span><span></span><span></span></span></div></div>';
       innerEl.appendChild(row);
       scrollToBottom();
     }
@@ -935,9 +1269,7 @@
       if (!match) return null;
       var query = (match[1] || '').toLowerCase();
       var start = caret - match[0].length;
-      var matches = agents.filter(function (a) {
-        return !query || a.name.toLowerCase().indexOf(query) === 0;
-      });
+      var matches = agents.filter(function (a) { return !query || a.name.toLowerCase().indexOf(query) === 0; });
       if (!matches.length) return null;
       return { start: start, query: query, matches: matches, index: 0 };
     }
@@ -947,23 +1279,18 @@
       pop.innerHTML = state.matches.map(function (a, i) {
         var active = i === state.index ? 'background:var(--blush);' : '';
         var initial = (a.name || '?').charAt(0).toUpperCase();
-        return (
-          '<div class="mention-item" data-index="' + i + '" style="' + active + '">' +
-            '<div class="mention-item__avatar">' + esc(initial) + '</div>' +
-            '<div style="min-width:0">' +
-              '<div style="font-weight:600;color:var(--navy)">@' + esc(a.name) + '</div>' +
-              '<div style="font-size:0.75rem;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
-                esc(a.description || a.subject || 'Custom AI') + '</div>' +
-            '</div>' +
-          '</div>'
-        );
+        return '<div class="mention-item" data-index="' + i + '" style="' + active + '">' +
+          '<div class="mention-item__avatar">' + esc(initial) + '</div>' +
+          '<div style="min-width:0">' +
+            '<div style="font-weight:600;color:var(--navy)">@' + esc(a.name) + '</div>' +
+            '<div style="font-size:0.75rem;color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
+              esc(a.description || a.subject || 'Custom AI') + '</div>' +
+          '</div>' +
+        '</div>';
       }).join('');
       pop.style.display = 'block';
       pop.querySelectorAll('.mention-item').forEach(function (el) {
-        el.addEventListener('mousedown', function (e) {
-          e.preventDefault();
-          selectMention(parseInt(el.getAttribute('data-index'), 10));
-        });
+        el.addEventListener('mousedown', function (e) { e.preventDefault(); selectMention(parseInt(el.getAttribute('data-index'), 10)); });
       });
     }
     function hideMentionPopup() {
@@ -998,21 +1325,17 @@
         if (a.status === 'ready') statusCls += ' attach-chip__status--ready';
         if (a.status === 'failed') statusCls += ' attach-chip__status--failed';
         var statusLabel = a.status === 'ready' ? 'ready' : a.status === 'failed' ? 'failed' : 'reading…';
-        return (
-          '<div class="attach-chip" data-id="' + a.id + '">' +
-            '<div class="attach-chip__icon"><i class="fa-solid fa-file-lines"></i></div>' +
-            '<span class="attach-chip__name">' + esc(a.name) + '</span>' +
-            '<span class="' + statusCls + '">' + statusLabel + '</span>' +
-            '<button class="attach-chip__remove" data-id="' + a.id + '" type="button" title="Remove">' +
-              '<i class="fa-solid fa-xmark"></i>' +
-            '</button>' +
-          '</div>'
-        );
+        return '<div class="attach-chip" data-id="' + a.id + '">' +
+          '<div class="attach-chip__icon"><i class="fa-solid fa-file-lines"></i></div>' +
+          '<span class="attach-chip__name">' + esc(a.name) + '</span>' +
+          '<span class="' + statusCls + '">' + statusLabel + '</span>' +
+          '<button class="attach-chip__remove" data-id="' + a.id + '" type="button" title="Remove">' +
+            '<i class="fa-solid fa-xmark"></i>' +
+          '</button>' +
+        '</div>';
       }).join('');
       attachStrip.querySelectorAll('.attach-chip__remove').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          removeAttachment(btn.getAttribute('data-id'));
-        });
+        btn.addEventListener('click', function () { removeAttachment(btn.getAttribute('data-id')); });
       });
     }
 
@@ -1031,10 +1354,7 @@
       for (var i = 0; i < files.length; i++) {
         var att = await uploadFile(files[i]);
         if (!att) continue;
-        stagedAttachments.push({
-          id: att.id, name: att.original_name,
-          status: att.extraction_status || 'pending',
-        });
+        stagedAttachments.push({ id: att.id, name: att.original_name, status: att.extraction_status || 'pending' });
         renderAttachStrip();
         pollAttachment(att.id);
       }
@@ -1057,9 +1377,7 @@
     }
 
     async function removeAttachment(id) {
-      try {
-        await fetch('/api/chat/attachments/' + id, { method: 'DELETE', credentials: 'include' });
-      } catch (_) {}
+      try { await fetch('/api/chat/attachments/' + id, { method: 'DELETE', credentials: 'include' }); } catch (_) {}
       stagedAttachments = stagedAttachments.filter(function (a) { return a.id !== id; });
       renderAttachStrip();
     }
@@ -1121,18 +1439,13 @@
       return '';
     }
     async function startRecording() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert('Your browser does not support microphone access.'); return;
-      }
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert('Your browser does not support microphone access.'); return; }
       try { mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
       catch (err) { alert('Could not access the microphone: ' + err.message); return; }
       var mimeType = pickMimeType();
       try {
-        mediaRecorder = mimeType
-          ? new MediaRecorder(mediaStream, { mimeType: mimeType })
-          : new MediaRecorder(mediaStream);
+        mediaRecorder = mimeType ? new MediaRecorder(mediaStream, { mimeType: mimeType }) : new MediaRecorder(mediaStream);
       } catch (err) { stopStream(); alert('Could not start recording.'); return; }
-
       audioChunks = [];
       mediaRecorder.ondataavailable = function (e) { if (e.data && e.data.size) audioChunks.push(e.data); };
       mediaRecorder.onstop = onRecordingStop;
@@ -1206,6 +1519,7 @@
           addMessage(m.role, m.content, {
             provider: m.provider,
             images: (media && media.images) ? media.images : null,
+            tools: (media && media.tools) ? media.tools : null,
             webSearch: (media && media.webSearch) ? media.webSearch : null,
           });
           history.push({ role: m.role, content: m.content });
@@ -1248,17 +1562,14 @@
         });
         var data = await res.json().catch(function () { return {}; });
         removeTyping();
-        if (!res.ok) {
-          addMessage('ai', data.error || 'Something went wrong.');
-          return;
-        }
+        if (!res.ok) { addMessage('ai', data.error || 'Something went wrong.'); return; }
         addMessage('ai', data.reply, {
           provider: data.provider,
           agentName: data.agent ? data.agent.name : null,
           webSearch: data.webSearch || null,
           libraryUsed: !!data.libraryUsed,
           images: data.images || null,
-          tools: data.tools || null, // --- NEW: Pass tools to renderer ---
+          tools: data.tools || null,
         });
         history.push({ role: 'assistant', content: data.reply });
 
