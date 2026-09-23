@@ -10,6 +10,15 @@ const fs = require('fs');
 
 const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
 
+// Browser-like headers — Google's signed download URLs reject
+// requests without these and return HTTP 403.
+const BROWSER_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+                '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Referer': 'https://books.google.com/',
+  'Accept': 'application/pdf,*/*',
+};
+
 /**
  * Search Google Books for downloadable PDFs.
  * Returns { ok: true, books: [...] } or { ok: false, code, detail }.
@@ -29,7 +38,12 @@ async function search(query, { limit = 25 } = {}) {
 
   let res;
   try {
-    res = await fetch(url, { headers: { Accept: 'application/json' } });
+    res = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': BROWSER_HEADERS['User-Agent'],
+      },
+    });
   } catch (err) {
     return { ok: false, code: 'NETWORK_ERROR', detail: err.message };
   }
@@ -74,9 +88,14 @@ async function search(query, { limit = 25 } = {}) {
 
 /**
  * Download a PDF from a Google Books downloadLink to destPath.
+ * Uses browser-like headers because Google's signed URLs reject
+ * plain server-side requests with HTTP 403.
  */
 async function downloadPdf(url, destPath) {
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: BROWSER_HEADERS,
+    redirect: 'follow',
+  });
   if (!res.ok) throw new Error('Download HTTP ' + res.status);
   const buf = await res.arrayBuffer();
   fs.writeFileSync(destPath, Buffer.from(buf));

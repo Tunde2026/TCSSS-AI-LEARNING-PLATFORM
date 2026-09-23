@@ -80,8 +80,7 @@ async function setStatus(documentId, status, error, chunkCount) {
           SET processing_status = $1,
               processing_error  = $2,
               processed_at      = CASE WHEN $1 = 'ready' THEN now() ELSE processed_at END,
-              chunk_count       = COALESCE($3, chunk_count),
-              updated_at        = now()
+              chunk_count       = COALESCE($3, chunk_count)
         WHERE id = $4`,
       [status, error, chunkCount, documentId]
     );
