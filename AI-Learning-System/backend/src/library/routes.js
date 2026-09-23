@@ -61,6 +61,15 @@ router.get('/:id/download', requireLogin, async function (req, res, next) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
+    // Google Books items are read-only — students can read in-app but not download.
+    // Admins can still download for library maintenance.
+    if (doc.source_type === 'googlebooks' && req.user.role !== 'admin') {
+      return res.status(403).json({
+        error: 'This book is read-only. You can read it in the library, but it cannot be downloaded.',
+        read_only: true,
+      });
+    }
+
     // If it's an archive.org link, redirect to it
     if (doc.storage_path && doc.storage_path.startsWith('https://archive.org')) {
       return res.redirect(doc.storage_path);
@@ -92,7 +101,6 @@ router.get('/:id/download', requireLogin, async function (req, res, next) {
   } catch (err) { next(err); }
 });
 
-// Read inline (no download prompt)
 // Read inline (no download prompt)
 router.get('/:id/read', requireLogin, async function (req, res, next) {
   try {
@@ -162,7 +170,7 @@ router.post('/admin/archive-headers', requireAdmin, async function (req, res, ne
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 7);
     const identifier = 'tcsss-' + timestamp + '-' + random;
-    
+
     // Clean filename for URL
     const cleanFilename = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
     const uploadUrl = 'https://s3.us.archive.org/' + identifier + '/' + cleanFilename;
@@ -172,17 +180,17 @@ router.post('/admin/archive-headers', requireAdmin, async function (req, res, ne
       'Authorization': 'LOW ' + accessKey + ':' + secretKey,
       'x-archive-auto-make-bucket': '1',
       'x-archive-meta-title': title || 'TCSSS Textbook',
-      'x-archive-meta-collection': 'opensource', 
+      'x-archive-meta-collection': 'opensource',
       'x-archive-meta-mediatype': 'texts',
       'x-archive-meta-subject': 'tcsss; textbook; education',
       'x-archive-meta-description': 'Uploaded via TCSSS AI Learning Platform'
     };
 
-    res.json({ 
-      uploadUrl: uploadUrl, 
-      identifier: identifier, 
+    res.json({
+      uploadUrl: uploadUrl,
+      identifier: identifier,
       cleanFilename: cleanFilename,
-      headers: headers 
+      headers: headers
     });
 
   } catch (err) {
@@ -194,30 +202,30 @@ router.post('/admin/archive-headers', requireAdmin, async function (req, res, ne
 router.post('/admin/archive-confirm', requireAdmin, async function (req, res, next) {
   try {
     const { title, subject, author, archiveUrl, identifier, fileSize } = req.body;
-    
+
     if (!title || !archiveUrl || !identifier) {
       return res.status(400).json({ error: 'Missing required book details.' });
     }
 
     // Extract filename from the URL
     const filename = archiveUrl.split('/').pop() || 'archive-upload';
-    const mimeType = filename.endsWith('.pdf') ? 'application/pdf' 
+    const mimeType = filename.endsWith('.pdf') ? 'application/pdf'
                    : filename.endsWith('.epub') ? 'application/epub+zip'
                    : filename.endsWith('.txt') ? 'text/plain'
                    : filename.endsWith('.docx') ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                    : 'application/octet-stream';
 
     const query = `
-      INSERT INTO library_documents 
+      INSERT INTO library_documents
       (title, subject, author, storage_path, approved, source_type, external_id, filename, original_name, size_bytes, mime_type, status, processing_status)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'approved', 'ready')
       RETURNING *
     `;
-    
+
     const values = [
-      title, 
-      subject || null, 
-      author || null, 
+      title,
+      subject || null,
+      author || null,
       archiveUrl,
       true,
       'upload',

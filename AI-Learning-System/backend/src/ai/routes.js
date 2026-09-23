@@ -13,10 +13,9 @@ const imagegen    = require('../tools/imagegen/service');
 const imagesearch = require('../tools/imagesearch/service');
 const quizService = require('../tools/quiz/service');
 const flashcardService = require('../tools/flashcards/service');
-
-// ============================================================
-// Intent detection — returns true if the message matches
-// ============================================================
+const practiceService = require('../tools/practice/service');
+const visualizationService = require('../tools/visualization/service');
+const studyPlanService = require('../tools/studyplans/service');
 
 function detectQuizIntent(t) {
   return /(?:create|make|generate|give me|start|prepare|set up|build)\s+(?:a\s+|an\s+)?(?:quiz|test|assessment|questions?)/i.test(t) ||
@@ -93,10 +92,6 @@ function detectWebSearchIntent(t) {
   return triggers.some(function (k) { return t.indexOf(k) !== -1; });
 }
 
-// ============================================================
-// Extract helpers
-// ============================================================
-
 function extractTopic(text) {
   return String(text || '')
     .replace(/^(please\s+)?(?:can you\s+)?(?:create|make|generate|give me|start|prepare|set up|build|i need you to|ask me)\s+(?:a\s+|an\s+|some\s+)?/i, '')
@@ -113,27 +108,16 @@ function extractNumber(text, fallback) {
   return Math.min(n, 50);
 }
 
-// ============================================================
-// Tool detection and execution
-// ============================================================
-
 async function runToolDetection({ user, userText }) {
   const t = String(userText || '').toLowerCase();
   const tools = [];
   const injectedContext = [];
 
-  // Order matters — most specific first
-  // Quiz
   if (detectQuizIntent(t)) {
     const topic = extractTopic(userText);
     const count = extractNumber(userText, 10);
     try {
-      const result = await quizService.generate({
-        userId: user.id,
-        topic: topic,
-        count: count,
-        difficulty: 'medium',
-      });
+      const result = await quizService.generate({ userId: user.id, topic: topic, count: count, difficulty: 'medium' });
       if (result.ok) {
         tools.push({
           type: 'quiz',
@@ -142,28 +126,17 @@ async function runToolDetection({ user, userText }) {
           count: result.quiz.questions.length,
           url: '/lab/quiz.html?id=' + result.quiz.id,
         });
-        injectedContext.push(
-          'A quiz on "' + topic + '" with ' + result.quiz.questions.length +
-          ' questions has been created. It appears as a clickable card below. ' +
-          'Mention it in one short sentence and let the student click to start.'
-        );
+        injectedContext.push('A quiz on "' + topic + '" with ' + result.quiz.questions.length + ' questions has been created. It appears as a clickable card below. Mention it in one short sentence and let the student click to start.');
       } else {
         logger.warn('[ai/chat] quiz tool failed: ' + result.code);
       }
-    } catch (err) {
-      logger.warn('[ai/chat] quiz tool threw: ' + err.message);
-    }
+    } catch (err) { logger.warn('[ai/chat] quiz tool threw: ' + err.message); }
   }
-  // Flashcards
   else if (detectFlashcardsIntent(t)) {
     const topic = extractTopic(userText);
     const count = extractNumber(userText, 10);
     try {
-      const result = await flashcardService.generate({
-        userId: user.id,
-        topic: topic,
-        count: count,
-      });
+      const result = await flashcardService.generate({ userId: user.id, topic: topic, count: count });
       if (result.ok) {
         tools.push({
           type: 'flashcards',
@@ -172,133 +145,102 @@ async function runToolDetection({ user, userText }) {
           count: result.deck.cards.length,
           url: '/lab/flashcards.html?id=' + result.deck.id,
         });
-        injectedContext.push(
-          'A flashcard deck on "' + topic + '" with ' + result.deck.cards.length +
-          ' cards has been created. It appears as a clickable card below. ' +
-          'Mention it briefly so the student knows to click it.'
-        );
+        injectedContext.push('A flashcard deck on "' + topic + '" with ' + result.deck.cards.length + ' cards has been created. It appears as a clickable card below. Mention it briefly so the student knows to click it.');
       }
-    } catch (err) {
-      logger.warn('[ai/chat] flashcards tool threw: ' + err.message);
-    }
+    } catch (err) { logger.warn('[ai/chat] flashcards tool threw: ' + err.message); }
   }
-  // Notes
   else if (detectNotesIntent(t)) {
     tools.push({
       type: 'notes',
-      title: 'Open Notes',
+      title: 'Notes',
       topic: extractTopic(userText),
       url: '/lab/notes.html',
     });
-    injectedContext.push(
-      'The Notes tool can be opened from the card below. Tell the student ' +
-      'briefly that they can create and save notes there.'
-    );
+    injectedContext.push('The Notes tool can be opened from the card below. Tell the student briefly that they can create and save notes there.');
   }
-  // Practice
   else if (detectPracticeIntent(t)) {
     const topic = extractTopic(userText);
-    tools.push({
-      type: 'practice',
-      title: 'Practice: ' + topic,
-      topic: topic,
-      url: '/lab/practice.html',
-    });
-    injectedContext.push(
-      'The Practice tool for "' + topic + '" can be opened from the card ' +
-      'below. Introduce the topic in one sentence.'
-    );
+    const count = extractNumber(userText, 5);
+    try {
+      const result = await practiceService.generate({ userId: user.id, topic: topic, count: count, difficulty: 'medium' });
+      if (result.ok) {
+        tools.push({
+          type: 'practice',
+          title: result.set.title || ('Practice: ' + topic),
+          topic: topic,
+          setId: result.set.id,
+          count: result.set.questions.length,
+          url: '/lab/practice.html?id=' + result.set.id,
+        });
+        injectedContext.push('A practice set on "' + topic + '" with ' + result.set.questions.length + ' questions has been created. It appears as an interactive widget below. Introduce the topic in one sentence.');
+      } else {
+        logger.warn('[ai/chat] practice tool failed: ' + result.code);
+      }
+    } catch (err) { logger.warn('[ai/chat] practice tool threw: ' + err.message); }
   }
-  // Visualization
   else if (detectVisualizationIntent(t)) {
     const topic = extractTopic(userText);
-    tools.push({
-      type: 'visualization',
-      title: 'Diagram: ' + topic,
-      topic: topic,
-      url: '/lab/visualization.html',
-    });
-    injectedContext.push(
-      'A visualization for "' + topic + '" can be opened from the card below. ' +
-      'Introduce the topic in one or two sentences.'
-    );
+    try {
+      const result = await visualizationService.generate({ topic: topic, kind: null });
+      if (result.ok) {
+        tools.push({
+          type: 'visualization',
+          title: result.visualization.title || ('Diagram: ' + topic),
+          topic: topic,
+          kind: result.visualization.kind,
+          mermaid: result.visualization.mermaid,
+          explanation: result.visualization.explanation,
+          url: '/lab/visualization.html',
+        });
+        injectedContext.push('A diagram for "' + topic + '" has been created. It appears as an interactive widget below. Introduce the topic in one or two sentences.');
+      } else {
+        logger.warn('[ai/chat] visualization tool failed: ' + result.code);
+      }
+    } catch (err) { logger.warn('[ai/chat] visualization tool threw: ' + err.message); }
   }
-  // Study Plan
   else if (detectStudyPlanIntent(t)) {
     const topic = extractTopic(userText);
-    tools.push({
-      type: 'studyplan',
-      title: 'Study Plan: ' + topic,
-      topic: topic,
-      url: '/lab/study-plans.html',
-    });
-    injectedContext.push(
-      'A study plan generator for "' + topic + '" can be opened from the card ' +
-      'below. Briefly explain that the student can set the number of days there.'
-    );
+    const days = Math.max(3, Math.min(30, extractNumber(userText, 7)));
+    try {
+      const result = await studyPlanService.generate({ userId: user.id, topic: topic, days: days });
+      if (result.ok) {
+        tools.push({
+          type: 'studyplan',
+          title: result.plan.title || (days + '-day plan for ' + topic),
+          topic: topic,
+          planId: result.plan.id,
+          days: result.plan.duration_days,
+          url: '/lab/study-plans.html?id=' + result.plan.id,
+        });
+        injectedContext.push('A ' + days + '-day study plan for "' + topic + '" has been created. It appears as an interactive widget below with checkboxes. Introduce it in one sentence.');
+      } else {
+        logger.warn('[ai/chat] study plan tool failed: ' + result.code);
+      }
+    } catch (err) { logger.warn('[ai/chat] study plan tool threw: ' + err.message); }
   }
-  // Exam Mode
   else if (detectExamIntent(t)) {
     const topic = extractTopic(userText);
-    tools.push({
-      type: 'exam',
-      title: 'Exam Mode',
-      topic: topic,
-      url: '/lab/exam.html',
-    });
-    injectedContext.push(
-      'Exam Mode can be opened from the card below. Explain briefly that it is ' +
-      'a timed mode with no hints.'
-    );
+    tools.push({ type: 'exam', title: 'Exam Mode', topic: topic, url: '/lab/exam.html' });
+    injectedContext.push('Exam Mode can be opened from the card below. Explain briefly that it is a timed mode with no hints.');
   }
-  // Mistake Bank
   else if (detectMistakesIntent(t)) {
-    tools.push({
-      type: 'mistakes',
-      title: 'My Mistakes',
-      url: '/lab/mistakes.html',
-    });
-    injectedContext.push(
-      'The student\'s Mistake Bank can be opened from the card below. ' +
-      'Mention briefly that it shows their weak topics.'
-    );
+    tools.push({ type: 'mistakes', title: 'My Mistakes', url: '/lab/mistakes.html' });
+    injectedContext.push('The student\'s Mistake Bank can be opened from the card below. Mention briefly that it shows their weak topics.');
   }
-  // Sketch / Formula
   else if (detectSketchIntent(t)) {
-    tools.push({
-      type: 'sketch',
-      title: 'Sketch & Formula Studio',
-      url: '/lab/sketch.html',
-    });
-    injectedContext.push(
-      'The Sketch and Formula Studio can be opened from the card below. ' +
-      'Explain briefly that it helps write things like H₂SO₄ correctly with ' +
-      'subscripts and superscripts.'
-    );
+    tools.push({ type: 'sketch', title: 'Sketch & Formula Studio', url: '/lab/sketch.html' });
+    injectedContext.push('The Sketch and Formula Studio can be opened from the card below. Explain briefly that it helps write things like H₂SO₄ correctly with subscripts and superscripts.');
   }
-  // Image generation
   else if (detectImageGenerateIntent(t)) {
     const prompt = extractTopic(userText);
     try {
       const r = await imagegen.generate({ prompt: prompt, model: 'flux', width: 1024, height: 1024 });
       if (r.ok) {
-        tools.push({
-          type: 'image',
-          url: r.image.url,
-          prompt: prompt,
-          source: 'pollinations',
-          title: prompt,
-        });
-        injectedContext.push(
-          'An image for "' + prompt + '" has been generated and appears below. ' +
-          'Introduce it in one sentence.'
-        );
+        tools.push({ type: 'image', url: r.image.url, prompt: prompt, source: 'pollinations', title: prompt });
+        injectedContext.push('An image for "' + prompt + '" has been generated and appears below. Introduce it in one sentence.');
       }
-    } catch (err) {
-      logger.warn('[ai/chat] imagegen threw: ' + err.message);
-    }
+    } catch (err) { logger.warn('[ai/chat] imagegen threw: ' + err.message); }
   }
-  // Photo search
   else if (detectPhotoSearchIntent(t) && imagesearch.isEnabled()) {
     const query = extractTopic(userText);
     try {
@@ -309,26 +251,14 @@ async function runToolDetection({ user, userText }) {
           title: 'Photos: ' + query,
           query: query,
           images: r.images.map(function (img) {
-            return {
-              url: img.url,
-              thumb: img.thumb,
-              author: img.author,
-              sourceUrl: img.sourceUrl,
-              alt: img.alt,
-            };
+            return { url: img.url, thumb: img.thumb, author: img.author, sourceUrl: img.sourceUrl, alt: img.alt };
           }),
         });
-        injectedContext.push(
-          'Real photos for "' + query + '" have been found and appear below. ' +
-          'Introduce them in one sentence.'
-        );
+        injectedContext.push('Real photos for "' + query + '" have been found and appear below. Introduce them in one sentence.');
       }
-    } catch (err) {
-      logger.warn('[ai/chat] imagesearch threw: ' + err.message);
-    }
+    } catch (err) { logger.warn('[ai/chat] imagesearch threw: ' + err.message); }
   }
 
-  // Web search runs independently of the above (only if nothing else matched)
   if (detectWebSearchIntent(t) && websearch.isEnabled() && tools.length === 0) {
     try {
       const r = await websearch.search(userText, { count: 5 });
@@ -339,17 +269,11 @@ async function runToolDetection({ user, userText }) {
         tools.push({ type: 'websearch', sources: sources });
         injectedContext.push(websearch.buildContextBlock(userText, r.results));
       }
-    } catch (err) {
-      logger.warn('[ai/chat] websearch threw: ' + err.message);
-    }
+    } catch (err) { logger.warn('[ai/chat] websearch threw: ' + err.message); }
   }
 
   return { tools: tools, injectedContext: injectedContext };
 }
-
-// ============================================================
-// Main chat route
-// ============================================================
 
 router.post('/chat', requireLogin, async (req, res, next) => {
   const body = req.body || {};
@@ -393,18 +317,9 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       content: lastUser.content,
     });
 
-    const decision = await route({
-      user: req.user,
-      messages: messages,
-      agentId: agentId || null,
-    });
+    const decision = await route({ user: req.user, messages: messages, agentId: agentId || null });
 
-    // Detect and run tools before calling the model
-    const toolResult = await runToolDetection({
-      user: req.user,
-      userText: lastUser.content,
-    });
-    logger.info('[DEBUG] toolResult: ' + JSON.stringify(toolResult));
+    const toolResult = await runToolDetection({ user: req.user, userText: lastUser.content });
 
     let gatewayMessages = messages.slice();
     const injectedSystemBlocks = [];
@@ -417,23 +332,15 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       try {
         const attCtx = await attachments.buildContextFor(attachmentIds, req.user.id);
         if (attCtx) injectedSystemBlocks.push(attCtx);
-      } catch (err) {
-        logger.warn('[ai/chat] attachment context failed: ' + err.message);
-      }
+      } catch (err) { logger.warn('[ai/chat] attachment context failed: ' + err.message); }
     }
 
-    // Library retrieval
     try {
       const rc = await retrieval.retrieveContext(lastUser.content);
       if (rc.contextText) injectedSystemBlocks.push(rc.contextText);
-    } catch (err) {
-      logger.warn('[ai/chat] retrieval failed: ' + err.message);
-    }
+    } catch (err) { logger.warn('[ai/chat] retrieval failed: ' + err.message); }
 
-    // Add tool-specific context blocks
-    toolResult.injectedContext.forEach(function (block) {
-      injectedSystemBlocks.push(block);
-    });
+    toolResult.injectedContext.forEach(function (block) { injectedSystemBlocks.push(block); });
 
     if (injectedSystemBlocks.length) {
       const combined = injectedSystemBlocks.join('\n\n=====\n\n');
@@ -442,48 +349,25 @@ router.post('/chat', requireLogin, async (req, res, next) => {
 
     const result = await chat({ messages: gatewayMessages });
 
-    // Split tools: card-style vs media-style
     const renderableTools = toolResult.tools.filter(function (t) {
-      return t.type !== 'websearch' &&
-             t.type !== 'image' &&
-             t.type !== 'photos';
+      return t.type !== 'websearch' && t.type !== 'image' && t.type !== 'photos';
     });
-    const inlineImages = toolResult.tools.filter(function (t) {
-      return t.type === 'image';
-    }).map(function (t) {
-      return { url: t.url, prompt: t.prompt, source: t.source };
-    });
-    const photoResults = toolResult.tools.filter(function (t) {
-      return t.type === 'photos';
-    });
+    const inlineImages = toolResult.tools.filter(function (t) { return t.type === 'image'; })
+      .map(function (t) { return { url: t.url, prompt: t.prompt, source: t.source }; });
+    const photoResults = toolResult.tools.filter(function (t) { return t.type === 'photos'; });
     const webSearchTool = toolResult.tools.find(function (t) { return t.type === 'websearch'; });
 
-    // Build a full list of all tools for the response
     const responseTools = [];
     renderableTools.forEach(function (t) { responseTools.push(t); });
     photoResults.forEach(function (t) {
       (t.images || []).forEach(function (img) {
-        responseTools.push({
-          type: 'image',
-          url: img.url,
-          thumb: img.thumb,
-          source: 'pexels',
-          author: img.author,
-          sourceUrl: img.sourceUrl,
-          alt: img.alt,
-        });
+        responseTools.push({ type: 'image', url: img.url, thumb: img.thumb, source: 'pexels', author: img.author, sourceUrl: img.sourceUrl, alt: img.alt });
       });
     });
     inlineImages.forEach(function (t) {
-      responseTools.push({
-        type: 'image',
-        url: t.url,
-        source: t.source || 'pollinations',
-        alt: t.prompt,
-      });
+      responseTools.push({ type: 'image', url: t.url, source: t.source || 'pollinations', alt: t.prompt });
     });
 
-    // Save to DB
     var media = null;
     if (responseTools.length || webSearchTool) {
       media = {};
@@ -513,49 +397,27 @@ router.post('/chat', requireLogin, async (req, res, next) => {
     });
   } catch (err) {
     logger.error('[ai/chat] ' + err.message, err.attempts || []);
-    if (err.message === 'REQUEST_REJECTED') {
-      return res.status(400).json({ error: 'The request was rejected by the model.' });
-    }
-    if (err.message === 'NO_PROVIDERS_AVAILABLE') {
-      return res.status(503).json({ error: 'No AI providers are configured.' });
-    }
-    if (err.message === 'ALL_PROVIDERS_FAILED') {
-      return res.status(503).json({ error: 'AI temporarily unavailable. Please try again.' });
-    }
+    if (err.message === 'REQUEST_REJECTED') return res.status(400).json({ error: 'The request was rejected by the model.' });
+    if (err.message === 'NO_PROVIDERS_AVAILABLE') return res.status(503).json({ error: 'No AI providers are configured.' });
+    if (err.message === 'ALL_PROVIDERS_FAILED') return res.status(503).json({ error: 'AI temporarily unavailable. Please try again.' });
     next(err);
   }
 });
 
-// ============================================================
-// Quick Ask AI (floating panel — not saved)
-// ============================================================
-
 router.post('/quick', requireLogin, async (req, res, next) => {
   const { messages, context } = req.body || {};
   const quick = require('./quick');
-
-  if (!Array.isArray(messages) || !messages.length) {
-    return res.status(400).json({ error: 'messages required' });
-  }
-
-  const result = await quick.quickAsk({
-    user: req.user,
-    messages: messages,
-    context: context || null,
-  });
-
+  if (!Array.isArray(messages) || !messages.length) return res.status(400).json({ error: 'messages required' });
+  const result = await quick.quickAsk({ user: req.user, messages: messages, context: context || null });
   if (!result.ok) {
     if (result.code === 'ALL_PROVIDERS_FAILED' || result.code === 'NO_PROVIDERS_AVAILABLE') {
       return res.status(503).json({ error: 'AI temporarily unavailable.' });
     }
     return res.status(500).json({ error: 'Unexpected AI error.' });
   }
-
   res.json({ reply: result.text, provider: result.provider });
 });
 
-router.get('/status', requireLogin, function (req, res) {
-  res.json(_debugState());
-});
+router.get('/status', requireLogin, function (req, res) { res.json(_debugState()); });
 
 module.exports = router;

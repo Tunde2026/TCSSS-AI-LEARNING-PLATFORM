@@ -1,9 +1,13 @@
 // ============================================================
 // library/fetcher.js
 // ------------------------------------------------------------
-// Background job: for each enabled library_source, search
-// Project Gutenberg, download any new EPUBs, and insert them
+// Background job: for each enabled library_source, search the
+// appropriate adapter, download any new books, and insert them
 // as pre-approved library documents.
+//
+// Adapters:
+//   - gutenberg   → EPUB files (existing behavior, unchanged)
+//   - googlebooks → PDF files only (read-only for students)
 // ============================================================
 
 const fs = require('fs');
@@ -13,12 +17,18 @@ const crypto = require('crypto');
 const db = require('../db');
 const logger = require('../core/logger');
 const gutenberg = require('./gutenberg');
+const googlebooks = require('./googlebooks');
 const storage = require('./storage');
 const processor = require('./processor');
 
 const INTERVAL_MS = 6 * 60 * 60 * 1000;
 let timer = null;
 let running = false;
+
+const ADAPTERS = {
+  gutenberg: gutenberg,
+  googlebooks: googlebooks,
+};
 
 function slugify(s) {
   return String(s || '')
@@ -34,7 +44,53 @@ function sleep(ms) {
   return new Promise(function (r) { setTimeout(r, ms); });
 }
 
-async function importBook(book, source) {
+async function downloadFile(url, destPath) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Download HTTP ' + res.status);
+  const buf = await res.arrayBuffer();
+  fs.writeFileSync(destPath, Buffer.from(buf));
+  return true;
+}
+
+/**
+ * Normalize adapter-specific book shape into a common form.
+ * Returns null if the book cannot be downloaded for this source.
+ */
+function normalizeBook(book, sourceType) {
+  if (sourceType === 'gutenberg') {
+    if (!book.epub_url) return null;
+    return {
+      external_id: book.external_id,
+      title: book.title,
+      author: book.author,
+      cover_url: book.cover_url,
+      external_url: book.external_url,
+      download_url: book.epub_url,
+      ext: '.epub',
+      mime: 'application/epub+zip',
+    };
+  }
+  if (sourceType === 'googlebooks') {
+    if (!book.pdf_url) return null;
+    return {
+      external_id: book.external_id,
+      title: book.title,
+      author: book.author,
+      cover_url: book.cover_url,
+      external_url: book.external_url,
+      download_url: book.pdf_url,
+      ext: '.pdf',
+      mime: 'application/pdf',
+    };
+  }
+  return null;
+}
+
+async function importBook(rawBook, source) {
+  const sourceType = source.source_type || 'gutenberg';
+  const book = normalizeBook(rawBook, sourceType);
+  if (!book) return { skipped: true, reason: 'unsupported_format' };
+
   // Skip if already imported
   const existing = await db.pool.query(
     'SELECT id FROM library_documents WHERE external_id = $1 LIMIT 1',
@@ -43,14 +99,14 @@ async function importBook(book, source) {
   if (existing.rowCount > 0) return { skipped: true };
 
   const filename = Date.now() + '-' + crypto.randomBytes(4).toString('hex') +
-                   '-' + slugify(book.title) + '.epub';
+                   '-' + slugify(book.title) + book.ext;
   const destPath = path.join(storage.LIBRARY_DIR, filename);
 
   // Try downloading, up to 2 attempts
   let lastErr = null;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      await gutenberg.downloadEpub(book.epub_url, destPath);
+      await downloadFile(book.download_url, destPath);
       lastErr = null;
       break;
     } catch (err) {
@@ -71,18 +127,20 @@ async function importBook(book, source) {
        (uploaded_by, title, subject, author, filename, original_name, mime_type,
         size_bytes, storage_path, status, approved, approved_at,
         source_type, external_id, external_url)
-     VALUES (NULL, $1, $2, $3, $4, $5, 'application/epub+zip',
-             $6, $7, 'approved', TRUE, now(),
-             'gutenberg', $8, $9)
+     VALUES (NULL, $1, $2, $3, $4, $5, $6,
+             $7, $8, 'approved', TRUE, now(),
+             $9, $10, $11)
      RETURNING id`,
     [
       book.title,
       source.subject || null,
       book.author || null,
       filename,
-      book.title + '.epub',
+      book.title + book.ext,
+      book.mime,
       size,
       destPath,
+      sourceType,
       book.external_id,
       book.external_url,
     ]
@@ -111,8 +169,18 @@ async function runOnce() {
     );
 
     for (const src of sources.rows) {
+      const adapter = ADAPTERS[src.source_type];
+      if (!adapter) {
+        logger.warn('[fetcher] unknown source_type "' + src.source_type + '" for source ' + src.name);
+        await db.pool.query(
+          'UPDATE library_sources SET last_error = $1 WHERE id = $2',
+          ['UNKNOWN_SOURCE_TYPE', src.id]
+        );
+        continue;
+      }
+
       try {
-        const search = await gutenberg.search(src.query || 'science', {
+        const search = await adapter.search(src.query || 'science', {
           limit: src.max_items || 40,
         });
         if (!search.ok) {
@@ -135,8 +203,7 @@ async function runOnce() {
             failed++;
             logger.warn('[fetcher] book insert failed: ' + err.message);
           }
-          // Gentle pacing — respects Gutendex & archive.org
-          await sleep(350);
+          await sleep(350);  // gentle pacing
         }
 
         totalImported += imported;
@@ -147,8 +214,8 @@ async function runOnce() {
           'UPDATE library_sources SET last_synced_at = now(), last_error = NULL WHERE id = $1',
           [src.id]
         );
-        logger.info('[fetcher] ' + src.name + ': +' + imported + ' new, ' +
-                    skipped + ' existing, ' + failed + ' failed');
+        logger.info('[fetcher] ' + src.name + ' (' + src.source_type + '): +' +
+                    imported + ' new, ' + skipped + ' existing, ' + failed + ' failed');
       } catch (err) {
         await db.pool.query(
           'UPDATE library_sources SET last_error = $1 WHERE id = $2',
@@ -170,7 +237,7 @@ function start() {
   if (timer) return;
   setTimeout(function () {
     runOnce().catch(function (err) { logger.error('[fetcher] run failed: ' + err.message); });
-  }, 15 * 1000); // 15s after boot
+  }, 15 * 1000);
   timer = setInterval(function () {
     runOnce().catch(function (err) { logger.error('[fetcher] run failed: ' + err.message); });
   }, INTERVAL_MS);

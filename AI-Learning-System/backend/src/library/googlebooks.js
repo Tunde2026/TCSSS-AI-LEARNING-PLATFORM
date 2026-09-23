@@ -1,0 +1,86 @@
+// ============================================================
+// library/googlebooks.js
+// ------------------------------------------------------------
+// Fetch public-domain books from Google Books API.
+// PDF-only: books without a public PDF download are skipped.
+// Every item here is legally public domain (full view = free).
+// ============================================================
+
+const fs = require('fs');
+
+const GOOGLE_BOOKS_API = 'https://www.googleapis.com/books/v1/volumes';
+
+/**
+ * Search Google Books for downloadable PDFs.
+ * Returns { ok: true, books: [...] } or { ok: false, code, detail }.
+ */
+async function search(query, { limit = 25 } = {}) {
+  const key = process.env.GOOGLE_BOOKS_KEY || process.env.GOOGLE_BOOKS_API_KEY;
+
+  const params = new URLSearchParams({
+    q: query || 'science',
+    maxResults: String(Math.min(Math.max(limit, 1), 40)),  // Google's hard cap is 40
+    filter: 'full',        // only full-view (public-domain) books
+    printType: 'books',
+  });
+  if (key) params.set('key', key);
+
+  const url = GOOGLE_BOOKS_API + '?' + params.toString();
+
+  let res;
+  try {
+    res = await fetch(url, { headers: { Accept: 'application/json' } });
+  } catch (err) {
+    return { ok: false, code: 'NETWORK_ERROR', detail: err.message };
+  }
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    return { ok: false, code: 'HTTP_' + res.status, detail: txt.slice(0, 200) };
+  }
+
+  const data = await res.json().catch(() => ({}));
+  const items = Array.isArray(data.items) ? data.items : [];
+
+  const books = [];
+  for (const item of items) {
+    const info = item.volumeInfo || {};
+    const access = item.accessInfo || {};
+
+    // PDF-only: skip books without a public PDF download link
+    const pdfUrl = access.pdf && access.pdf.downloadLink;
+    if (!pdfUrl) continue;
+
+    books.push({
+      external_id: 'googlebooks-' + item.id,
+      title: info.title || 'Untitled',
+      author: (Array.isArray(info.authors) && info.authors.length)
+        ? info.authors.join(', ')
+        : 'Unknown',
+      cover_url: (info.imageLinks && (info.imageLinks.thumbnail || info.imageLinks.smallThumbnail)) || null,
+      external_url: info.infoLink || ('https://books.google.com/books?id=' + item.id),
+      pdf_url: pdfUrl,
+      page_count: info.pageCount || null,
+      published_date: info.publishedDate || null,
+      publisher: info.publisher || null,
+      description: info.description || null,
+    });
+
+    if (books.length >= limit) break;
+  }
+
+  return { ok: true, books };
+}
+
+/**
+ * Download a PDF from a Google Books downloadLink to destPath.
+ */
+async function downloadPdf(url, destPath) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Download HTTP ' + res.status);
+  const buf = await res.arrayBuffer();
+  fs.writeFileSync(destPath, Buffer.from(buf));
+  return true;
+}
+
+module.exports = { search, downloadPdf };
