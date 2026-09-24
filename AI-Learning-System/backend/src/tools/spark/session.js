@@ -6,11 +6,11 @@
 // Responsibilities:
 //   - Decide which skill to probe next (evidence gap analysis)
 //   - Adjust difficulty based on recent performance
-//   - Avoid repeating questions
+//   - Avoid repeating questions within a session
+//   - Refill the bank via AI when seed variety is thin
 //   - Decide when the assessment has enough evidence to end
 //
-// This file does NOT score or grade. It only picks the next
-// question. Scoring lives in scoring.js.
+// This file does NOT score or grade. Scoring lives in scoring.js.
 // ============================================================
 
 const db = require('../../db');
@@ -35,7 +35,6 @@ const SKILLS = [
 ];
 
 // Skills that every assessment must cover at least once.
-// Everything else is filled in by the adaptive logic.
 const KEY_SKILLS = [
   'numerical_reasoning',
   'scientific_reasoning',
@@ -47,8 +46,6 @@ const KEY_SKILLS = [
 ];
 
 // How much each skill contributes to each stream.
-// Used to prioritise which skills we probe first.
-// These are engine defaults — admins can override via system_settings.
 const STREAM_WEIGHTS = {
   science: {
     scientific_reasoning:  3.0,
@@ -88,6 +85,11 @@ const MIN_QUESTIONS = 8;
 const MAX_QUESTIONS = 12;
 const MIN_EVIDENCE_PER_KEY_SKILL = 1;
 const MIN_EVIDENCE_PER_ANY_SKILL = 2;
+
+// How many seed questions must be available before we skip AI refill.
+// If fewer than this exist for a skill+difficulty, we ask the AI to
+// generate more.
+const SEED_VARIETY_THRESHOLD = 3;
 
 // ----------------------------------------------------------------
 // Meta helpers
@@ -173,13 +175,8 @@ function nextDifficultyForSkill(meta, skill) {
 }
 
 // ----------------------------------------------------------------
-// Choice — pick the next question
+// Skill → (category, answerType) mapping for AI generation
 // ----------------------------------------------------------------
-
-/**
- * Choose the next question for this assessment.
- * Returns the question row, or null when the session is done.
- */
 
 /**
  * Map a skill to a sensible (category, answerType) for AI generation.
@@ -188,29 +185,46 @@ function nextDifficultyForSkill(meta, skill) {
  */
 function pickCategoryAndType(skill) {
   const map = {
-    numerical_reasoning:  { category: 'numerical', answerType: 'mcq' },
-    scientific_reasoning: { category: 'scientific', answerType: 'mcq' },
-    verbal_reasoning:     { category: 'verbal', answerType: 'mcq' },
-    analytical_reasoning: { category: 'analytical', answerType: 'mcq' },
-    pattern_recognition:  { category: 'pattern', answerType: 'mcq' },
-    commercial_reasoning: { category: 'commercial', answerType: 'mcq' },
-    creative_reasoning:   { category: 'creative', answerType: 'open' },
+    numerical_reasoning:  { category: 'numerical',       answerType: 'mcq' },
+    scientific_reasoning: { category: 'scientific',      answerType: 'mcq' },
+    verbal_reasoning:     { category: 'verbal',          answerType: 'mcq' },
+    analytical_reasoning: { category: 'analytical',      answerType: 'mcq' },
+    pattern_recognition:  { category: 'pattern',         answerType: 'mcq' },
+    commercial_reasoning: { category: 'commercial',      answerType: 'mcq' },
+    creative_reasoning:   { category: 'creative',        answerType: 'open' },
     problem_solving:      { category: 'problem_solving', answerType: 'open' },
-    communication:        { category: 'communication', answerType: 'open' },
-    decision_making:      { category: 'decision', answerType: 'open' },
-    practical_reasoning:  { category: 'practical', answerType: 'mcq' },
-    interest_alignment:   { category: 'interest', answerType: 'mcq' },
+    communication:        { category: 'communication',   answerType: 'open' },
+    decision_making:      { category: 'decision',        answerType: 'open' },
+    practical_reasoning:  { category: 'practical',       answerType: 'mcq' },
+    interest_alignment:   { category: 'interest',        answerType: 'mcq' },
   };
   return map[skill] || { category: 'knowledge', answerType: 'mcq' };
 }
 
+// ----------------------------------------------------------------
+// Choice — pick the next question
+// ----------------------------------------------------------------
+
+/**
+ * Choose the next question for this assessment.
+ * Returns the question row, or null when the session is done.
+ *
+ * Strategy:
+ *   1. If enough evidence is already gathered → end session.
+ *   2. Rank skills by evidence need.
+ *   3. For each skill in order, try difficulty ladder.
+ *   4. If seed bank is thin (< SEED_VARIETY_THRESHOLD), call AI to refill.
+ *   5. Fall back to whatever is available.
+ */
 async function chooseNextQuestion(assessment, responses) {
   const meta = getMeta(assessment);
 
-  // Session done?
+  // ---------- Session done? ----------
   const totalAnswered = responses.length;
+  const evidence = evidenceBySkill(responses);
+
   const allKeyCovered = KEY_SKILLS.every(skill => {
-    const ev = evidenceBySkill(responses)[skill];
+    const ev = evidence[skill];
     return ev && ev.count >= MIN_EVIDENCE_PER_KEY_SKILL;
   });
 
@@ -218,28 +232,27 @@ async function chooseNextQuestion(assessment, responses) {
     return null;
   }
   if (totalAnswered >= MIN_QUESTIONS && allKeyCovered) {
-    // Check no skill is severely under-evidenced
-    const evidence = evidenceBySkill(responses);
-    const anyMissing = SKILLS.some(s => {
+    const anyMissingKey = KEY_SKILLS.some(s => {
       const ev = evidence[s];
-      // Require at least 1 evidence for key skills
-      if (KEY_SKILLS.includes(s)) return !ev || ev.count < 1;
-      return false;
+      return !ev || ev.count < 1;
     });
-    if (!anyMissing) return null;
+    if (!anyMissingKey) return null;
   }
 
-  // Rank candidate skills by need
-  const evidence = evidenceBySkill(responses);
+  // ---------- Rank skills by need ----------
   const ranked = SKILLS
     .map(skill => ({ skill, need: needScore(skill, evidence) }))
     .sort((a, b) => b.need - a.need);
 
-  // Try each skill in order — pick the first that has an available question
-    // Lazy-load the generator only when we actually need it.
+  // Lazy-load generator — only when we actually need it.
   let generator = null;
-  try { generator = require('./generator'); } catch (_) {}
+  try {
+    generator = require('./generator');
+  } catch (err) {
+    logger.warn('[spark/session] generator not available: ' + err.message);
+  }
 
+  // ---------- Try each skill in order ----------
   for (const { skill } of ranked) {
     const difficulty = nextDifficultyForSkill(meta, skill);
 
@@ -254,41 +267,52 @@ async function chooseNextQuestion(assessment, responses) {
       });
 
       // Plenty of seed variety — use it.
-      if (candidates.length >= 3) {
+      if (candidates.length >= SEED_VARIETY_THRESHOLD) {
         const picked = candidates[Math.floor(Math.random() * candidates.length)];
         return picked;
       }
 
-      // Thin on seed — ask AI for a couple more, then use the freshest.
-      if (generator && candidates.length < 3 && candidates.length > 0) {
+      // Thin on seed (1 or 2) — ask AI for more, then use a fresh one.
+      if (generator && candidates.length >= 1 && candidates.length < SEED_VARIETY_THRESHOLD) {
         const { category, answerType } = pickCategoryAndType(skill);
         const fresh = await generator.refillBank({
-          skill, difficulty: d, category, answerType, count: 2,
+          skill,
+          difficulty: d,
+          category,
+          answerType,
+          count: 2,
         });
         if (fresh.length) {
-          // Prefer an AI-generated one to keep variety high.
+          // Prefer a fresh AI question to keep variety high.
           return fresh[Math.floor(Math.random() * fresh.length)];
         }
-        // Generation failed — fall through to whatever seed we have.
+        // Generation failed — use whatever seed exists.
         const picked = candidates[Math.floor(Math.random() * candidates.length)];
         return picked;
       }
 
-      // Exactly one candidate and can't generate — use it.
-      if (candidates.length === 1) return candidates[0];
+      // Exactly one candidate, no generator — use it.
+      if (candidates.length === 1) {
+        return candidates[0];
+      }
+
       // Zero candidates — try the next difficulty.
     }
 
-    // No seed at all for this skill — try to generate from scratch.
+    // No seed at all for this skill — generate from scratch.
     if (generator) {
       const { category, answerType } = pickCategoryAndType(skill);
       const fresh = await generator.refillBank({
-        skill, difficulty: 'medium', category, answerType, count: 2,
+        skill,
+        difficulty: 'medium',
+        category,
+        answerType,
+        count: 2,
       });
       if (fresh.length) return fresh[0];
     }
 
-    // Last resort: any seed question for this skill.
+    // Last resort: any seed question for this skill, ignoring difficulty.
     const anyForSkill = await db.spark.listActiveQuestions({
       skill,
       excludeIds: meta.visitedQuestionIds,
@@ -297,7 +321,8 @@ async function chooseNextQuestion(assessment, responses) {
       return anyForSkill[Math.floor(Math.random() * anyForSkill.length)];
     }
   }
-  // Nothing left in the bank — end the session
+
+  // Nothing left in the bank — end the session.
   logger.warn('[spark/session] no questions left for assessment ' + assessment.id);
   return null;
 }
@@ -327,16 +352,21 @@ async function recordAnswer(assessment, question, correctness) {
   return meta;
 }
 
+// ----------------------------------------------------------------
+// Exports
+// ----------------------------------------------------------------
+
 module.exports = {
   SKILLS,
   KEY_SKILLS,
   STREAM_WEIGHTS,
   MIN_QUESTIONS,
   MAX_QUESTIONS,
+  SEED_VARIETY_THRESHOLD,
   getMeta,
   saveMeta,
   evidenceBySkill,
   chooseNextQuestion,
   recordAnswer,
-  pickCategoryAndType,   // ← new
+  pickCategoryAndType,
 };
