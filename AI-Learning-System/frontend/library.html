@@ -167,20 +167,25 @@
     var isAdmin = false;
 
     var CATEGORY_META = {
-      'Mathematics': { icon: 'fa-square-root-variable', order: 1 },
-      'Physics':     { icon: 'fa-atom',                 order: 2 },
-      'Chemistry':   { icon: 'fa-flask-vial',           order: 3 },
-      'Biology':     { icon: 'fa-dna',                  order: 4 },
-      'Astronomy':   { icon: 'fa-star',                 order: 5 },
-      'Science':     { icon: 'fa-microscope',           order: 6 },
-      'Geography':   { icon: 'fa-earth-africa',         order: 7 },
-      'History':     { icon: 'fa-landmark',             order: 8 },
-      'Literature':  { icon: 'fa-feather',              order: 9 },
-      'English':     { icon: 'fa-book',                 order: 10 },
-      'Economics':   { icon: 'fa-chart-line',           order: 11 },
-      'Philosophy':  { icon: 'fa-brain',                order: 12 },
-      'Technology':  { icon: 'fa-microchip',            order: 13 },
-      'Other':       { icon: 'fa-book-open',            order: 99 }
+      'Mathematics':      { icon: 'fa-square-root-variable', order: 1 },
+      'Physics':          { icon: 'fa-atom',                 order: 2 },
+      'Chemistry':        { icon: 'fa-flask-vial',           order: 3 },
+      'Biology':          { icon: 'fa-dna',                  order: 4 },
+      'Astronomy':        { icon: 'fa-star',                 order: 5 },
+      'Science':          { icon: 'fa-microscope',           order: 6 },
+      'Geography':        { icon: 'fa-earth-africa',         order: 7 },
+      'History':          { icon: 'fa-landmark',             order: 8 },
+      'Government':       { icon: 'fa-scale-balanced',       order: 9 },
+      'Literature':       { icon: 'fa-feather',              order: 10 },
+      'English':          { icon: 'fa-book',                 order: 11 },
+      'Economics':        { icon: 'fa-chart-line',           order: 12 },
+      'Commerce':         { icon: 'fa-handshake',            order: 13 },
+      'Accounting':       { icon: 'fa-calculator',           order: 14 },
+      'Business Studies': { icon: 'fa-briefcase',            order: 15 },
+      'Fine Arts':        { icon: 'fa-palette',              order: 16 },
+      'Philosophy':       { icon: 'fa-brain',                order: 17 },
+      'Technology':       { icon: 'fa-microchip',            order: 18 },
+      'Other':            { icon: 'fa-book-open',            order: 99 }
     };
 
     function esc(s) {
@@ -487,7 +492,6 @@
       try {
         readerBody.innerHTML = '<div id="epub-viewer" style="width:100%;height:100%"></div>';
 
-        // Pass the ArrayBuffer directly — EPUB.js reads the ZIP internally
         epubBook = window.ePub(arrayBuffer);
 
         epubRendition = epubBook.renderTo('epub-viewer', {
@@ -544,9 +548,10 @@
     }
 
     document.getElementById('reader-close').addEventListener('click', closeReader);
-    readerOverlay.addEventListener('click', function (e) {
-      if (e.target === readerOverlay) closeReader();
-    });
+
+    // NOTE: click-outside-to-close removed on purpose.
+    // The reader only closes via the X button or Escape key.
+
     document.addEventListener('keydown', function (e) {
       if (!readerOverlay.classList.contains('is-open')) return;
       if (e.key === 'Escape') closeReader();
