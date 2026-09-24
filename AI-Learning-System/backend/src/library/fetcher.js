@@ -5,6 +5,10 @@
 // appropriate adapter, download any new books, and insert them
 // as pre-approved library documents.
 //
+// On Render's ephemeral filesystem, downloaded files vanish on
+// redeploy. cleanupMissingFiles() removes orphan DB records so
+// the next sync re-imports them from their sources.
+//
 // Adapters:
 //   - gutenberg       → EPUB files
 //   - googlebooks     → PDF files only
@@ -36,6 +40,9 @@ const ADAPTERS = {
   openstax: openstax,
 };
 
+// Sources whose files may vanish on redeploy (all cloud-fetched sources).
+const FETCHED_SOURCES = ['internetarchive', 'openstax', 'googlebooks', 'gutenberg'];
+
 function slugify(s) {
   return String(s || '')
     .toLowerCase()
@@ -59,11 +66,43 @@ async function downloadFile(url, destPath) {
 }
 
 /**
+ * Remove DB records whose local file no longer exists.
+ * Only affects fetched sources — never touches admin uploads.
+ * Records that point to remote URLs (https://) are also skipped.
+ */
+async function cleanupMissingFiles() {
+  let rows;
+  try {
+    rows = await db.pool.query(
+      `SELECT id, storage_path, title FROM library_documents
+        WHERE source_type = ANY($1)
+          AND storage_path IS NOT NULL
+          AND storage_path NOT LIKE 'https://%'`,
+      [FETCHED_SOURCES]
+    );
+  } catch (err) {
+    logger.warn('[fetcher] cleanup query failed: ' + err.message);
+    return 0;
+  }
+
+  let removed = 0;
+  for (const r of rows.rows) {
+    if (!fs.existsSync(r.storage_path)) {
+      try {
+        await db.pool.query('DELETE FROM library_documents WHERE id = $1', [r.id]);
+        removed++;
+      } catch (_) {}
+    }
+  }
+  if (removed) logger.info('[fetcher] cleanup: removed ' + removed + ' records with missing files');
+  return removed;
+}
+
+/**
  * Normalize adapter-specific book shape into a common form.
  * Returns null if the book cannot be downloaded for this source.
  */
 function normalizeBook(book, sourceType) {
-  // --- Gutenberg: EPUB ---
   if (sourceType === 'gutenberg') {
     if (!book.epub_url) return null;
     return {
@@ -78,7 +117,6 @@ function normalizeBook(book, sourceType) {
     };
   }
 
-  // --- PDF sources: Google Books, Internet Archive, OpenStax ---
   if (sourceType === 'googlebooks' ||
       sourceType === 'internetarchive' ||
       sourceType === 'openstax') {
@@ -103,7 +141,6 @@ async function importBook(rawBook, source) {
   const book = normalizeBook(rawBook, sourceType);
   if (!book) return { skipped: true, reason: 'unsupported_format' };
 
-  // Skip if already imported
   const existing = await db.pool.query(
     'SELECT id FROM library_documents WHERE external_id = $1 LIMIT 1',
     [book.external_id]
@@ -114,7 +151,6 @@ async function importBook(rawBook, source) {
                    '-' + slugify(book.title) + book.ext;
   const destPath = path.join(storage.LIBRARY_DIR, filename);
 
-  // Try downloading, up to 2 attempts
   let lastErr = null;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
@@ -171,6 +207,13 @@ async function runOnce() {
   running = true;
   logger.info('[fetcher] sync started');
 
+  // Remove any DB rows whose underlying file has vanished (ephemeral FS).
+  try {
+    await cleanupMissingFiles();
+  } catch (err) {
+    logger.warn('[fetcher] cleanup threw: ' + err.message);
+  }
+
   let totalImported = 0;
   let totalSkipped = 0;
   let totalFailed = 0;
@@ -215,7 +258,7 @@ async function runOnce() {
             failed++;
             logger.warn('[fetcher] book insert failed: ' + err.message);
           }
-          await sleep(350);  // gentle pacing
+          await sleep(350);
         }
 
         totalImported += imported;
@@ -256,4 +299,9 @@ function start() {
   logger.info('[fetcher] scheduled (every 6h)');
 }
 
-module.exports = { start: start, runOnce: runOnce, isRunning: function () { return running; } };
+module.exports = {
+  start: start,
+  runOnce: runOnce,
+  isRunning: function () { return running; },
+  cleanupMissingFiles: cleanupMissingFiles,
+};

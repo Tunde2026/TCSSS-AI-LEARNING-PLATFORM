@@ -28,6 +28,11 @@ const { requireLogin, requireAdmin } = require('../auth');
 
 storage.ensureUploadDirs();
 
+// Sources whose files can vanish on Render's ephemeral filesystem.
+// When their file is missing, we clean up the DB row so the next
+// sync restores it — and give the student a friendly message.
+const FETCHED_SOURCES = ['internetarchive', 'openstax', 'googlebooks', 'gutenberg'];
+
 const multerStorage = multer.diskStorage({
   destination: function (req, file, cb) { cb(null, storage.LIBRARY_DIR); },
   filename: function (req, file, cb) { cb(null, storage.generateFilename(file.originalname, null)); },
@@ -61,16 +66,23 @@ router.get('/:id/download', requireLogin, async function (req, res, next) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 
-    // Google Books items are read-only — students can read in-app but not download.
-    // Admins can still download for library maintenance.
-   
-
     // If it's an archive.org link, redirect to it
     if (doc.storage_path && doc.storage_path.startsWith('https://archive.org')) {
       return res.redirect(doc.storage_path);
     }
 
+    // File missing on disk?
     if (!doc.storage_path || !fs.existsSync(doc.storage_path)) {
+      // Fetched sources live on ephemeral storage — clean up the orphan
+      // record and tell the student it will come back on the next sync.
+      if (FETCHED_SOURCES.includes(doc.source_type)) {
+        db.pool.query('DELETE FROM library_documents WHERE id = $1', [doc.id])
+          .catch(function () {});
+        return res.status(404).json({
+          error: 'This book was removed from the server and will be restored on the next sync.',
+          will_restore: true,
+        });
+      }
       return res.status(404).json({ error: 'File missing on server' });
     }
 
@@ -110,6 +122,19 @@ router.get('/:id/read', requireLogin, async function (req, res, next) {
     // If it's an archive.org link, redirect to it
     if (doc.storage_path && doc.storage_path.startsWith('https://archive.org')) {
       return res.redirect(doc.storage_path);
+    }
+
+    // File missing on disk?
+    if (!doc.storage_path || !fs.existsSync(doc.storage_path)) {
+      if (FETCHED_SOURCES.includes(doc.source_type)) {
+        db.pool.query('DELETE FROM library_documents WHERE id = $1', [doc.id])
+          .catch(function () {});
+        return res.status(404).json({
+          error: 'This book was removed from the server and will be restored on the next sync.',
+          will_restore: true,
+        });
+      }
+      return res.status(404).json({ error: 'File missing on server' });
     }
 
     // Otherwise stream from local filesystem
@@ -161,16 +186,13 @@ router.post('/admin/archive-headers', requireAdmin, async function (req, res, ne
     const { filename, title } = req.body;
     if (!filename) return res.status(400).json({ error: 'Filename is required.' });
 
-    // Create a unique identifier for the book
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 7);
     const identifier = 'tcsss-' + timestamp + '-' + random;
 
-    // Clean filename for URL
     const cleanFilename = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
     const uploadUrl = 'https://s3.us.archive.org/' + identifier + '/' + cleanFilename;
 
-    // Generate the headers the frontend needs
     const headers = {
       'Authorization': 'LOW ' + accessKey + ':' + secretKey,
       'x-archive-auto-make-bucket': '1',
@@ -202,7 +224,6 @@ router.post('/admin/archive-confirm', requireAdmin, async function (req, res, ne
       return res.status(400).json({ error: 'Missing required book details.' });
     }
 
-    // Extract filename from the URL
     const filename = archiveUrl.split('/').pop() || 'archive-upload';
     const mimeType = filename.endsWith('.pdf') ? 'application/pdf'
                    : filename.endsWith('.epub') ? 'application/epub+zip'
