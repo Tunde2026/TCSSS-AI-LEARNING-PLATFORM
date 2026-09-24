@@ -21,11 +21,16 @@ const USER_AGENT = 'TCSSS-Library/1.0 (+https://tcsss-ai-learning-platform.onren
 async function search(query, { limit = 25 } = {}) {
   const rows = Math.min(Math.max(limit * 3, 30), 100);
 
-  // Build the Solr-style query manually so IA receives the literal [] brackets
+  // Exclude lending-library and print-disabled items — we only want free-to-download.
   const q = encodeURIComponent(
-    `${query || 'science'} AND mediatype:texts AND format:PDF`
+    `${query || 'science'} ` +
+    `AND mediatype:texts ` +
+    `AND format:PDF ` +
+    `AND -collection:inlibrary ` +
+    `AND -collection:printdisabled ` +
+    `AND -collection:opensource_image`
   );
-  const fields = ['identifier', 'title', 'creator', 'year']
+  const fields = ['identifier', 'title', 'creator', 'year', 'collection']
     .map(f => 'fl[]=' + f)
     .join('&');
 
@@ -34,10 +39,7 @@ async function search(query, { limit = 25 } = {}) {
   let res;
   try {
     res = await fetch(url, {
-      headers: {
-        'User-Agent': USER_AGENT,
-        'Accept': 'application/json',
-      },
+      headers: { 'User-Agent': USER_AGENT, 'Accept': 'application/json' },
     });
   } catch (err) {
     return { ok: false, code: 'NETWORK_ERROR', detail: err.message };
@@ -51,8 +53,6 @@ async function search(query, { limit = 25 } = {}) {
   const data = await res.json().catch(() => ({}));
   const docs = (data.response && data.response.docs) || [];
 
-  // Enrich each result with metadata so we can find the actual PDF filename.
-  // Parallel in small batches to keep latency low without hammering IA.
   const BATCH = 5;
   const books = [];
   for (let i = 0; i < docs.length && books.length < limit; i += BATCH) {
@@ -69,11 +69,19 @@ async function search(query, { limit = 25 } = {}) {
 
 /**
  * Fetch metadata for one IA identifier and find a downloadable PDF.
- * Returns null if the item is restricted (lending-library) or has no PDF.
+ * Returns null if the item is restricted, low-quality, or has no PDF.
  */
 async function enrichOne(doc) {
   const identifier = doc && doc.identifier;
   if (!identifier) return null;
+
+  // Skip known-low-quality mirrors — they often 500 on download.
+  const lowerTitle = (doc.title || '').toLowerCase();
+  if (lowerTitle.includes('(pdfy mirror)') ||
+      lowerTitle.includes('(archive.org mirror)') ||
+      lowerTitle.includes('(user upload)')) {
+    return null;
+  }
 
   let res;
   try {
@@ -88,8 +96,15 @@ async function enrichOne(doc) {
   const meta = await res.json().catch(() => ({}));
   if (!meta || !meta.metadata) return null;
 
-  // Skip lending-library items — those are borrow-only and cannot be downloaded.
+  // Skip lending-library items — those are borrow-only.
   if (String(meta.metadata['access-restricted-item']).toLowerCase() === 'true') {
+    return null;
+  }
+
+  const collections = Array.isArray(meta.metadata.collection)
+    ? meta.metadata.collection
+    : [meta.metadata.collection].filter(Boolean);
+  if (collections.includes('inlibrary') || collections.includes('printdisabled')) {
     return null;
   }
 
@@ -97,7 +112,7 @@ async function enrichOne(doc) {
   const pdfs = files.filter(f => f.name && f.name.toLowerCase().endsWith('.pdf'));
   if (!pdfs.length) return null;
 
-  // Prefer the OCR'd "Text PDF" so it's searchable, else take the first PDF.
+  // Prefer OCR'd "Text PDF" so it's searchable, else take the first PDF.
   const chosen = pdfs.find(f => f.format === 'Text PDF') || pdfs[0];
 
   const creator = doc.creator;
@@ -118,19 +133,41 @@ async function enrichOne(doc) {
 
 /**
  * Download a PDF from archive.org to destPath.
+ * Retries up to 3 times on 5xx / network errors with exponential backoff.
  */
 async function downloadPdf(url, destPath) {
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': USER_AGENT,
-      'Accept': 'application/pdf,*/*',
-    },
-    redirect: 'follow',
-  });
-  if (!res.ok) throw new Error('Download HTTP ' + res.status);
-  const buf = await res.arrayBuffer();
-  fs.writeFileSync(destPath, Buffer.from(buf));
-  return true;
+  const MAX_ATTEMPTS = 3;
+  let lastErr = null;
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': USER_AGENT,
+          'Accept': 'application/pdf,*/*',
+        },
+        redirect: 'follow',
+      });
+
+      if (!res.ok) {
+        const err = new Error('Download HTTP ' + res.status);
+        err.status = res.status;
+        throw err;
+      }
+
+      const buf = await res.arrayBuffer();
+      fs.writeFileSync(destPath, Buffer.from(buf));
+      return true;
+    } catch (err) {
+      lastErr = err;
+      const transient = !err.status || err.status >= 500 || err.status === 429;
+      if (!transient || attempt === MAX_ATTEMPTS) break;
+      // Exponential backoff: 1s, 2s, 4s
+      await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt - 1)));
+    }
+  }
+
+  throw lastErr || new Error('Download failed');
 }
 
 module.exports = { search, downloadPdf };
