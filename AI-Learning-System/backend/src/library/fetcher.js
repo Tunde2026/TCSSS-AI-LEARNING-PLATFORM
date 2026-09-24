@@ -20,6 +20,7 @@ const gutenberg = require('./gutenberg');
 const googlebooks = require('./googlebooks');
 const storage = require('./storage');
 const processor = require('./processor');
+const internetarchive = require('./internetarchive');
 
 const INTERVAL_MS = 6 * 60 * 60 * 1000;
 let timer = null;
@@ -28,6 +29,7 @@ let running = false;
 const ADAPTERS = {
   gutenberg: gutenberg,
   googlebooks: googlebooks,
+  internetarchive: internetarchive,
 };
 
 function slugify(s) {
@@ -57,17 +59,17 @@ async function downloadFile(url, destPath) {
  * Returns null if the book cannot be downloaded for this source.
  */
 function normalizeBook(book, sourceType) {
-  if (sourceType === 'gutenberg') {
-    if (!book.epub_url) return null;
+  if (sourceType === 'googlebooks' || sourceType === 'internetarchive') {
+    if (!book.pdf_url) return null;
     return {
       external_id: book.external_id,
       title: book.title,
       author: book.author,
       cover_url: book.cover_url,
       external_url: book.external_url,
-      download_url: book.epub_url,
-      ext: '.epub',
-      mime: 'application/epub+zip',
+      download_url: book.pdf_url,
+      ext: '.pdf',
+      mime: 'application/pdf',
     };
   }
   if (sourceType === 'googlebooks') {

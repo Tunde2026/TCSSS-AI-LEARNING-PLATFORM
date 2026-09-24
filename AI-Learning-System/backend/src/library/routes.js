@@ -63,7 +63,7 @@ router.get('/:id/download', requireLogin, async function (req, res, next) {
 
     // Google Books items are read-only — students can read in-app but not download.
     // Admins can still download for library maintenance.
-    if (doc.source_type === 'googlebooks' && req.user.role !== 'admin') {
+    if ((doc.source_type === 'googlebooks' || doc.source_type === 'internetarchive') && req.user.role !== 'admin') {
       return res.status(403).json({
         error: 'This book is read-only. You can read it in the library, but it cannot be downloaded.',
         read_only: true,

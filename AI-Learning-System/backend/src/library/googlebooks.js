@@ -26,12 +26,11 @@ const BROWSER_HEADERS = {
 async function search(query, { limit = 25 } = {}) {
   const key = process.env.GOOGLE_BOOKS_KEY || process.env.GOOGLE_BOOKS_API_KEY;
 
-  const params = new URLSearchParams({
-    q: query || 'science',
-    maxResults: String(Math.min(Math.max(limit, 1), 40)),  // Google's hard cap is 40
-    filter: 'full',        // only full-view (public-domain) books
-    printType: 'books',
-  });
+ const params = new URLSearchParams({
+  q: query || 'science',
+  maxResults: String(Math.min(Math.max(limit, 1), 40)),
+  printType: 'books',
+});
   if (key) params.set('key', key);
 
   const url = GOOGLE_BOOKS_API + '?' + params.toString();
@@ -92,14 +91,34 @@ async function search(query, { limit = 25 } = {}) {
  * plain server-side requests with HTTP 403.
  */
 async function downloadPdf(url, destPath) {
-  const res = await fetch(url, {
-    headers: BROWSER_HEADERS,
-    redirect: 'follow',
-  });
-  if (!res.ok) throw new Error('Download HTTP ' + res.status);
-  const buf = await res.arrayBuffer();
-  fs.writeFileSync(destPath, Buffer.from(buf));
-  return true;
+  // Google sometimes returns http:// — force https:// which the signed redirect expects
+  const safeUrl = url.replace(/^http:\/\//i, 'https://');
+
+  const attempt = async () => {
+    const res = await fetch(safeUrl, {
+      headers: BROWSER_HEADERS,
+      redirect: 'follow',
+    });
+    if (!res.ok) {
+      const err = new Error('Download HTTP ' + res.status);
+      err.status = res.status;
+      throw err;
+    }
+    const buf = await res.arrayBuffer();
+    fs.writeFileSync(destPath, Buffer.from(buf));
+    return true;
+  };
+
+  try {
+    return await attempt();
+  } catch (err) {
+    // 429 = rate limit. Wait 5s and try once more.
+    if (err.status === 429) {
+      await new Promise(r => setTimeout(r, 5000));
+      return await attempt();
+    }
+    throw err;
+  }
 }
 
 module.exports = { search, downloadPdf };
