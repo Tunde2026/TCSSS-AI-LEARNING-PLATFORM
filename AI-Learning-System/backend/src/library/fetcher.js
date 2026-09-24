@@ -6,8 +6,10 @@
 // as pre-approved library documents.
 //
 // Adapters:
-//   - gutenberg   → EPUB files (existing behavior, unchanged)
-//   - googlebooks → PDF files only (read-only for students)
+//   - gutenberg       → EPUB files
+//   - googlebooks     → PDF files only
+//   - internetarchive → PDF files only
+//   - openstax        → PDF files only
 // ============================================================
 
 const fs = require('fs');
@@ -18,9 +20,10 @@ const db = require('../db');
 const logger = require('../core/logger');
 const gutenberg = require('./gutenberg');
 const googlebooks = require('./googlebooks');
+const internetarchive = require('./internetarchive');
+const openstax = require('./openstax');
 const storage = require('./storage');
 const processor = require('./processor');
-const internetarchive = require('./internetarchive');
 
 const INTERVAL_MS = 6 * 60 * 60 * 1000;
 let timer = null;
@@ -30,6 +33,7 @@ const ADAPTERS = {
   gutenberg: gutenberg,
   googlebooks: googlebooks,
   internetarchive: internetarchive,
+  openstax: openstax,
 };
 
 function slugify(s) {
@@ -59,7 +63,25 @@ async function downloadFile(url, destPath) {
  * Returns null if the book cannot be downloaded for this source.
  */
 function normalizeBook(book, sourceType) {
-  if (sourceType === 'googlebooks' || sourceType === 'internetarchive') {
+  // --- Gutenberg: EPUB ---
+  if (sourceType === 'gutenberg') {
+    if (!book.epub_url) return null;
+    return {
+      external_id: book.external_id,
+      title: book.title,
+      author: book.author,
+      cover_url: book.cover_url,
+      external_url: book.external_url,
+      download_url: book.epub_url,
+      ext: '.epub',
+      mime: 'application/epub+zip',
+    };
+  }
+
+  // --- PDF sources: Google Books, Internet Archive, OpenStax ---
+  if (sourceType === 'googlebooks' ||
+      sourceType === 'internetarchive' ||
+      sourceType === 'openstax') {
     if (!book.pdf_url) return null;
     return {
       external_id: book.external_id,
@@ -72,19 +94,7 @@ function normalizeBook(book, sourceType) {
       mime: 'application/pdf',
     };
   }
-  if (sourceType === 'googlebooks') {
-    if (!book.pdf_url) return null;
-    return {
-      external_id: book.external_id,
-      title: book.title,
-      author: book.author,
-      cover_url: book.cover_url,
-      external_url: book.external_url,
-      download_url: book.pdf_url,
-      ext: '.pdf',
-      mime: 'application/pdf',
-    };
-  }
+
   return null;
 }
 
