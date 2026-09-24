@@ -158,8 +158,9 @@
     : 'assets/shell.js';
   var BASE = scriptSrc.replace(/assets\/shell\.js.*$/, '');
 
-  var NAV_ITEMS = [
+     var NAV_ITEMS = [
     { href: 'chat.html',    icon: 'fa-comment-dots', label: 'Chat'         },
+    { href: 'spark.html',   icon: 'fa-wand-magic-sparkles', label: 'Spark' },
     { href: 'lab.html',     icon: 'fa-flask',        label: 'Studying Lab' },
     { href: 'library.html', icon: 'fa-book-open',    label: 'Library'      }
   ];

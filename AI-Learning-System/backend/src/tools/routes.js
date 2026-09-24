@@ -18,6 +18,7 @@ router.use('/visualization', require('./visualization').router);
 router.use('/studyplans',    require('./studyplans').router);
 router.use('/imagegen',      require('./imagegen').router);
 router.use('/imagesearch',   require('./imagesearch').router);
+router.use('/spark',         require('./spark').router);
 
 router.get('/', function (req, res) {
   res.json({ tools: registry.list() });

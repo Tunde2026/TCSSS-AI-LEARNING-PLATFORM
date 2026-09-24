@@ -21,11 +21,12 @@ const notes            = require('./queries/notes');
 const practice         = require('./queries/practice');
 const studyPlans       = require('./queries/studyPlans');
 const chatAttachments  = require('./queries/chatAttachments');
+const spark            = require('./queries/spark');
 
 module.exports = {
   pool, ping,
   users, conversations, messages, quizzes, agents,
   flashcards, library, documentChunks, settings,
   knowledge, analytics, providerKeys, auditLog,
-  notes, practice, studyPlans, chatAttachments,
+  notes, practice, studyPlans, chatAttachments, spark,
 };
