@@ -289,6 +289,24 @@
     white-space: nowrap;
   }
 
+    .row-menu--mobile {
+    top: 16px !important;
+    left: 16px !important;
+    right: 16px !important;
+    width: calc(100% - 32px) !important;
+    min-width: 0 !important;
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(17,16,74,0.35);
+  }
+  .row-menu--mobile .row-menu__item {
+    padding: 12px 14px;
+    font-size: 0.92rem;
+  }
+  .row-menu--mobile .row-menu__item i {
+    font-size: 0.9rem;
+    width: 20px;
+  }
+  
   .toast {
     position: fixed;
     bottom: 24px; left: 50%;
@@ -690,11 +708,25 @@
           '<i class="fa-solid fa-trash"></i> Delete user' +
         '</button>';
 
-      document.body.appendChild(menu);
-      var rect = anchor.getBoundingClientRect();
-      menu.style.top = (rect.bottom + 4) + 'px';
-      menu.style.left = Math.max(8, rect.right - menu.offsetWidth) + 'px';
+           document.body.appendChild(menu);
 
+      var isMobile = window.matchMedia('(max-width: 860px)').matches;
+
+      if (isMobile) {
+        // On mobile: full-width sheet pinned to the top of the viewport
+        menu.style.top = '16px';
+        menu.style.left = '16px';
+        menu.style.right = '16px';
+        menu.style.width = 'calc(100% - 32px)';
+        menu.style.minWidth = '0';
+        menu.classList.add('row-menu--mobile');
+      } else {
+        // Desktop: dropdown below the trigger button
+        var rect = anchor.getBoundingClientRect();
+        menu.style.top = (rect.bottom + 4) + 'px';
+        menu.style.left = Math.max(8, rect.right - menu.offsetWidth) + 'px';
+      }
+      
       menu.addEventListener('click', function (e) {
         var btn = e.target.closest('[data-action]');
         if (!btn || btn.disabled) return;
