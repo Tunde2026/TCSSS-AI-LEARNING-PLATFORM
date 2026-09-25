@@ -22,11 +22,16 @@ const practice         = require('./queries/practice');
 const studyPlans       = require('./queries/studyPlans');
 const chatAttachments  = require('./queries/chatAttachments');
 const spark            = require('./queries/spark');
+const theory           = require('./queries/theory');
+// const spark            = require('./queries/spark');
+// const theory           = require('./queries/theory');
+const sketches         = require('./queries/sketches');  // ← new
 
 module.exports = {
   pool, ping,
   users, conversations, messages, quizzes, agents,
   flashcards, library, documentChunks, settings,
   knowledge, analytics, providerKeys, auditLog,
-  notes, practice, studyPlans, chatAttachments, spark,
+  notes, practice, studyPlans, chatAttachments, spark, theory,
+  sketches,                                              // ← new
 };

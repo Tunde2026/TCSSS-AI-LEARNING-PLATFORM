@@ -6,7 +6,6 @@
 <title>Notes — Studying Lab</title>
 <link rel="stylesheet" href="../assets/shell.css">
 <style>
-  /* Wider content area — see shell.css for the shared override */
   .page-inner, .viz-inner, .fc-inner, .pr-inner, .sp-inner, .qh-inner, .exam-inner { max-width: 1440px; }
   .notes-layout {
     display: grid;
@@ -184,6 +183,113 @@
     color: var(--slate);
     font-size: 0.85rem;
   }
+
+  /* ---------- Notes AI ---------- */
+  .note-ai-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 18px;
+    background: var(--blush);
+    border-top: 1px solid var(--border-soft);
+  }
+  .note-ai-bar__label {
+    font-family: var(--font-ui);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .note-ai-bar__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .note-ai-btn {
+    padding: 6px 12px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--navy);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+  }
+  .note-ai-btn:hover:not(:disabled) { border-color: var(--gold); background: var(--gold-50); }
+  .note-ai-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .note-ai-btn.is-loading { pointer-events: none; opacity: 0.7; }
+
+  .note-ai-preview {
+    margin: 0 18px 18px;
+    background: var(--white);
+    border: 1.5px solid var(--gold);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  .note-ai-preview__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--gold-50);
+    border-bottom: 1px solid var(--border-soft);
+    font-family: var(--font-head);
+    font-size: 0.94rem;
+    color: var(--navy);
+  }
+  .note-ai-preview__close {
+    width: 28px; height: 28px;
+    border: none; background: transparent;
+    color: var(--slate); cursor: pointer;
+    border-radius: 6px;
+    display: grid; place-items: center;
+  }
+  .note-ai-preview__close:hover { background: rgba(0,0,0,0.05); color: var(--navy); }
+  .note-ai-preview__body {
+    padding: 16px 18px;
+    max-height: 320px;
+    overflow-y: auto;
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  .note-ai-preview__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-soft);
+    background: var(--blush);
+    flex-wrap: wrap;
+  }
+
+  /* Markdown styles inside AI preview */
+  .note-ai-preview__body p { margin: 0 0 0.85em; line-height: 1.7; }
+  .note-ai-preview__body p:last-child { margin-bottom: 0; }
+  .note-ai-preview__body h1,
+  .note-ai-preview__body h2,
+  .note-ai-preview__body h3 {
+    font-family: var(--font-head); color: var(--navy);
+    margin: 1em 0 0.5em;
+  }
+  .note-ai-preview__body h1 { font-size: 1.2rem; }
+  .note-ai-preview__body h2 { font-size: 1.08rem; }
+  .note-ai-preview__body h3 { font-size: 0.98rem; }
+  .note-ai-preview__body ul,
+  .note-ai-preview__body ol { margin: 0 0 0.85em; padding-left: 1.4em; }
+  .note-ai-preview__body li { margin: 0.3em 0; }
+  .note-ai-preview__body li::marker { color: var(--red); font-weight: 600; }
+  .note-ai-preview__body strong { font-weight: 700; color: var(--ink); }
+  .note-ai-preview__body code {
+    font-family: var(--font-ui); font-size: 0.86em;
+    background: var(--blush); color: var(--deep-red);
+    padding: 2px 6px; border-radius: 5px;
+  }
 </style>
 </head>
 <body>
@@ -228,7 +334,7 @@
                 </div>
               </div>
 
-              <div id="editor-content" style="display:none;flex:1;display:none;flex-direction:column">
+              <div id="editor-content" style="display:none; flex:1; flex-direction:column;">
                 <div class="notes-editor__head">
                   <input class="notes-editor__title" type="text" id="note-title" placeholder="Untitled note">
                   <input class="notes-editor__subject" type="text" id="note-subject" placeholder="Subject">
@@ -236,7 +342,46 @@
                     <i class="fa-solid fa-trash" aria-hidden="true"></i>
                   </button>
                 </div>
+
                 <textarea class="notes-editor__body" id="note-content" placeholder="Start writing…"></textarea>
+
+                <!-- Notes AI bar -->
+                <div class="note-ai-bar" id="note-ai-bar">
+                  <div class="note-ai-bar__label">
+                    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    AI tools
+                  </div>
+                  <div class="note-ai-bar__actions">
+                    <button class="note-ai-btn" data-action="summarize"  type="button">Summarize</button>
+                    <button class="note-ai-btn" data-action="rephrase"   type="button">Rephrase</button>
+                    <button class="note-ai-btn" data-action="fix_typos"  type="button">Fix typos</button>
+                    <button class="note-ai-btn" data-action="simplify"   type="button">Simplify</button>
+                    <button class="note-ai-btn" data-action="expand"     type="button">Expand</button>
+                    <button class="note-ai-btn" data-action="key_points" type="button">Key points</button>
+                    <button class="note-ai-btn" data-action="outline"    type="button">Outline</button>
+                  </div>
+                </div>
+
+                <!-- AI preview panel -->
+                <div class="note-ai-preview" id="note-ai-preview" style="display:none">
+                  <div class="note-ai-preview__head">
+                    <strong id="note-ai-preview-label">AI result</strong>
+                    <button class="note-ai-preview__close" id="note-ai-close" type="button" aria-label="Close">✕</button>
+                  </div>
+                  <div class="note-ai-preview__body md-content" id="note-ai-preview-body"></div>
+                  <div class="note-ai-preview__actions">
+                    <button class="btn btn-ghost" id="note-ai-cancel" type="button">Cancel</button>
+                    <button class="btn btn-primary" id="note-ai-accept" type="button">
+                      <i class="fa-solid fa-check" aria-hidden="true"></i>
+                      Replace note
+                    </button>
+                    <button class="btn btn-ghost" id="note-ai-append" type="button">
+                      <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                      Append
+                    </button>
+                  </div>
+                </div>
+
                 <div class="notes-editor__status">
                   <span id="word-count">0 words</span>
                   <span id="save-status">Saved</span>
@@ -332,6 +477,7 @@
       document.getElementById('note-content').value = activeNote.content || '';
       updateWordCount();
       setStatus('Saved');
+      closeAIPreview();
 
       renderList();
     }
@@ -340,6 +486,7 @@
       activeNote = null;
       document.getElementById('empty-editor').style.display = '';
       document.getElementById('editor-content').style.display = 'none';
+      closeAIPreview();
       renderList();
     }
 
@@ -426,7 +573,104 @@
       closeEditor();
     }
 
-    // Wire
+    /* ============================================================
+       NOTES AI
+       ============================================================ */
+
+    var aiPreview     = document.getElementById('note-ai-preview');
+    var aiPreviewBody = document.getElementById('note-ai-preview-body');
+    var aiPreviewLbl  = document.getElementById('note-ai-preview-label');
+    var aiCurrentResult = null;
+
+    function closeAIPreview() {
+      aiPreview.style.display = 'none';
+      aiCurrentResult = null;
+    }
+
+    async function runAIAction(action) {
+      if (!activeNote) {
+        alert('Open a note first.');
+        return;
+      }
+
+      // Save first, so the server has the latest content
+      await flushSave();
+
+      var draft = document.getElementById('note-content').value;
+      if (!draft.trim()) {
+        alert('Write something first.');
+        return;
+      }
+
+      document.querySelectorAll('.note-ai-btn').forEach(function (b) { b.disabled = true; });
+      var btn = document.querySelector('.note-ai-btn[data-action="' + action + '"]');
+      if (btn) btn.classList.add('is-loading');
+
+      try {
+        var res = await fetch('/api/tools/notes/' + activeNote.id + '/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            action: action,
+            useEditedContent: true,
+            editedContent: draft,
+          }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { alert(data.error || 'AI failed.'); return; }
+
+        aiCurrentResult = data.result;
+        aiPreviewLbl.textContent = 'AI — ' + data.label;
+
+        // Render the AI output as Markdown + KaTeX using the shared renderer
+        if (window.renderMarkdown) {
+          window.renderMarkdown(data.result, aiPreviewBody);
+        } else {
+          aiPreviewBody.textContent = data.result;
+        }
+        aiPreview.style.display = '';
+      } catch (_) {
+        alert('Network error.');
+      } finally {
+        document.querySelectorAll('.note-ai-btn').forEach(function (b) { b.disabled = false; });
+        if (btn) btn.classList.remove('is-loading');
+      }
+    }
+
+    function applyAIResult(mode) {
+      if (!aiCurrentResult) return;
+      var contentEl = document.getElementById('note-content');
+      var existing = contentEl.value;
+
+      if (mode === 'replace') {
+        contentEl.value = aiCurrentResult;
+      } else if (mode === 'append') {
+        contentEl.value = existing + '\n\n---\n\n' + aiCurrentResult;
+      }
+
+      // Trigger autosave + word count
+      contentEl.dispatchEvent(new Event('input', { bubbles: true }));
+      updateWordCount();
+      scheduleSave();
+      closeAIPreview();
+    }
+
+    // Wire the AI bar
+    document.querySelectorAll('.note-ai-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        runAIAction(b.getAttribute('data-action'));
+      });
+    });
+    document.getElementById('note-ai-close').addEventListener('click', closeAIPreview);
+    document.getElementById('note-ai-cancel').addEventListener('click', closeAIPreview);
+    document.getElementById('note-ai-accept').addEventListener('click', function () { applyAIResult('replace'); });
+    document.getElementById('note-ai-append').addEventListener('click', function () { applyAIResult('append'); });
+
+    /* ============================================================
+       WIRE UP THE REST
+       ============================================================ */
+
     document.getElementById('new-note-btn').addEventListener('click', createNew);
     document.getElementById('delete-btn').addEventListener('click', deleteNote);
 

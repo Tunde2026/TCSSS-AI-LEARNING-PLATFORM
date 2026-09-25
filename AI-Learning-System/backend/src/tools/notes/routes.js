@@ -51,4 +51,32 @@ router.delete('/:id', requireLogin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// POST /api/tools/notes/:id/ai  — AI transform the note
+router.post('/:id/ai', requireLogin, async (req, res, next) => {
+  try {
+    const result = await service.aiTransform({
+      userId: req.user.id,
+      noteId: req.params.id,
+      action: req.body.action,
+      useEditedContent: req.body.useEditedContent,
+      editedContent: req.body.editedContent,
+    });
+    if (!result.ok) {
+      const status =
+        result.code === 'NOT_FOUND' ? 404 :
+        result.code === 'INVALID_ACTION' ? 400 :
+        result.code === 'EMPTY_NOTE' ? 400 :
+        result.code === 'TOO_LONG' ? 413 :
+        500;
+      return res.status(status).json({ error: result.code });
+    }
+    res.json({
+      action: result.action,
+      label: result.label,
+      result: result.result,
+      provider: result.provider,
+    });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

@@ -121,6 +121,14 @@
                 <p class="tool-card__desc">Turn topics into flowcharts, mindmaps, and diagrams.</p>
               </button>
 
+                 <button class="tool-card" type="button" data-tool="sketch">
+                <div class="tool-card__icon tool-card__icon--gold">
+                  <i class="fa-solid fa-pen-ruler" aria-hidden="true"></i>
+                </div>
+                <h3 class="tool-card__title">Sketch</h3>
+                <p class="tool-card__desc">Write chemical formulas, physics equations, and math properly.</p>
+              </button>
+
               <button class="tool-card" type="button" data-tool="studyplans">
                 <div class="tool-card__icon tool-card__icon--red">
                   <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
@@ -153,6 +161,13 @@
                 <p class="tool-card__desc">Review every mistake you've made, organized by topic.</p>
               </button>
 
+                 <button class="tool-card" type="button" data-tool="theory">
+                  <div class="tool-card__icon tool-card__icon--red">
+                    <i class="fa-solid fa-spell-check" aria-hidden="true"></i>
+                  </div>
+                  <h3 class="tool-card__title">Theory</h3>
+                  <p class="tool-card__desc">Fill-in-the-gap questions. Perfect for recall and exam prep.</p>
+              </button>
             </div>
           </section>
 
@@ -188,7 +203,9 @@
       visualization: 'lab/visualization.html',
       studyplans:    'lab/study-plans.html',
       exam:          'lab/exam.html',
-      history:       'lab/quiz-history.html'
+      history:       'lab/quiz-history.html',
+      theory:        'lab/theory.html',
+      sketch:        'lab/sketch.html',
     };
 
     document.querySelectorAll('.tool-card[data-tool]').forEach(function (card) {

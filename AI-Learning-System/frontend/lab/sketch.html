@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sketch — Studying Lab</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .sketch-inner { max-width: 1200px; margin: 0 auto; }
+
+  .sketch-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .sketch-layout { grid-template-columns: 1fr; } }
+
+  .sketch-panel {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .sketch-panel__head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .sketch-panel__title {
+    font-family: var(--font-head); font-size: 1.05rem;
+    color: var(--navy); margin: 0;
+  }
+  .sketch-panel__sub {
+    font-family: var(--font-ui); font-size: 0.68rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--slate);
+  }
+
+  .sketch-meta { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 14px; }
+  @media (max-width: 500px) { .sketch-meta { grid-template-columns: 1fr; } }
+
+  .sketch-textarea {
+    width: 100%; min-height: 130px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    font-family: var(--font-ui);
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: var(--ink);
+    resize: vertical;
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+  .sketch-textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.14);
+  }
+
+  .sketch-palette { margin-top: 14px; }
+  .sketch-palette__row {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 0;
+    border-top: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+  }
+  .sketch-palette__row:first-child { border-top: none; }
+  .sketch-palette__label {
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--slate); width: 82px;
+    flex-shrink: 0;
+  }
+  .symbol-btn {
+    min-width: 32px; height: 32px;
+    padding: 0 8px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--navy);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .symbol-btn:hover { border-color: var(--gold); background: var(--gold-50); }
+  .symbol-btn:active { transform: scale(0.95); }
+  .symbol-btn--wide { padding: 0 12px; font-size: 0.8rem; font-weight: 600; }
+
+  .sketch-actions {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  /* Preview pane */
+  .sketch-preview {
+    min-height: 140px;
+    padding: 26px 20px;
+    background: var(--blush);
+    border-radius: 12px;
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    line-height: 1.7;
+    color: var(--navy);
+    text-align: center;
+    word-break: break-word;
+    overflow-x: auto;
+  }
+  .sketch-preview:empty::before {
+    content: 'Your formula will appear here';
+    color: var(--slate);
+    font-size: 0.95rem;
+    font-family: var(--font-body);
+    font-style: italic;
+  }
+  .sketch-preview .katex { font-size: 1.15em; }
+  .sketch-preview .katex-display { margin: 0.4em 0; }
+
+  /* Solution box */
+  .sketch-solution {
+    margin-top: 16px;
+    padding: 16px 18px;
+    background: #EEF3FB;
+    border-radius: 12px;
+    border-left: 3px solid var(--navy);
+    display: none;
+  }
+  .sketch-solution.is-visible { display: block; }
+  .sketch-solution__label {
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--slate); margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .sketch-solution__answer {
+    font-family: var(--font-head);
+    font-size: 1.25rem;
+    color: var(--navy);
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    background: var(--white);
+    border-radius: 10px;
+    display: inline-block;
+  }
+  .sketch-solution__steps {
+    margin: 12px 0 0;
+    padding-left: 1.5em;
+  }
+  .sketch-solution__steps li {
+    font-size: 0.9rem;
+    color: var(--ink);
+    margin: 6px 0;
+    line-height: 1.55;
+  }
+  .sketch-solution__steps li::marker {
+    color: var(--red);
+    font-weight: 700;
+  }
+  .sketch-solution__explain {
+    margin-top: 12px;
+    font-size: 0.86rem;
+    color: var(--slate);
+    line-height: 1.5;
+  }
+
+  /* AI bar */
+  .ai-bar { display: flex; gap: 8px; margin-top: 16px; }
+  .ai-bar input {
+    flex: 1;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    outline: none;
+    transition: border-color var(--transition);
+  }
+  .ai-bar input:focus { border-color: var(--gold); }
+
+  /* Saved list */
+  .saved-item {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color var(--transition);
+  }
+  .saved-item:hover { border-color: var(--gold); }
+  .saved-item__title {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: 0.92rem; color: var(--navy); margin: 0 0 3px;
+  }
+  .saved-item__preview {
+    font-family: var(--font-ui); font-size: 0.72rem;
+    color: var(--slate); margin: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 500px;
+  }
+  .saved-item__del {
+    width: 30px; height: 30px; border-radius: 8px;
+    border: none; background: transparent; color: var(--slate);
+    cursor: pointer; display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .saved-item__del:hover { background: #FCECEC; color: var(--deep-red); }
+
+  .empty-note {
+    padding: 30px 20px; text-align: center;
+    color: var(--slate); font-size: 0.86rem;
+  }
+
+  /* Modal */
+  .sketch-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(17,16,74,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 400;
+    padding: 20px;
+  }
+  .sketch-modal-overlay.is-open { display: flex; }
+  .sketch-modal {
+    width: 100%;
+    max-width: 420px;
+    background: var(--white);
+    border-radius: 18px;
+    padding: 26px;
+    box-shadow: 0 24px 60px rgba(17,16,74,0.3);
+  }
+  .sketch-modal__title {
+    font-family: var(--font-head); font-size: 1.15rem;
+    color: var(--navy); margin: 0 0 6px;
+  }
+  .sketch-modal__sub {
+    font-size: 0.88rem; color: var(--slate);
+    margin: 0 0 20px; line-height: 1.5;
+  }
+  .frac-preview {
+    text-align: center;
+    padding: 20px;
+    background: var(--blush);
+    border-radius: 12px;
+    margin-bottom: 18px;
+    font-family: var(--font-head);
+    font-size: 1.8rem;
+    color: var(--navy);
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .frac-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .frac-divider {
+    text-align: center;
+    color: var(--slate);
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .sketch-modal__actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  /* Toast */
+  .sketch-toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--navy);
+    color: var(--white);
+    padding: 12px 22px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    box-shadow: 0 12px 32px rgba(17,16,74,0.35);
+    z-index: 500;
+    animation: sketch-toast-in 200ms var(--ease-out);
+  }
+  .sketch-toast--error { background: var(--deep-red); }
+  @keyframes sketch-toast-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner sketch-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Sketch</h1>
+              <p class="page-header__sub">
+                Formula and scientific notation studio. Fractions, roots, chemistry, physics, math.
+              </p>
+            </div>
+          </header>
+
+          <div class="sketch-layout">
+
+            <!-- Editor column -->
+            <div>
+              <div class="sketch-panel">
+                <div class="sketch-panel__head">
+                  <h2 class="sketch-panel__title">Editor</h2>
+                  <span class="sketch-panel__sub" id="edit-status">New sketch</span>
+                </div>
+
+                <div class="sketch-meta">
+                  <input class="input" type="text" id="title" placeholder="Title (optional)">
+                  <input class="input" type="text" id="subject" placeholder="Subject">
+                </div>
+
+                <textarea class="sketch-textarea" id="editor" placeholder="Type here, or use the palette.&#10;Examples: H2SO4, (8/9)^(1/2), x^2 + y^2 = z^2"></textarea>
+
+                <div class="sketch-palette" id="palette"></div>
+
+                <div class="sketch-actions">
+                  <button class="btn btn-ghost" id="fraction-btn" type="button">
+                    <i class="fa-solid fa-divide" aria-hidden="true"></i>
+                    Insert fraction
+                  </button>
+                  <button class="btn btn-ghost" id="sqrt-btn" type="button">
+                    <i class="fa-solid fa-square-root-variable" aria-hidden="true"></i>
+                    √
+                  </button>
+                  <button class="btn btn-ghost" id="format-btn" type="button">
+                    <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    Auto-format
+                  </button>
+                  <button class="btn btn-ghost" id="clear-btn" type="button">
+                    <i class="fa-solid fa-eraser" aria-hidden="true"></i>
+                    Clear
+                  </button>
+                </div>
+
+                <div class="sketch-actions" style="margin-top:10px">
+                  <button class="btn btn-primary" id="solve-btn" type="button">
+                    <i class="fa-solid fa-calculator" aria-hidden="true"></i>
+                    AI Solve
+                  </button>
+                  <button class="btn btn-primary" id="save-btn" type="button">
+                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                    Save
+                  </button>
+                  <button class="btn btn-ghost" id="save-note-btn" type="button">
+                    <i class="fa-solid fa-note-sticky" aria-hidden="true"></i>
+                    Save to Notes
+                  </button>
+                </div>
+
+                <div class="ai-bar">
+                  <input type="text" id="ai-input" placeholder='Ask AI: "sulfuric acid", "quadratic formula"…'>
+                  <button class="btn btn-primary" id="ai-btn" type="button">
+                    <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                    Ask AI
+                  </button>
+                </div>
+              </div>
+
+              <div class="sketch-panel" style="margin-top:20px">
+                <div class="sketch-panel__head">
+                  <h2 class="sketch-panel__title">Saved</h2>
+                  <span class="sketch-panel__sub" id="saved-count">—</span>
+                </div>
+                <div id="saved-list">
+                  <div class="empty-note">No saved sketches yet.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview column -->
+            <div class="sketch-panel" style="position:sticky;top:20px">
+              <div class="sketch-panel__head">
+                <h2 class="sketch-panel__title">Preview</h2>
+                <span class="sketch-panel__sub">Live</span>
+              </div>
+
+              <div class="sketch-preview" id="preview"></div>
+
+              <div class="sketch-solution" id="solution">
+                <div class="sketch-solution__label">AI Solution</div>
+                <div id="solution-answer"></div>
+                <ol class="sketch-solution__steps" id="solution-steps"></ol>
+                <div class="sketch-solution__explain" id="solution-explain"></div>
+              </div>
+
+              <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-ghost" id="copy-btn" type="button">
+                  <i class="fa-solid fa-copy" aria-hidden="true"></i>
+                  Copy
+                </button>
+                <button class="btn btn-ghost" id="copy-latex-btn" type="button">
+                  <i class="fa-solid fa-square-root-variable" aria-hidden="true"></i>
+                  Copy LaTeX
+                </button>
+                <button class="btn btn-ghost" id="send-chat-btn" type="button">
+                  <i class="fa-solid fa-comments" aria-hidden="true"></i>
+                  Send to Chat
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Fraction builder modal -->
+  <div class="sketch-modal-overlay" id="fraction-modal">
+    <div class="sketch-modal">
+      <h3 class="sketch-modal__title">Insert fraction</h3>
+      <p class="sketch-modal__sub">Type the numerator and denominator. They can be numbers or expressions.</p>
+
+      <div class="frac-preview" id="frac-preview">
+        <span id="frac-preview-render">— / —</span>
+      </div>
+
+      <div class="frac-fields">
+        <input class="input" type="text" id="frac-num" placeholder="Numerator (e.g. 1, x, a+b)" autocomplete="off">
+        <div class="frac-divider">divided by</div>
+        <input class="input" type="text" id="frac-den" placeholder="Denominator (e.g. 6, y, c-d)" autocomplete="off">
+      </div>
+
+      <div class="sketch-modal__actions">
+        <button class="btn btn-ghost" id="frac-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="frac-insert" type="button">
+          <i class="fa-solid fa-check" aria-hidden="true"></i>
+          Insert
+        </button>
+      </div>
+    </div>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var editor      = document.getElementById('editor');
+    var preview     = document.getElementById('preview');
+    var titleInput  = document.getElementById('title');
+    var subjectIn   = document.getElementById('subject');
+    var editStatus  = document.getElementById('edit-status');
+
+    var currentId = null;
+
+    /* ============================================================
+       TOAST
+       ============================================================ */
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.className = 'sketch-toast' + (isError ? ' sketch-toast--error' : '');
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+
+    /* ============================================================
+       PALETTE
+       ============================================================ */
+    var PALETTE = [
+      { label: 'Subscripts',   symbols: ['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉'] },
+      { label: 'Superscripts', symbols: ['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹','⁺','⁻'] },
+      { label: 'Greek',        symbols: ['α','β','γ','δ','ε','θ','λ','μ','π','ρ','σ','τ','φ','ψ','ω','Γ','Δ','Θ','Λ','Σ','Π','Ω'] },
+      { label: 'Math',         symbols: ['×','÷','±','√','∛','∑','∏','∫','∞','≈','≠','≤','≥','∂','°','µ'] },
+      { label: 'Arrows',       symbols: ['→','←','↑','↓','↔','⇌','⇒','⇐','⇔'] },
+      { label: 'Fractions',    symbols: ['½','⅓','¼','⅔','¾','⅕','⅙','⅛','⅜','⅝','⅞'] },
+    ];
+
+    function buildPalette() {
+      var el = document.getElementById('palette');
+      el.innerHTML = PALETTE.map(function (group) {
+        return '<div class="sketch-palette__row">' +
+          '<span class="sketch-palette__label">' + group.label + '</span>' +
+          group.symbols.map(function (s) {
+            return '<button class="symbol-btn" type="button" data-sym="' + s + '">' + s + '</button>';
+          }).join('') +
+        '</div>';
+      }).join('');
+
+      el.querySelectorAll('.symbol-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          insertAtCursor(btn.getAttribute('data-sym'));
+        });
+      });
+    }
+
+    function insertAtCursor(text) {
+      var start = editor.selectionStart;
+      var end   = editor.selectionEnd;
+      var value = editor.value;
+      editor.value = value.slice(0, start) + text + value.slice(end);
+      editor.selectionStart = editor.selectionEnd = start + text.length;
+      editor.focus();
+      updatePreview();
+    }
+
+    /* ============================================================
+       AUTO-FORMAT
+       Handles: 1/6, (8/9), (8/9)^(1/2), x^2, H2SO4 → LaTeX
+       ============================================================ */
+    function autoFormat(text) {
+      var out = String(text || '').trim();
+      if (!out) return out;
+
+      var hadLatex = /\\[a-z]/.test(out);
+
+      // 1. Parenthesized fraction (a/b) → \frac{a}{b}
+      out = out.replace(/\((\d+)\s*\/\s*(\d+)\)/g, '\\frac{$1}{$2}');
+
+      // 2. Standalone a/b → \frac{a}{b}
+      out = out.replace(/(\d+)\s*\/\s*(\d+)/g, '\\frac{$1}{$2}');
+
+      // 3. Superscript group ^(expr) → ^{expr}
+      out = out.replace(/\^\(([^)]+)\)/g, '^{$1}');
+
+      // 4. Simple superscript ^n → ^{n}
+      out = out.replace(/\^(\w)/g, '^{$1}');
+
+      // 5. Subscript _n → _{n}
+      out = out.replace(/_(\w)/g, '_{$1}');
+
+      // 6. Chemistry subscripts: only run when it looks like a chemical formula.
+      //    We look for a sequence of element-like tokens with optional digits.
+      if (/^[A-Z][a-z]?\d?([A-Z][a-z]?\d?)+$/.test(out.replace(/\s+/g, ''))) {
+        out = out.replace(/([A-Z][a-z]?)(\d+)/g, function (m, elem, digits) {
+          return elem + digits.split('').map(function (d) { return '₀₁₂₃₄₅₆₇₈₉'[+d]; }).join('');
+        });
+      }
+
+      // 7. If we produced LaTeX commands and there's no $, wrap inline
+      if (/\\[a-z]/.test(out) && !/\$/.test(out)) {
+        out = '$' + out + '$';
+      }
+
+      return out;
+    }
+
+    function fmtOnClick() {
+      var before = editor.value;
+      var after = autoFormat(before);
+      if (before === after) {
+        toast('Nothing to format — try a formula like 1/6 or x^2');
+        return;
+      }
+      editor.value = after;
+      updatePreview();
+      toast('Formatted');
+    }
+
+    /* ============================================================
+       PREVIEW
+       Detects LaTeX ($...$) and uses renderMarkdown + KaTeX.
+       Otherwise renders plain Unicode.
+       ============================================================ */
+    function updatePreview() {
+      var text = editor.value.trim();
+      if (!text) { preview.innerHTML = ''; return; }
+
+      // Has inline math or LaTeX commands → use renderMarkdown
+      var hasMath = /\$[^$]+\$/.test(text) || /\\[a-zA-Z]/.test(text);
+
+      if (hasMath) {
+        // If it has LaTeX but no $, wrap it
+        var toRender = text;
+        if (!/\$[^$]+\$/.test(toRender) && /\\[a-zA-Z]/.test(toRender)) {
+          toRender = '$' + toRender + '$';
+        }
+        if (window.renderMarkdown) {
+          window.renderMarkdown(toRender, preview);
+        } else {
+          preview.textContent = toRender;
+        }
+      } else {
+        preview.textContent = text;
+      }
+    }
+
+    editor.addEventListener('input', updatePreview);
+
+    /* ============================================================
+       FRACTION BUILDER MODAL
+       ============================================================ */
+    var fractionModal = document.getElementById('fraction-modal');
+    var fracNum   = document.getElementById('frac-num');
+    var fracDen   = document.getElementById('frac-den');
+    var fracRender = document.getElementById('frac-preview-render');
+
+    function openFractionModal() {
+      fracNum.value = '';
+      fracDen.value = '';
+      updateFracPreview();
+      fractionModal.classList.add('is-open');
+      setTimeout(function () { fracNum.focus(); }, 60);
+    }
+    function closeFractionModal() {
+      fractionModal.classList.remove('is-open');
+    }
+    function updateFracPreview() {
+      var n = fracNum.value.trim() || '—';
+      var d = fracDen.value.trim() || '—';
+      // Try to render with KaTeX if available
+      var latex = '$\\frac{' + (n === '—' ? '\\square' : escapeLatex(n)) + '}{' + (d === '—' ? '\\square' : escapeLatex(d)) + '}$';
+      if (window.renderMarkdown) {
+        window.renderMarkdown(latex, fracRender);
+      } else {
+        fracRender.textContent = n + ' / ' + d;
+      }
+    }
+    function escapeLatex(s) {
+      return String(s).replace(/\\/g, '\\\\').replace(/[{}]/g, '');
+    }
+    function insertFraction() {
+      var n = fracNum.value.trim();
+      var d = fracDen.value.trim();
+      if (!n || !d) { toast('Fill in both fields', true); return; }
+      var latex = '\\frac{' + n + '}{' + d + '}';
+      // Wrap in $ if there's no existing math context
+      var value = editor.value;
+      var needsWrap = !/\$[^$]*$/.test(value);
+      var toInsert = needsWrap ? '$' + latex + '$' : latex;
+      insertAtCursor(toInsert);
+      closeFractionModal();
+    }
+
+    fracNum.addEventListener('input', updateFracPreview);
+    fracDen.addEventListener('input', updateFracPreview);
+    fracNum.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); fracDen.focus(); }
+      if (e.key === 'Escape') closeFractionModal();
+    });
+    fracDen.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); insertFraction(); }
+      if (e.key === 'Escape') closeFractionModal();
+    });
+    document.getElementById('frac-cancel').addEventListener('click', closeFractionModal);
+    document.getElementById('frac-insert').addEventListener('click', insertFraction);
+    fractionModal.addEventListener('click', function (e) {
+      if (e.target === fractionModal) closeFractionModal();
+    });
+
+    /* ============================================================
+       AI — generate a formula
+       ============================================================ */
+    async function askAI() {
+      var query = document.getElementById('ai-input').value.trim();
+      if (!query) { toast('Type what you want', true); return; }
+
+      var btn = document.getElementById('ai-btn');
+      btn.disabled = true;
+      btn.textContent = 'Thinking…';
+
+      try {
+        var res = await fetch('/api/tools/sketch/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ query: query }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(data.error || 'Could not generate', true); return; }
+
+        var insert = data.insertText || data.unicode || data.plain || '';
+        if (!insert) { toast(data.explanation || 'Could not determine', true); return; }
+
+        var prefix = editor.value && !/\s$/.test(editor.value) ? '\n' : '';
+        editor.value = editor.value + prefix + insert;
+        updatePreview();
+        if (data.explanation) toast(data.explanation);
+      } catch (err) {
+        toast('Network error', true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-bolt" aria-hidden="true"></i> Ask AI';
+      }
+    }
+
+    /* ============================================================
+       AI SOLVE
+       ============================================================ */
+    async function solve() {
+      var expr = editor.value.trim();
+      if (!expr) { toast('Type an expression first', true); return; }
+
+      var btn = document.getElementById('solve-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Solving…';
+
+      try {
+        var res = await fetch('/api/tools/sketch/solve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ expression: expr }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(data.error || 'Could not solve', true); return; }
+
+        // Replace editor content with the AI's clean LaTeX
+        if (data.latex) {
+          editor.value = data.latex;
+          updatePreview();
+        }
+
+        // Populate the solution box
+        var sol = document.getElementById('solution');
+        var answer = document.getElementById('solution-answer');
+        var steps = document.getElementById('solution-steps');
+        var explain = document.getElementById('solution-explain');
+
+        if (data.answer) {
+          answer.innerHTML = '<strong style="color:var(--slate);font-family:var(--font-ui);font-size:0.66rem;letter-spacing:0.08em;text-transform:uppercase;display:block;margin-bottom:4px">Answer</strong>' +
+                             esc(data.answer);
+          answer.style.display = 'inline-block';
+        } else {
+          answer.style.display = 'none';
+        }
+
+        steps.innerHTML = '';
+        (data.steps || []).forEach(function (s) {
+          var li = document.createElement('li');
+          li.textContent = s;
+          steps.appendChild(li);
+        });
+
+        explain.textContent = data.explanation || '';
+
+        sol.classList.add('is-visible');
+        toast('Solved');
+      } catch (err) {
+        toast('Network error', true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-calculator" aria-hidden="true"></i> AI Solve';
+      }
+    }
+
+    /* ============================================================
+       SAVE / LOAD / DELETE
+       ============================================================ */
+    async function save() {
+      var raw = editor.value.trim();
+      if (!raw) { toast('Nothing to save', true); return; }
+
+      var btn = document.getElementById('save-btn');
+      btn.disabled = true;
+
+      var payload = {
+        title: titleInput.value.trim() || null,
+        subject: subjectIn.value.trim() || null,
+        rawInput: raw,
+        renderedHtml: preview.innerHTML,
+        renderedText: preview.textContent,
+        kind: 'formula',
+      };
+
+      try {
+        var url = currentId ? '/api/tools/sketch/' + currentId : '/api/tools/sketch';
+        var method = currentId ? 'PATCH' : 'POST';
+
+        var res = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
+        var data = await res.json().catch(function () { return {}; });
+        if (!res.ok) { toast(data.error || 'Could not save', true); return; }
+
+        if (!currentId && data.sketch) currentId = data.sketch.id;
+        editStatus.textContent = currentId ? 'Saved' : 'New sketch';
+        toast('Sketch saved');
+        loadSaved();
+      } catch (err) {
+        toast('Network error', true);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    /* Save to Notes — one-click insert into Notes */
+    async function saveToNotes() {
+      var raw = editor.value.trim();
+      if (!raw) { toast('Nothing to save', true); return; }
+
+      var defaultTitle = titleInput.value.trim() || 'Sketch — ' + new Date().toLocaleDateString();
+      var title = prompt('Note title:', defaultTitle);
+      if (!title) return;
+
+      // Build content that Notes will render correctly
+      var content = '';
+      if (subjectIn.value.trim()) content += '**Subject:** ' + subjectIn.value.trim() + '\n\n';
+      content += '## Formula\n\n';
+      content += raw.includes('$') ? raw : '$' + raw + '$';
+      content += '\n\n*Saved from Sketch.*';
+
+      try {
+        var res = await fetch('/api/tools/notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            title: title,
+            content: content,
+            subject: subjectIn.value.trim() || null,
+          }),
+        });
+        if (!res.ok) { toast('Could not save to Notes', true); return; }
+        toast('Saved to Notes');
+      } catch (err) {
+        toast('Network error', true);
+      }
+    }
+
+    async function loadSaved() {
+      var res = await fetch('/api/tools/sketch', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      var list = data.sketches || [];
+
+      document.getElementById('saved-count').textContent = list.length + ' item' + (list.length === 1 ? '' : 's');
+
+      var el = document.getElementById('saved-list');
+      if (!list.length) {
+        el.innerHTML = '<div class="empty-note">No saved sketches yet.</div>';
+        return;
+      }
+
+      el.innerHTML = list.map(function (s) {
+        return '<div class="saved-item" data-id="' + s.id + '">' +
+          '<div style="min-width:0;flex:1">' +
+            '<div class="saved-item__title">' + esc(s.title || 'Untitled') + '</div>' +
+            '<div class="saved-item__preview">' + esc(s.rendered_text || s.raw_input) + '</div>' +
+          '</div>' +
+          '<button class="saved-item__del" data-del="' + s.id + '" type="button" title="Delete">' +
+            '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
+          '</button>' +
+        '</div>';
+      }).join('');
+
+      el.querySelectorAll('.saved-item').forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          if (e.target.closest('[data-del]')) return;
+          openSketch(item.getAttribute('data-id'));
+        });
+      });
+
+      el.querySelectorAll('[data-del]').forEach(function (btn) {
+        btn.addEventListener('click', async function (e) {
+          e.stopPropagation();
+          if (!confirm('Delete this sketch?')) return;
+          var id = btn.getAttribute('data-del');
+          await fetch('/api/tools/sketch/' + id, { method: 'DELETE', credentials: 'include' });
+          if (currentId === id) newSketch();
+          loadSaved();
+        });
+      });
+    }
+
+    async function openSketch(id) {
+      var res = await fetch('/api/tools/sketch/' + id, { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      var s = data.sketch;
+
+      currentId = s.id;
+      titleInput.value = s.title || '';
+      subjectIn.value = s.subject || '';
+      editor.value = s.raw_input || '';
+      preview.innerHTML = s.rendered_html || '';
+      editStatus.textContent = 'Loaded';
+      document.getElementById('solution').classList.remove('is-visible');
+      window.scrollTo(0, 0);
+    }
+
+    function newSketch() {
+      currentId = null;
+      titleInput.value = '';
+      subjectIn.value = '';
+      editor.value = '';
+      preview.innerHTML = '';
+      editStatus.textContent = 'New sketch';
+      document.getElementById('solution').classList.remove('is-visible');
+      editor.focus();
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    /* ============================================================
+       COPY / SEND
+       ============================================================ */
+    function copyText() {
+      var text = preview.textContent || editor.value;
+      navigator.clipboard.writeText(text).then(function () { toast('Copied'); });
+    }
+    function copyLatex() {
+      var text = editor.value;
+      var toCopy = /\$[^$]+\$/.test(text) ? text : '$' + text + '$';
+      navigator.clipboard.writeText(toCopy).then(function () { toast('LaTeX copied'); });
+    }
+    function sendToChat() {
+      var text = preview.textContent || editor.value;
+      if (!text) return;
+      window.location.href = '../chat.html?prefill=' + encodeURIComponent(
+        'Help me understand this formula: ' + text
+      );
+    }
+
+    /* ============================================================
+       WIRE UP
+       ============================================================ */
+    document.getElementById('format-btn').addEventListener('click', fmtOnClick);
+    document.getElementById('fraction-btn').addEventListener('click', openFractionModal);
+    document.getElementById('sqrt-btn').addEventListener('click', function () {
+      insertAtCursor('\\sqrt{}');
+    });
+    document.getElementById('clear-btn').addEventListener('click', function () {
+      if (!editor.value) return;
+      if (confirm('Clear the editor?')) newSketch();
+    });
+    document.getElementById('solve-btn').addEventListener('click', solve);
+    document.getElementById('save-btn').addEventListener('click', save);
+    document.getElementById('save-note-btn').addEventListener('click', saveToNotes);
+    document.getElementById('ai-btn').addEventListener('click', askAI);
+    document.getElementById('copy-btn').addEventListener('click', copyText);
+    document.getElementById('copy-latex-btn').addEventListener('click', copyLatex);
+    document.getElementById('send-chat-btn').addEventListener('click', sendToChat);
+
+    document.getElementById('ai-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); askAI(); }
+    });
+
+    /* ============================================================
+       BOOT
+       ============================================================ */
+    buildPalette();
+    editor.focus();
+    loadSaved();
+  })();
+</script>
+</body>
+</html>

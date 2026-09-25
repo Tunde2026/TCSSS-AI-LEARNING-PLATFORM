@@ -179,16 +179,18 @@
     { href: 'settings.html',  icon: 'fa-gears',      label: 'Settings'  }
   ];
 
-  var LAB_SECTIONS = [
-    { href: 'notes.html',         icon: 'fa-note-sticky',      label: 'Notes' },
-    { href: 'flashcards.html',    icon: 'fa-clone',            label: 'Flashcards' },
-    { href: 'quiz.html',          icon: 'fa-circle-question',  label: 'Quiz' },
-    { href: 'practice.html',      icon: 'fa-dumbbell',         label: 'Practice' },
-    { href: 'visualization.html', icon: 'fa-diagram-project',  label: 'Visualization' },
-    { href: 'study-plans.html',   icon: 'fa-calendar-days',    label: 'Plans' },
-    { href: 'exam.html',          icon: 'fa-stopwatch',        label: 'Exam' },
+    var LAB_SECTIONS = [
+    { href: 'notes.html',         icon: 'fa-note-sticky',       label: 'Notes' },
+    { href: 'flashcards.html',    icon: 'fa-clone',             label: 'Flashcards' },
+    { href: 'quiz.html',          icon: 'fa-circle-question',   label: 'Quiz' },
+    { href: 'theory.html',        icon: 'fa-spell-check',       label: 'Theory' },
+    { href: 'practice.html',      icon: 'fa-dumbbell',          label: 'Practice' },
+    { href: 'visualization.html', icon: 'fa-diagram-project',   label: 'Visualization' },
+    { href: 'sketch.html',        icon: 'fa-pen-ruler',         label: 'Sketch' },
+    { href: 'study-plans.html',   icon: 'fa-calendar-days',     label: 'Plans' },
+    { href: 'exam.html',          icon: 'fa-stopwatch',         label: 'Exam' },
     { href: 'quiz-history.html',  icon: 'fa-clock-rotate-left', label: 'History' },
-    { href: 'mistakes.html',      icon: 'fa-clipboard-list',   label: 'Mistakes' }
+    { href: 'mistakes.html',      icon: 'fa-clipboard-list',    label: 'Mistakes' }
   ];
 
   var path = location.pathname;

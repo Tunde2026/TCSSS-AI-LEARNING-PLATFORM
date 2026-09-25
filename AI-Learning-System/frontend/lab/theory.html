@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theory — Studying Lab</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .theory-inner { max-width: 900px; margin: 0 auto; }
+
+  /* Setup */
+  .setup-card { padding: 28px; }
+  .setup-field { margin-bottom: 18px; }
+  .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .setup-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+
+  /* Generating */
+  .generating { text-align: center; padding: 60px 20px; }
+  .generating__spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--blush-deep);
+    border-top-color: var(--red);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: theory-spin 0.9s linear infinite;
+  }
+  @keyframes theory-spin { to { transform: rotate(360deg); } }
+  .generating__text {
+    font-family: var(--font-head); color: var(--navy);
+    font-size: 1.1rem; margin: 0;
+  }
+  .generating__sub { color: var(--slate); font-size: 0.88rem; margin-top: 6px; }
+
+  /* Progress */
+  .q-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .q-progress {
+    font-family: var(--font-ui); font-size: 0.72rem;
+    letter-spacing: 0.06em; color: var(--slate);
+    text-transform: uppercase;
+  }
+  .q-progress-bar {
+    height: 4px; background: var(--blush-deep);
+    border-radius: 2px; overflow: hidden; margin-bottom: 24px;
+  }
+  .q-progress-bar__fill {
+    height: 100%; background: linear-gradient(90deg, var(--red), var(--gold));
+    transition: width 240ms var(--ease);
+  }
+
+  /* Question card */
+  .q-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 18px;
+  }
+  .q-topic {
+    font-family: var(--font-ui); font-size: 0.64rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--red); font-weight: 700;
+    margin-bottom: 12px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 999px;
+    background: #FDECEC;
+  }
+  .q-template {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    color: var(--navy);
+    line-height: 1.7;
+    margin: 0 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .q-blank {
+    display: inline-block;
+    min-width: 140px;
+    padding: 4px 12px;
+    border: none;
+    border-bottom: 2px solid var(--gold);
+    background: var(--gold-50);
+    border-radius: 6px 6px 0 0;
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: var(--ink);
+    text-align: center;
+    outline: none;
+    transition: border-color var(--transition), background var(--transition);
+  }
+  .q-blank:focus {
+    border-bottom-color: var(--red);
+    background: #FDECEC;
+  }
+  .q-blank.is-correct {
+    border-bottom-color: #2F8F4A;
+    background: #EAF7EE;
+    color: #1F6B35;
+  }
+  .q-blank.is-wrong {
+    border-bottom-color: var(--red);
+    background: #FDECEC;
+    color: var(--deep-red);
+  }
+  .q-blank:disabled { cursor: default; }
+
+  .q-actions {
+    display: flex; gap: 10px; justify-content: space-between;
+    margin-top: 22px; padding-top: 18px;
+    border-top: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+  }
+  .q-actions .btn { min-width: 110px; justify-content: center; }
+
+  .q-hint {
+    background: var(--gold-50);
+    border-left: 3px solid var(--gold);
+    padding: 10px 14px; border-radius: 0 10px 10px 0;
+    font-size: 0.86rem; color: #6A4F13;
+    margin-top: 14px; line-height: 1.5;
+    display: none;
+  }
+  .q-hint.is-visible { display: block; }
+  .q-hint strong {
+    display: block; font-family: var(--font-ui);
+    font-size: 0.62rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--warn);
+    margin-bottom: 4px;
+  }
+
+  .q-feedback {
+    background: #EEF3FB; border-radius: 12px;
+    padding: 14px 16px; margin-top: 16px;
+    font-size: 0.9rem; color: var(--navy);
+    line-height: 1.55; display: none;
+  }
+  .q-feedback.is-visible { display: block; }
+  .q-feedback--correct { background: #EAF7EE; color: #1F6B35; }
+  .q-feedback--wrong   { background: #FDECEC; color: var(--deep-red); }
+  .q-feedback strong {
+    display: block; font-family: var(--font-ui);
+    font-size: 0.66rem; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .q-feedback__answer {
+    font-family: var(--font-head); font-size: 1rem;
+    font-weight: 600; margin: 4px 0;
+  }
+
+  /* Result */
+  .result-card { padding: 40px 28px; text-align: center; }
+  .result-score {
+    font-family: var(--font-head); font-size: 3.5rem;
+    font-weight: 700; color: var(--navy); line-height: 1;
+    margin-bottom: 6px;
+  }
+  .result-score span { font-size: 1.5rem; color: var(--slate); }
+  .result-label {
+    font-family: var(--font-ui); font-size: 0.72rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--slate); margin-bottom: 20px;
+  }
+  .result-message {
+    font-family: var(--font-head); font-size: 1.15rem;
+    color: var(--ink); margin-bottom: 28px;
+  }
+  .result-actions {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+
+  /* History */
+  .history-item {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    transition: border-color var(--transition);
+  }
+  .history-item:hover { border-color: var(--gold); }
+  .history-item__title {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: 0.98rem; color: var(--navy); margin: 0 0 4px;
+  }
+  .history-item__meta {
+    font-family: var(--font-ui); font-size: 0.68rem;
+    color: var(--slate); letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 640px) {
+    .setup-row { grid-template-columns: 1fr; }
+    .q-template { font-size: 1.05rem; }
+    .q-blank { min-width: 100px; }
+    .q-actions { flex-direction: column; }
+    .q-actions .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner theory-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Theory</h1>
+              <p class="page-header__sub">Fill in the gap. Test your recall.</p>
+            </div>
+            <button class="btn btn-ghost" id="history-btn" type="button">
+              <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+              Past sets
+            </button>
+          </header>
+
+          <!-- Setup -->
+          <div id="stage-setup">
+            <div class="card setup-card">
+              <div class="setup-field">
+                <label class="label" for="topic">Topic</label>
+                <input class="input" type="text" id="topic"
+                       placeholder="e.g. Photosynthesis, Newton's laws, Cell division">
+              </div>
+              <div class="setup-row">
+                <div class="setup-field">
+                  <label class="label" for="subject">Subject (optional)</label>
+                  <input class="input" type="text" id="subject" placeholder="e.g. Biology">
+                </div>
+                <div class="setup-field">
+                  <label class="label" for="count">Questions</label>
+                  <select class="input" id="count">
+                    <option value="5" selected>5</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                  </select>
+                </div>
+              </div>
+                            <div class="setup-field">
+                <label class="label" for="difficulty">Difficulty</label>
+                <select class="input" id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                </div>
+                <div class="setup-field">
+                <label class="label" for="description">Note to self (optional)</label>
+                <textarea class="input" id="description" rows="2"
+                            placeholder="How do you feel about this topic? What do you want to remember?"
+                            style="resize:vertical;min-height:60px;font-family:var(--font-body)"></textarea>
+                </div>
+                <div class="setup-actions">
+                <button class="btn btn-primary" id="start-btn" type="button">
+                  <i class="fa-solid fa-bolt" aria-hidden="true"></i>
+                  Generate questions
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generating -->
+          <div id="stage-generating" style="display:none">
+            <div class="card generating">
+              <div class="generating__spinner"></div>
+              <p class="generating__text">Creating your theory questions…</p>
+              <p class="generating__sub">This may take a few seconds.</p>
+            </div>
+          </div>
+
+          <!-- Question -->
+          <div id="stage-question" style="display:none">
+            <div class="q-header">
+              <span class="q-progress" id="q-progress">Question 1 of 5</span>
+              <span class="q-progress" id="q-score">Score: 0</span>
+            </div>
+            <div class="q-progress-bar">
+              <div class="q-progress-bar__fill" id="q-progress-fill" style="width:0%"></div>
+            </div>
+
+            <div class="q-card">
+              <div class="q-topic" id="q-topic">
+                <i class="fa-solid fa-spell-check" aria-hidden="true"></i>
+                <span>—</span>
+              </div>
+              <div class="q-template" id="q-template">—</div>
+
+              <div class="q-hint" id="q-hint">
+                <strong>Hint</strong>
+                <span id="q-hint-text"></span>
+              </div>
+
+              <div class="q-feedback" id="q-feedback">
+                <strong id="q-feedback-label">Feedback</strong>
+                <div id="q-feedback-body"></div>
+              </div>
+
+              <div class="q-actions">
+                <button class="btn btn-ghost" id="hint-btn" type="button">
+                  <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
+                  Show hint
+                </button>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="btn btn-ghost" id="skip-btn" type="button">Skip</button>
+                  <button class="btn btn-primary" id="check-btn" type="button" disabled>
+                    Check <i class="fa-solid fa-check" aria-hidden="true"></i>
+                  </button>
+                  <button class="btn btn-primary" id="next-btn" type="button" style="display:none">
+                    Next <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Result -->
+          <div id="stage-result" style="display:none">
+            <div class="card result-card">
+              <div class="result-score" id="result-score">0<span> / 5</span></div>
+              <div class="result-label">Final score</div>
+              <p class="result-message" id="result-message">—</p>
+              <div class="result-actions">
+                <button class="btn btn-ghost" id="review-btn" type="button">
+                  <i class="fa-solid fa-eye" aria-hidden="true"></i>
+                  Review answers
+                </button>
+                <button class="btn btn-ghost" id="again-btn" type="button">
+                  <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                  New set
+                </button>
+                <button class="btn btn-primary" id="retry-btn" type="button">
+                  <i class="fa-solid fa-redo" aria-hidden="true"></i>
+                  Retry same set
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- History -->
+          <div id="stage-history" style="display:none">
+            <div id="history-list"></div>
+            <div style="margin-top:24px;text-align:center">
+              <button class="btn btn-ghost" id="history-back" type="button">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                Back
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var stages = {
+      setup:      document.getElementById('stage-setup'),
+      generating: document.getElementById('stage-generating'),
+      question:   document.getElementById('stage-question'),
+      result:     document.getElementById('stage-result'),
+      history:    document.getElementById('stage-history')
+    };
+    function showStage(name) {
+      Object.keys(stages).forEach(function (k) {
+        stages[k].style.display = (k === name) ? '' : 'none';
+      });
+      window.scrollTo(0, 0);
+    }
+
+    var set = null;
+    var index = 0;
+    var answers = [];
+    var graded = null;
+    var currentInput = null;
+    var checked = false;
+    var startTime = Date.now();
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    async function api(path, opts) {
+      opts = opts || {};
+      opts.credentials = 'include';
+      opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+      if (opts.body && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+      var res = await fetch(path, opts);
+      var data = await res.json().catch(function () { return {}; });
+      return { ok: res.ok, status: res.status, data: data };
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      return true;
+    }
+
+    /* ---------- Generate ---------- */
+    async function generate() {
+      var topic = document.getElementById('topic').value.trim();
+      if (!topic) { alert('Please enter a topic.'); return; }
+
+            var subject    = document.getElementById('subject').value.trim() || null;
+      var count      = parseInt(document.getElementById('count').value, 10);
+      var difficulty = document.getElementById('difficulty').value;
+      var description = document.getElementById('description').value.trim() || null;
+
+      showStage('generating');
+      var r = await api('/api/tools/theory/generate', {
+        method: 'POST',
+        body: { topic, subject, count, difficulty, description }
+      });
+
+      if (!r.ok) {
+        showStage('setup');
+        alert(r.data.error || 'Could not generate questions.');
+        return;
+      }
+
+      set = r.data.set;
+      index = 0;
+      answers = [];
+      graded = null;
+      startTime = Date.now();
+      renderQuestion();
+      showStage('question');
+    }
+
+    /* ---------- Render question ---------- */
+    function renderQuestion() {
+      var q = set.questions[index];
+      if (!q) { finish(); return; }
+
+      document.getElementById('q-progress').textContent =
+        'Question ' + (index + 1) + ' of ' + set.questions.length;
+      document.getElementById('q-score').textContent =
+        'Score: ' + answers.filter(function (a) { return a.correct; }).length;
+
+      var pct = ((index + 1) / set.questions.length) * 100;
+      document.getElementById('q-progress-fill').style.width = pct + '%';
+
+      document.getElementById('q-topic').querySelector('span').textContent =
+        set.topic || set.subject || 'Theory';
+
+      // Build template with an inline input where ___ appears
+      var templateEl = document.getElementById('q-template');
+      templateEl.innerHTML = '';
+
+      var parts = q.template.split('___');
+      if (parts.length < 2) {
+        templateEl.textContent = q.template;
+      } else {
+        var before = parts[0];
+        var after = parts.slice(1).join('___');
+
+        templateEl.appendChild(document.createTextNode(before));
+
+        currentInput = document.createElement('input');
+        currentInput.type = 'text';
+        currentInput.className = 'q-blank';
+        currentInput.setAttribute('autocomplete', 'off');
+        currentInput.setAttribute('autocapitalize', 'off');
+        currentInput.setAttribute('spellcheck', 'false');
+        currentInput.placeholder = 'answer';
+        currentInput.addEventListener('input', function () {
+          document.getElementById('check-btn').disabled = !currentInput.value.trim();
+        });
+        currentInput.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (checked) nextQuestion();
+            else checkAnswer();
+          }
+        });
+        templateEl.appendChild(currentInput);
+
+        if (after) templateEl.appendChild(document.createTextNode(after));
+      }
+
+      // Reset UI state
+      document.getElementById('q-hint').classList.remove('is-visible');
+      document.getElementById('q-feedback').classList.remove('is-visible');
+      document.getElementById('q-feedback').classList.remove('q-feedback--correct', 'q-feedback--wrong');
+      document.getElementById('hint-btn').style.display = '';
+      document.getElementById('check-btn').style.display = '';
+      document.getElementById('check-btn').disabled = true;
+      document.getElementById('next-btn').style.display = 'none';
+      document.getElementById('skip-btn').style.display = '';
+      checked = false;
+
+      setTimeout(function () { if (currentInput) currentInput.focus(); }, 100);
+    }
+
+    /* ---------- Check ---------- */
+    function checkAnswer() {
+      if (checked || !currentInput) return;
+      var userAnswer = currentInput.value.trim();
+      if (!userAnswer) return;
+
+      checked = true;
+      var q = set.questions[index];
+      var accepted = q.accepted_answers || [];
+
+      // Client-side normalization (matches server)
+      var norm = function (s) {
+        return String(s == null ? '' : s).trim().toLowerCase()
+          .replace(/[.,!?;:'"()\[\]{}]+$/g, '')
+          .replace(/\s+/g, ' ');
+      };
+      var isCorrect = accepted.some(function (a) { return norm(a) === norm(userAnswer); });
+
+      answers.push({
+        questionId: q.id,
+        answer: userAnswer,
+        correct: isCorrect,
+        accepted: accepted,
+      });
+
+      currentInput.disabled = true;
+      currentInput.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+
+      var fb = document.getElementById('q-feedback');
+      fb.classList.add('is-visible');
+      fb.classList.add(isCorrect ? 'q-feedback--correct' : 'q-feedback--wrong');
+
+      document.getElementById('q-feedback-label').textContent =
+        isCorrect ? '✓ Correct' : '✗ Not quite';
+
+      var bodyHtml = '';
+      if (!isCorrect) {
+        bodyHtml += '<div class="q-feedback__answer">Accepted answer: ' +
+                    esc(accepted.join(' / ')) + '</div>';
+      }
+      if (q.explanation) {
+        bodyHtml += '<div style="margin-top:6px">' + esc(q.explanation) + '</div>';
+      }
+      document.getElementById('q-feedback-body').innerHTML = bodyHtml;
+
+      document.getElementById('q-score').textContent =
+        'Score: ' + answers.filter(function (a) { return a.correct; }).length;
+
+      document.getElementById('check-btn').style.display = 'none';
+      document.getElementById('skip-btn').style.display = 'none';
+      document.getElementById('hint-btn').style.display = 'none';
+
+      var nextBtn = document.getElementById('next-btn');
+      nextBtn.style.display = '';
+      nextBtn.innerHTML = (index === set.questions.length - 1 ? 'Finish' : 'Next') +
+        ' <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+      nextBtn.focus();
+    }
+
+    function nextQuestion() {
+      if (index < set.questions.length - 1) {
+        index += 1;
+        renderQuestion();
+      } else {
+        finish();
+      }
+    }
+
+    function skip() {
+      var q = set.questions[index];
+      answers.push({
+        questionId: q.id,
+        answer: '',
+        correct: false,
+        accepted: q.accepted_answers || [],
+      });
+      nextQuestion();
+    }
+
+    /* ---------- Finish ---------- */
+    async function finish() {
+      showStage('generating');
+      document.querySelector('.generating__text').textContent = 'Scoring your answers…';
+
+      var payload = set.questions.map(function (q) {
+        var a = answers.find(function (x) { return x.questionId === q.id; });
+        return { questionId: q.id, answer: a ? a.answer : '' };
+      });
+
+      var elapsed = Math.round((Date.now() - startTime) / 1000);
+      var r = await api('/api/tools/theory/' + set.id + '/attempt', {
+        method: 'POST',
+        body: { answers: payload, timeTakenSeconds: elapsed }
+      });
+
+      if (!r.ok) {
+        alert(r.data.error || 'Could not score.');
+        showStage('question');
+        return;
+      }
+
+      graded = r.data.graded;
+      var s = r.data.attempt.score;
+      var t = r.data.attempt.total;
+
+      document.getElementById('result-score').innerHTML = s + '<span> / ' + t + '</span>';
+
+      var pct = t ? s / t : 0;
+      var msg = '';
+      if (pct === 1)       msg = 'Perfect — outstanding recall!';
+      else if (pct >= 0.8) msg = 'Great work — you know this well.';
+      else if (pct >= 0.6) msg = 'Good effort. Review the missed ones.';
+      else if (pct >= 0.4) msg = 'Keep going — practice makes the difference.';
+      else                 msg = 'This topic needs more study. Try again soon.';
+
+      document.getElementById('result-message').textContent = msg;
+      showStage('result');
+
+      document.querySelector('.generating__text').textContent = 'Creating your theory questions…';
+    }
+
+    /* ---------- Review ---------- */
+    function review() {
+      if (!graded) return;
+      index = 0;
+      renderReview();
+      showStage('question');
+    }
+
+    function renderReview() {
+      var q = set.questions[index];
+      var g = graded[index];
+      if (!q || !g) { showStage('result'); return; }
+
+      document.getElementById('q-progress').textContent =
+        'Review ' + (index + 1) + ' of ' + set.questions.length;
+      var pct = ((index + 1) / set.questions.length) * 100;
+      document.getElementById('q-progress-fill').style.width = pct + '%';
+      document.getElementById('q-score').textContent = '';
+
+      document.getElementById('q-topic').querySelector('span').textContent =
+        set.topic || set.subject || 'Theory';
+
+      var templateEl = document.getElementById('q-template');
+      templateEl.innerHTML = '';
+      var parts = q.template.split('___');
+      if (parts.length < 2) {
+        templateEl.textContent = q.template;
+      } else {
+        templateEl.appendChild(document.createTextNode(parts[0]));
+        var span = document.createElement('span');
+        span.className = 'q-blank ' + (g.correct ? 'is-correct' : 'is-wrong');
+        span.style.display = 'inline-block';
+        span.textContent = g.userAnswer || '(blank)';
+        templateEl.appendChild(span);
+        templateEl.appendChild(document.createTextNode(parts.slice(1).join('___')));
+      }
+
+      var fb = document.getElementById('q-feedback');
+      fb.classList.add('is-visible');
+      fb.classList.add(g.correct ? 'q-feedback--correct' : 'q-feedback--wrong');
+      document.getElementById('q-feedback-label').textContent =
+        g.correct ? '✓ Correct' : '✗ Missed';
+      var body = '';
+      if (!g.correct) {
+        body += '<div class="q-feedback__answer">Accepted: ' +
+                esc((g.acceptedAnswers || []).join(' / ')) + '</div>';
+      }
+      if (g.explanation) body += '<div style="margin-top:6px">' + esc(g.explanation) + '</div>';
+      document.getElementById('q-feedback-body').innerHTML = body;
+
+      document.getElementById('hint-btn').style.display = 'none';
+      document.getElementById('check-btn').style.display = 'none';
+      document.getElementById('skip-btn').style.display = 'none';
+
+      var nextBtn = document.getElementById('next-btn');
+      nextBtn.style.display = '';
+      nextBtn.innerHTML = (index === set.questions.length - 1 ? 'Done' : 'Next') +
+        ' <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+    }
+
+    function nextReview() {
+      if (index < set.questions.length - 1) {
+        index += 1;
+        renderReview();
+      } else {
+        showStage('result');
+      }
+    }
+
+    /* ---------- Hint ---------- */
+    function showHint() {
+      var q = set.questions[index];
+      if (!q || !q.hint) return;
+      document.getElementById('q-hint-text').textContent = q.hint;
+      document.getElementById('q-hint').classList.add('is-visible');
+    }
+
+    /* ---------- History ---------- */
+    async function openHistory() {
+      showStage('generating');
+      var r = await api('/api/tools/theory');
+      if (!r.ok) { showStage('setup'); return; }
+      var list = r.data.sets || [];
+      var el = document.getElementById('history-list');
+
+      if (!list.length) {
+        el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--slate)">' +
+                       'No sets yet.</div>';
+      } else {
+        el.innerHTML = list.map(function (s) {
+          var when = new Date(s.created_at).toLocaleDateString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric'
+          });
+                    return '<div class="history-item">' +
+                   '<div style="flex:1;min-width:0">' +
+                     '<div class="history-item__title">' + esc(s.title) + '</div>' +
+                     '<div class="history-item__meta">' + s.question_count + ' question' +
+                       (s.question_count === 1 ? '' : 's') + ' · ' +
+                       esc(s.difficulty) + (s.subject ? ' · ' + esc(s.subject) : '') +
+                       ' · ' + when +
+                     '</div>' +
+                     (s.description
+                       ? '<div style="margin-top:8px;padding:8px 12px;background:var(--gold-50);' +
+                         'border-left:3px solid var(--gold);border-radius:0 8px 8px 0;' +
+                         'font-size:0.82rem;color:#6A4F13;line-height:1.5;font-style:italic">' +
+                         esc(s.description) + '</div>'
+                       : '') +
+                   '</div>' +
+                   '<div style="display:flex;gap:6px;align-items:flex-start">' +
+                     '<button class="btn btn-ghost" data-open="' + s.id + '" type="button">Open</button>' +
+                     '<button class="btn btn-ghost" data-del="' + s.id + '" type="button" title="Delete">' +
+                       '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
+                     '</button>' +
+                   '</div>' +
+                 '</div>';
+        }).join('');
+
+                el.querySelectorAll('[data-open]').forEach(function (b) {
+          b.addEventListener('click', async function () {
+            var id = b.getAttribute('data-open');
+            var r2 = await api('/api/tools/theory/' + id);
+            if (!r2.ok) { alert('Could not open set.'); return; }
+            set = r2.data.set;
+            index = 0;
+            answers = [];
+            graded = null;
+            startTime = Date.now();
+            // Pre-fill the description box with the set's saved description
+            var descEl = document.getElementById('description');
+            if (descEl) descEl.value = set.description || '';
+            renderQuestion();
+            showStage('question');
+          });
+        });
+
+        el.querySelectorAll('[data-del]').forEach(function (b) {
+          b.addEventListener('click', async function () {
+            if (!confirm('Delete this set?')) return;
+            var id = b.getAttribute('data-del');
+            var r3 = await api('/api/tools/theory/' + id, { method: 'DELETE' });
+            if (r3.ok) openHistory();
+          });
+        });
+      }
+      showStage('history');
+    }
+
+    /* ---------- Wire up ---------- */
+    document.getElementById('start-btn').addEventListener('click', generate);
+    document.getElementById('check-btn').addEventListener('click', checkAnswer);
+    document.getElementById('next-btn').addEventListener('click', function () {
+      if (graded) nextReview();
+      else nextQuestion();
+    });
+    document.getElementById('skip-btn').addEventListener('click', skip);
+    document.getElementById('hint-btn').addEventListener('click', showHint);
+    document.getElementById('history-btn').addEventListener('click', openHistory);
+    document.getElementById('history-back').addEventListener('click', function () {
+      showStage('setup');
+    });
+    document.getElementById('review-btn').addEventListener('click', review);
+    document.getElementById('again-btn').addEventListener('click', function () {
+      showStage('setup');
+    });
+    document.getElementById('retry-btn').addEventListener('click', function () {
+      index = 0;
+      answers = [];
+      graded = null;
+      startTime = Date.now();
+      renderQuestion();
+      showStage('question');
+    });
+
+    document.getElementById('topic').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); generate(); }
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      showStage('setup');
+      document.getElementById('topic').focus();
+    })();
+  })();
+</script>
+</body>
+</html>
