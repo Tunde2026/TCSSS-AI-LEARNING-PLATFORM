@@ -90,7 +90,7 @@
   .tool-card__icon--exam       { background: var(--blush); color: var(--slate); }
   .tool-card__icon--mistakes   { background: #ECEBF5; color: var(--navy); }
   .tool-card__icon--sketch     { background: #FBF3E1; color: var(--gold); }
-  .tool-card__icon--theory     { background: var(--green-bg); color: var(--green); }
+  .tool-card__icon--theory     { background: #EAF7EE; color: #2F8F4A; }
   .tool-card__body { flex: 1; min-width: 0; }
   .tool-card__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; color: var(--navy); margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tool-card__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.04em; color: var(--slate); margin: 0; text-transform: uppercase; }
@@ -100,40 +100,64 @@
   .widget-loading, .widget-error { padding: 24px; text-align: center; color: var(--slate); font-size: 0.9rem; }
   .widget-error { color: var(--deep-red); }
 
-  /* Quiz widget */
-  .quiz-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
-  .quiz-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: linear-gradient(135deg, var(--navy), var(--soft-navy)); color: var(--white); }
-  .quiz-widget__icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.15); color: var(--gold-300); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
-  .quiz-widget__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; margin: 0 0 2px; }
-  .quiz-widget__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; }
-  .quiz-widget__questions { max-height: 520px; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 18px; }
-  .quiz-q { padding-bottom: 14px; border-bottom: 1px solid var(--border-soft); }
-  .quiz-q:last-child { border-bottom: none; padding-bottom: 0; }
-  .quiz-q__num { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); font-weight: 600; margin-bottom: 6px; }
-  .quiz-q__text { font-weight: 500; color: var(--ink); font-size: 0.94rem; line-height: 1.55; margin-bottom: 10px; }
-  .quiz-q.is-correct .quiz-q__num { color: var(--green); }
-  .quiz-q.is-wrong   .quiz-q__num { color: var(--deep-red); }
-  .quiz-q__opts { display: flex; flex-direction: column; gap: 6px; }
-  .quiz-opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; font-family: var(--font-body); font-size: 0.88rem; text-align: left; color: var(--ink); transition: border-color var(--transition), background var(--transition); width: 100%; }
-  .quiz-opt:hover:not(:disabled) { border-color: var(--navy); background: var(--blush); }
-  .quiz-opt:disabled { cursor: default; }
-  .quiz-opt.is-selected { border-color: var(--red); background: #FDECEC; }
-  .quiz-opt.is-selected .quiz-opt__label { background: var(--red); color: var(--white); }
-  .quiz-opt.is-correct-answer { border-color: var(--green); background: var(--green-bg); }
-  .quiz-opt.is-correct-answer .quiz-opt__label { background: var(--green); color: var(--white); }
-  .quiz-opt.is-wrong-answer { border-color: var(--red); background: #FDECEC; opacity: 0.85; }
-  .quiz-opt__label { width: 24px; height: 24px; border-radius: 50%; background: var(--blush-deep); color: var(--navy); display: grid; place-items: center; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
-  .quiz-opt__text { line-height: 1.45; padding-top: 3px; }
-  .quiz-explanation { margin-top: 10px; padding: 10px 12px; background: #EEF3FB; border-radius: 10px; font-size: 0.82rem; line-height: 1.55; color: var(--navy); }
-  .quiz-explanation strong { display: block; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); margin-bottom: 4px; }
-  .quiz-widget__actions { padding: 14px 18px; background: var(--blush); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .quiz-submit { padding: 10px 20px; border: none; border-radius: 999px; background: linear-gradient(135deg, var(--red), var(--deep-red)); color: var(--white); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: opacity var(--transition), transform 120ms var(--ease); }
-  .quiz-submit:disabled { background: var(--slate-300); cursor: not-allowed; opacity: 0.7; }
-  .quiz-widget__progress { font-family: var(--font-ui); font-size: 0.72rem; color: var(--slate); letter-spacing: 0.04em; }
-  .quiz-widget__score { display: flex; align-items: baseline; gap: 10px; }
-  .quiz-widget__score-num { font-family: var(--font-head); font-size: 1.6rem; font-weight: 700; color: var(--navy); line-height: 1; }
-  .quiz-ask-ai, .flashcard-ask-ai, .theory-ask-ai, .exam-ask-ai { padding: 10px 18px; border: none; border-radius: 999px; background: var(--navy); color: var(--white); font-family: var(--font-body); font-size: 0.86rem; font-weight: 600; cursor: pointer; }
-  .quiz-ask-ai:hover, .flashcard-ask-ai:hover, .theory-ask-ai:hover, .exam-ask-ai:hover { background: var(--soft-navy); }
+  /* ---------- Shared widget chrome (Quiz + Theory + Exam one-at-a-time) ---------- */
+  .qa-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  .qa-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: var(--white); }
+  .qa-widget__head--quiz   { background: linear-gradient(135deg, var(--navy), var(--soft-navy)); }
+  .qa-widget__head--theory { background: linear-gradient(135deg, #2F8F4A, #1F6B35); color: #FFFFFF; }
+  .qa-widget__head--exam   { background: linear-gradient(135deg, var(--red), var(--deep-red)); }
+  .qa-widget__icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.15); color: var(--white); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
+  .qa-widget__headtext { flex: 1; min-width: 0; }
+  .qa-widget__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; margin: 0 0 2px; }
+  .qa-widget__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.85; }
+  .qa-widget__pill { padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,0.15); font-family: var(--font-ui); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em; flex-shrink: 0; }
+
+  .qa-progress { height: 4px; background: var(--blush-deep); }
+  .qa-progress__fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--gold)); transition: width 260ms var(--ease-out); }
+
+  .qa-body { padding: 22px 22px 6px; min-height: 220px; display: flex; flex-direction: column; gap: 16px; }
+  .qa-qnum { font-family: var(--font-ui); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate); font-weight: 700; }
+  .qa-qtext { font-family: var(--font-head); font-size: 1.12rem; line-height: 1.55; color: var(--navy); margin: 0; }
+  .qa-qtext--template { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .qa-qtext--template input { min-width: 140px; padding: 4px 12px; border: none; border-bottom: 2px solid var(--gold); background: var(--gold-50); border-radius: 6px 6px 0 0; font-family: var(--font-body); font-size: 1.02rem; color: var(--ink); text-align: center; outline: none; }
+  .qa-qtext--template input:focus { border-bottom-color: var(--red); background: #FDECEC; }
+  .qa-qtext--template input.is-correct { border-bottom-color: #2F8F4A; background: #EAF7EE; color: #1F6B35; }
+  .qa-qtext--template input.is-wrong { border-bottom-color: var(--red); background: #FDECEC; color: var(--deep-red); }
+  .qa-qtext--template input:disabled { cursor: default; }
+
+  .qa-opts { display: flex; flex-direction: column; gap: 8px; }
+  .qa-opt { display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 11px; cursor: pointer; font-family: var(--font-body); font-size: 0.92rem; text-align: left; color: var(--ink); transition: border-color var(--transition), background var(--transition); width: 100%; }
+  .qa-opt:hover:not(:disabled) { border-color: var(--navy); background: var(--blush); }
+  .qa-opt:disabled { cursor: default; }
+  .qa-opt.is-selected { border-color: var(--red); background: #FDECEC; }
+  .qa-opt.is-selected .qa-opt__label { background: var(--red); color: var(--white); }
+  .qa-opt.is-correct-answer { border-color: #2F8F4A; background: #EAF7EE; }
+  .qa-opt.is-correct-answer .qa-opt__label { background: #2F8F4A; color: var(--white); }
+  .qa-opt.is-wrong-answer { border-color: var(--red); background: #FDECEC; opacity: 0.85; }
+  .qa-opt__label { width: 26px; height: 26px; border-radius: 50%; background: var(--blush-deep); color: var(--navy); display: grid; place-items: center; font-family: var(--font-ui); font-size: 0.72rem; font-weight: 700; flex-shrink: 0; }
+  .qa-opt__text { line-height: 1.5; padding-top: 3px; }
+
+  .qa-feedback { margin-top: 4px; padding: 12px 14px; border-radius: 11px; font-size: 0.86rem; line-height: 1.55; display: none; }
+  .qa-feedback.is-visible { display: block; }
+  .qa-feedback--correct { background: #EAF7EE; color: var(--ink); border-left: 3px solid #2F8F4A; }
+  .qa-feedback--wrong { background: #FDECEC; color: var(--ink); border-left: 3px solid var(--red); }
+  .qa-feedback strong { display: block; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+  .qa-feedback--correct strong { color: #2F8F4A; }
+  .qa-feedback--wrong strong { color: var(--deep-red); }
+
+  .qa-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 22px 20px; margin-top: auto; }
+  .qa-actions__left  { display: flex; gap: 8px; }
+  .qa-actions__right { display: flex; gap: 8px; }
+  .qa-btn { padding: 10px 18px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--white); color: var(--navy); font-family: var(--font-body); font-size: 0.86rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: border-color var(--transition), background var(--transition), transform 120ms var(--ease); }
+  .qa-btn:hover:not(:disabled) { border-color: var(--navy); background: var(--blush); }
+  .qa-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .qa-btn--primary { background: linear-gradient(135deg, var(--red), var(--deep-red)); color: var(--white); border-color: transparent; }
+  .qa-btn--primary:hover:not(:disabled) { background: linear-gradient(135deg, var(--deep-red), var(--red)); border-color: transparent; }
+  .qa-btn--primary:disabled { background: var(--slate-300); }
+
+  .qa-result { padding: 14px 22px; background: var(--blush); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .qa-result__score { font-family: var(--font-head); font-size: 1.35rem; font-weight: 700; color: var(--navy); }
+  .qa-result__score small { font-family: var(--font-ui); font-size: 0.72rem; color: var(--slate); letter-spacing: 0.06em; text-transform: uppercase; margin-left: 8px; font-weight: 500; }
 
   /* Flashcard widget */
   .flashcard-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
@@ -167,8 +191,8 @@
   .flashcard-rate-btn--hard:hover { background: var(--gold-50); border-color: var(--gold); }
   .flashcard-rate-btn--good  { color: var(--navy); border-color: #C7C6E0; }
   .flashcard-rate-btn--good:hover { background: var(--blush); border-color: var(--navy); }
-  .flashcard-rate-btn--easy  { color: var(--green); border-color: #B9DDC3; }
-  .flashcard-rate-btn--easy:hover { background: var(--green-bg); border-color: var(--green); }
+  .flashcard-rate-btn--easy  { color: #2F8F4A; border-color: #B9DDC3; }
+  .flashcard-rate-btn--easy:hover { background: #EAF7EE; border-color: #2F8F4A; }
   .flashcard-widget__hint-line { margin-top: 18px; font-family: var(--font-ui); font-size: 0.7rem; letter-spacing: 0.06em; color: var(--slate); opacity: 0.75; transition: opacity var(--transition); }
   .flashcard-widget__hint-line.is-hidden { opacity: 0; }
   .flashcard-widget__progress { padding: 12px 20px; background: var(--white); border-top: 1px solid var(--border-soft); display: flex; align-items: center; gap: 12px; }
@@ -176,14 +200,14 @@
   .flashcard-widget__progress-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--deep-red)); border-radius: 3px; transition: width 320ms var(--ease-out); }
   .flashcard-widget__progress-label { font-family: var(--font-ui); font-size: 0.68rem; color: var(--slate); letter-spacing: 0.04em; flex-shrink: 0; }
   .flashcard-widget__done { padding: 36px 24px; text-align: center; }
-  .flashcard-widget__done-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--green-bg); color: var(--green); display: grid; place-items: center; font-size: 1.4rem; margin: 0 auto 16px; }
+  .flashcard-widget__done-icon { width: 52px; height: 52px; border-radius: 14px; background: #EAF7EE; color: #2F8F4A; display: grid; place-items: center; font-size: 1.4rem; margin: 0 auto 16px; }
   .flashcard-widget__done-title { font-family: var(--font-head); font-size: 1.15rem; color: var(--navy); margin: 0 0 6px; }
   .flashcard-widget__done-desc { font-size: 0.88rem; color: var(--slate); margin: 0 0 20px; }
   .flashcard-widget__done-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 
   /* Practice widget */
   .practice-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
-  .practice-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: linear-gradient(135deg, var(--green), #1F6B35); color: var(--white); }
+  .practice-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: linear-gradient(135deg, #2F8F4A, #1F6B35); color: #FFFFFF; }
   .practice-widget__icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.15); color: var(--white); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
   .practice-widget__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; margin: 0 0 2px; }
   .practice-widget__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.85; }
@@ -199,9 +223,9 @@
   .practice-btn--hint:hover { background: var(--gold-50); border-color: var(--gold); }
   .practice-hint, .practice-answer { margin-top: 10px; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem; line-height: 1.55; display: none; }
   .practice-hint { background: var(--gold-50); color: #6A4F13; border-left: 3px solid var(--gold); }
-  .practice-answer { background: var(--green-bg); color: var(--ink); border-left: 3px solid var(--green); }
+  .practice-answer { background: #EAF7EE; color: var(--ink); border-left: 3px solid #2F8F4A; }
   .practice-hint.is-visible, .practice-answer.is-visible { display: block; }
-  .practice-answer strong { display: block; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
+  .practice-answer strong { display: block; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: #2F8F4A; margin-bottom: 4px; }
   .practice-hint strong { display: block; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--warn); margin-bottom: 4px; }
 
   /* Visualization widget */
@@ -254,33 +278,6 @@
   .note-widget__input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
   .note-widget__actions { display: flex; gap: 8px; justify-content: flex-end; }
 
-  /* Theory widget */
-  .theory-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
-  .theory-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: linear-gradient(135deg, var(--green), #1F6B35); color: var(--white); }
-  .theory-widget__icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.15); color: var(--white); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
-  .theory-widget__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; margin: 0 0 2px; }
-  .theory-widget__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.9; }
-  .theory-widget__body { padding: 16px 18px; display: flex; flex-direction: column; gap: 16px; max-height: 560px; overflow-y: auto; }
-  .theory-q { padding-bottom: 14px; border-bottom: 1px solid var(--border-soft); }
-  .theory-q:last-child { border-bottom: none; padding-bottom: 0; }
-  .theory-q__num { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); font-weight: 600; margin-bottom: 6px; }
-  .theory-q__template { font-family: var(--font-head); font-size: 0.98rem; color: var(--navy); line-height: 1.65; margin-bottom: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .theory-blank { display: inline-block; min-width: 110px; padding: 2px 10px; border: none; border-bottom: 2px solid var(--gold); background: var(--gold-50); border-radius: 6px 6px 0 0; font-family: var(--font-body); font-size: 0.95rem; color: var(--ink); text-align: center; outline: none; transition: border-color var(--transition), background var(--transition); }
-  .theory-blank:focus { border-bottom-color: var(--red); background: #FDECEC; }
-  .theory-blank.is-correct { border-bottom-color: #2F8F4A; background: #EAF7EE; color: #1F6B35; }
-  .theory-blank.is-wrong { border-bottom-color: var(--red); background: #FDECEC; color: var(--deep-red); }
-  .theory-blank:disabled { cursor: default; }
-  .theory-feedback { margin-top: 8px; padding: 8px 12px; border-radius: 10px; font-size: 0.82rem; line-height: 1.5; display: none; }
-  .theory-feedback.is-visible { display: block; }
-  .theory-feedback--correct { background: var(--green-bg); color: var(--ink); border-left: 3px solid var(--green); }
-  .theory-feedback--wrong { background: #FDECEC; color: var(--ink); border-left: 3px solid var(--red); }
-  .theory-feedback strong { font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 3px; }
-  .theory-widget__actions { padding: 14px 18px; background: var(--blush); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .theory-widget__score { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; color: var(--navy); }
-  .theory-submit { padding: 10px 20px; border: none; border-radius: 999px; background: linear-gradient(135deg, var(--red), var(--deep-red)); color: var(--white); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; cursor: pointer; }
-  .theory-submit:disabled { background: var(--slate-300); cursor: not-allowed; opacity: 0.7; }
-  .theory-widget__progress { font-family: var(--font-ui); font-size: 0.72rem; color: var(--slate); letter-spacing: 0.04em; }
-
   /* Sketch widget */
   .sketch-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
   .sketch-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: linear-gradient(135deg, var(--navy), var(--soft-navy)); color: var(--white); }
@@ -294,48 +291,11 @@
   .sketch-copy-btn { padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--white); font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--navy); display: inline-flex; align-items: center; gap: 6px; }
   .sketch-copy-btn:hover { border-color: var(--navy); background: var(--blush); }
 
-  /* Exam widget */
-  .exam-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
-  .exam-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: linear-gradient(135deg, var(--red), var(--deep-red)); color: var(--white); }
-  .exam-widget__icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.15); color: var(--white); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
-  .exam-widget__headtext { flex: 1; min-width: 0; }
-  .exam-widget__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; margin: 0 0 2px; }
-  .exam-widget__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.9; }
+  /* Exam widget (reuses qa-widget chrome) */
   .exam-widget__timer { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,0.15); font-family: var(--font-ui); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; flex-shrink: 0; }
   .exam-widget__timer.is-warning { background: rgba(201,149,46,0.3); }
   .exam-widget__timer.is-danger { background: rgba(255,255,255,0.3); animation: exam-pulse 1s infinite; }
   @keyframes exam-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
-  .exam-widget__bar { height: 3px; background: var(--blush-deep); }
-  .exam-widget__bar-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--gold)); transition: width 1s linear; }
-  .exam-widget__body { padding: 16px 18px; display: flex; flex-direction: column; gap: 18px; max-height: 560px; overflow-y: auto; }
-  .exam-q { padding-bottom: 14px; border-bottom: 1px solid var(--border-soft); }
-  .exam-q:last-child { border-bottom: none; padding-bottom: 0; }
-  .exam-q__num { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); font-weight: 600; margin-bottom: 6px; }
-  .exam-q__text { font-weight: 500; color: var(--ink); font-size: 0.94rem; line-height: 1.55; margin-bottom: 10px; }
-  .exam-q.is-correct .exam-q__num { color: var(--green); }
-  .exam-q.is-wrong .exam-q__num { color: var(--deep-red); }
-  .exam-q__opts { display: flex; flex-direction: column; gap: 6px; }
-  .exam-opt { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; font-family: var(--font-body); font-size: 0.88rem; text-align: left; color: var(--ink); transition: border-color var(--transition), background var(--transition); width: 100%; }
-  .exam-opt:hover:not(:disabled) { border-color: var(--navy); background: var(--blush); }
-  .exam-opt:disabled { cursor: default; }
-  .exam-opt.is-selected { border-color: var(--red); background: #FDECEC; }
-  .exam-opt.is-selected .exam-opt__label { background: var(--red); color: var(--white); }
-  .exam-opt.is-correct-answer { border-color: var(--green); background: var(--green-bg); }
-  .exam-opt.is-correct-answer .exam-opt__label { background: var(--green); color: var(--white); }
-  .exam-opt.is-wrong-answer { border-color: var(--red); background: #FDECEC; opacity: 0.85; }
-  .exam-opt__label { width: 24px; height: 24px; border-radius: 50%; background: var(--blush-deep); color: var(--navy); display: grid; place-items: center; font-family: var(--font-ui); font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
-  .exam-opt__text { line-height: 1.45; padding-top: 3px; }
-  .exam-q__written { width: 100%; min-height: 100px; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--font-body); font-size: 0.92rem; color: var(--ink); resize: vertical; outline: none; }
-  .exam-q__written:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
-  .exam-q__model { margin-top: 10px; padding: 10px 12px; background: var(--green-bg); border-radius: 10px; font-size: 0.85rem; line-height: 1.55; border-left: 3px solid var(--green); }
-  .exam-q__model strong { display: block; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--green); margin-bottom: 4px; }
-  .exam-widget__actions { padding: 14px 18px; background: var(--blush); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .exam-submit { padding: 10px 20px; border: none; border-radius: 999px; background: linear-gradient(135deg, var(--red), var(--deep-red)); color: var(--white); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; cursor: pointer; }
-  .exam-submit:disabled { background: var(--slate-300); cursor: not-allowed; opacity: 0.7; }
-  .exam-widget__progress { font-family: var(--font-ui); font-size: 0.72rem; color: var(--slate); letter-spacing: 0.04em; }
-  .exam-widget__score { display: flex; align-items: baseline; gap: 10px; }
-  .exam-widget__score-num { font-family: var(--font-head); font-size: 1.6rem; font-weight: 700; color: var(--navy); line-height: 1; }
-  .exam-widget__score-pct { font-family: var(--font-ui); font-size: 0.9rem; color: var(--slate); }
   .exam-widget__note { padding: 12px 18px; background: var(--gold-50); border-top: 1px solid var(--border-soft); font-size: 0.82rem; color: #6A4F13; text-align: center; }
 
   /* Meta */
@@ -343,7 +303,7 @@
   .msg-row--user .msg-meta { text-align: right; justify-content: flex-end; }
   .meta-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.04em; font-weight: 500; }
   .meta-badge--search { background: var(--gold-50); color: var(--warn); }
-  .meta-badge--library { background: var(--green-bg); color: var(--green); }
+  .meta-badge--library { background: #EAF7EE; color: #2F8F4A; }
   .meta-badge--attachment { background: #EEF3FB; color: var(--navy); }
 
   .sources-toggle { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: var(--blush); color: var(--navy); font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.04em; font-weight: 500; cursor: pointer; border: none; }
@@ -374,7 +334,7 @@
   .attach-chip__icon { width: 26px; height: 26px; border-radius: 8px; background: var(--blush); color: var(--navy); display: grid; place-items: center; font-size: 0.72rem; flex-shrink: 0; }
   .attach-chip__name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; font-weight: 500; }
   .attach-chip__status { font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); flex-shrink: 0; }
-  .attach-chip__status--ready { color: var(--green); }
+  .attach-chip__status--ready { color: #2F8F4A; }
   .attach-chip__status--failed { color: var(--deep-red); }
   .attach-chip__remove { width: 22px; height: 22px; border-radius: 50%; border: none; background: var(--blush-deep); color: var(--slate); cursor: pointer; display: grid; place-items: center; font-size: 0.62rem; flex-shrink: 0; }
   .attach-chip__remove:hover { background: var(--red); color: var(--white); }
@@ -439,9 +399,11 @@
     .msg-images { grid-template-columns: 1fr 1fr; }
     .msg-image__download { opacity: 1; }
     .tool-card { padding: 12px 14px; }
-    .quiz-widget__questions { max-height: 380px; padding: 12px 14px; }
-    .quiz-widget__actions { padding: 12px 14px; }
-    .quiz-submit, .quiz-ask-ai, .flashcard-ask-ai, .theory-ask-ai, .exam-ask-ai, .theory-submit, .exam-submit { width: 100%; text-align: center; }
+    .qa-body { padding: 18px 16px 4px; }
+    .qa-actions { padding: 12px 16px 16px; flex-wrap: wrap; }
+    .qa-actions__left, .qa-actions__right { flex: 1; }
+    .qa-btn { flex: 1; justify-content: center; }
+    .qa-result { padding: 12px 16px; }
     .flashcard-widget__card { height: 200px; }
     .flashcard-widget__stage { padding: 16px; }
   }
@@ -826,8 +788,8 @@
             sugHTML('fa-calculator', 'Solve a problem', 'Solve the quadratic equation $2x^2 + 5x - 3 = 0$ step by step.') +
             sugHTML('fa-circle-question', 'Create a quiz', 'Create a quiz on photosynthesis with 5 questions.') +
             sugHTML('fa-clone', 'Make flashcards', 'Make 10 flashcards on cell division.') +
+            sugHTML('fa-spell-check', 'Theory practice', 'Give me theory questions on photosynthesis.') +
             sugHTML('fa-diagram-project', 'Draw a diagram', 'Draw the water cycle as a diagram.') +
-            sugHTML('fa-book-open', 'My mistakes', 'Show me my mistakes.') +
           '</div>' +
         '</div>';
       innerEl.querySelectorAll('.suggestion-card').forEach(function (card) {
@@ -929,13 +891,13 @@
     }
 
     /* ============================================================
-       INTERACTIVE QUIZ
+       QUIZ — one question at a time
        ============================================================ */
     async function buildInteractiveQuiz(tool) {
       var quizId = extractIdFromUrl(tool);
       if (!quizId) return buildToolCard(tool);
       var container = document.createElement('div');
-      container.className = 'quiz-widget';
+      container.className = 'qa-widget';
       container.innerHTML = '<div class="widget-loading">Loading quiz…</div>';
       try {
         var res = await fetch('/api/tools/quiz/' + quizId, { credentials: 'include' });
@@ -953,109 +915,183 @@
     }
 
     function renderQuizWidget(container, quiz) {
+      var total = quiz.questions.length;
+      var idx = 0;
       var answers = {};
+      var submitted = false;
+      var graded = null;
+
+      container.className = 'qa-widget';
+
       var html =
-        '<div class="quiz-widget__head">' +
-          '<div class="quiz-widget__icon"><i class="fa-solid fa-circle-question"></i></div>' +
-          '<div>' +
-            '<div class="quiz-widget__title">' + esc(quiz.title || 'Quiz') + '</div>' +
-            '<div class="quiz-widget__meta">' + quiz.questions.length + ' question' +
-              (quiz.questions.length === 1 ? '' : 's') + ' · ' + esc(quiz.topic || 'general') + '</div>' +
+        '<div class="qa-widget__head qa-widget__head--quiz">' +
+          '<div class="qa-widget__icon"><i class="fa-solid fa-circle-question"></i></div>' +
+          '<div class="qa-widget__headtext">' +
+            '<div class="qa-widget__title">' + esc(quiz.title || 'Quiz') + '</div>' +
+            '<div class="qa-widget__meta">' + esc(quiz.topic || 'general') +
+              ' · ' + esc(quiz.difficulty || 'medium') + '</div>' +
+          '</div>' +
+          '<div class="qa-widget__pill" data-role="counter">1 / ' + total + '</div>' +
+        '</div>' +
+        '<div class="qa-progress"><div class="qa-progress__fill" data-role="progress" style="width:' + (1 / total * 100) + '%"></div></div>' +
+        '<div class="qa-body" data-role="body"></div>' +
+        '<div class="qa-actions">' +
+          '<div class="qa-actions__left">' +
+            '<button type="button" class="qa-btn" data-role="prev"><i class="fa-solid fa-arrow-left"></i> Back</button>' +
+          '</div>' +
+          '<div class="qa-actions__right">' +
+            '<button type="button" class="qa-btn qa-btn--primary" data-role="next">Next <i class="fa-solid fa-arrow-right"></i></button>' +
           '</div>' +
         '</div>' +
-        '<div class="quiz-widget__questions">';
-      quiz.questions.forEach(function (q, idx) {
-        html += '<div class="quiz-q" data-qid="' + q.id + '">' +
-          '<div class="quiz-q__num">Question ' + (idx + 1) + '</div>' +
-          '<div class="quiz-q__text">' + esc(q.question) + '</div>' +
-          '<div class="quiz-q__opts">';
-        (q.options || []).forEach(function (opt) {
-          html += '<button type="button" class="quiz-opt" data-label="' + esc(opt.label) + '">' +
-            '<span class="quiz-opt__label">' + esc(opt.label) + '</span>' +
-            '<span class="quiz-opt__text">' + esc(opt.text) + '</span>' +
-          '</button>';
-        });
-        html += '</div></div>';
-      });
-      html += '</div>' +
-        '<div class="quiz-widget__actions">' +
-          '<button type="button" class="quiz-submit" disabled>Answer all questions to submit</button>' +
-          '<span class="quiz-widget__progress">0 / ' + quiz.questions.length + ' answered</span>' +
-        '</div>';
+        '<div data-role="result-slot"></div>';
+
       container.innerHTML = html;
 
-      container.querySelectorAll('.quiz-q').forEach(function (qEl) {
-        var qid = qEl.getAttribute('data-qid');
-        qEl.querySelectorAll('.quiz-opt').forEach(function (optBtn) {
-          optBtn.addEventListener('click', function () {
-            qEl.querySelectorAll('.quiz-opt').forEach(function (o) { o.classList.remove('is-selected'); });
-            optBtn.classList.add('is-selected');
-            answers[qid] = optBtn.getAttribute('data-label');
-            updateQuizProgress(container, answers, quiz);
+      var bodyEl     = container.querySelector('[data-role="body"]');
+      var counterEl  = container.querySelector('[data-role="counter"]');
+      var progressEl = container.querySelector('[data-role="progress"]');
+      var prevBtn    = container.querySelector('[data-role="prev"]');
+      var nextBtn    = container.querySelector('[data-role="next"]');
+      var resultSlot = container.querySelector('[data-role="result-slot"]');
+
+      function renderCurrent() {
+        var q = quiz.questions[idx];
+
+        counterEl.textContent = (idx + 1) + ' / ' + total;
+        progressEl.style.width = ((idx + 1) / total * 100) + '%';
+        prevBtn.disabled = idx === 0;
+
+        var isLast = idx === total - 1;
+        if (submitted) {
+          nextBtn.innerHTML = isLast ? 'Done' : 'Next <i class="fa-solid fa-arrow-right"></i>';
+          nextBtn.disabled = false;
+        } else {
+          nextBtn.innerHTML = isLast
+            ? 'Submit <i class="fa-solid fa-check"></i>'
+            : 'Next <i class="fa-solid fa-arrow-right"></i>';
+          nextBtn.disabled = false;
+        }
+
+        bodyEl.innerHTML =
+          '<div class="qa-qnum">Question ' + (idx + 1) + ' of ' + total + '</div>' +
+          '<p class="qa-qtext">' + esc(q.question) + '</p>' +
+          '<div class="qa-opts" data-role="opts"></div>' +
+          '<div class="qa-feedback" data-role="feedback"></div>';
+
+        var optsEl = bodyEl.querySelector('[data-role="opts"]');
+        (q.options || []).forEach(function (opt) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'qa-opt';
+          b.setAttribute('data-label', opt.label);
+          b.innerHTML =
+            '<span class="qa-opt__label">' + esc(opt.label) + '</span>' +
+            '<span class="qa-opt__text">' + esc(opt.text) + '</span>';
+
+          if (submitted && graded) {
+            var g = graded.find(function (x) { return x.questionId === q.id; });
+            if (g) {
+              b.disabled = true;
+              if (opt.label === g.correct) b.classList.add('is-correct-answer');
+              if (opt.label === g.selected && !g.isCorrect) b.classList.add('is-wrong-answer');
+            }
+          } else {
+            if (answers[q.id] === opt.label) b.classList.add('is-selected');
+            b.addEventListener('click', function () {
+              optsEl.querySelectorAll('.qa-opt').forEach(function (o) { o.classList.remove('is-selected'); });
+              b.classList.add('is-selected');
+              answers[q.id] = opt.label;
+            });
+          }
+
+          optsEl.appendChild(b);
+        });
+
+        if (submitted && graded) {
+          var g2 = graded.find(function (x) { return x.questionId === q.id; });
+          if (g2) {
+            var fb = bodyEl.querySelector('[data-role="feedback"]');
+            fb.classList.add('is-visible');
+            fb.classList.add(g2.isCorrect ? 'qa-feedback--correct' : 'qa-feedback--wrong');
+            var inner = '<strong>' + (g2.isCorrect ? '✓ Correct' : '✗ Missed') + '</strong>';
+            if (!g2.isCorrect) inner += '<div>Correct answer: <b>' + esc(g2.correct) + '</b></div>';
+            if (q.explanation) inner += '<div style="margin-top:6px">' + esc(q.explanation) + '</div>';
+            fb.innerHTML = inner;
+          }
+        }
+      }
+
+      prevBtn.addEventListener('click', function () {
+        if (idx > 0) { idx--; renderCurrent(); }
+      });
+
+      nextBtn.addEventListener('click', async function () {
+        if (submitted) {
+          if (idx === total - 1) { scrollToBottom(); return; }
+          idx++;
+          renderCurrent();
+          return;
+        }
+
+        if (idx < total - 1) {
+          idx++;
+          renderCurrent();
+          return;
+        }
+
+        var missing = quiz.questions.filter(function (q) { return !answers[q.id]; });
+        if (missing.length) {
+          alert('Please answer all questions before submitting. ' + missing.length + ' left.');
+          var firstMissingIdx = quiz.questions.findIndex(function (q) { return !answers[q.id]; });
+          idx = firstMissingIdx;
+          renderCurrent();
+          return;
+        }
+
+        nextBtn.disabled = true;
+        nextBtn.textContent = 'Submitting…';
+
+        var payload = quiz.questions.map(function (q) {
+          return { questionId: q.id, selected: answers[q.id] || null };
+        });
+
+        try {
+          var res = await fetch('/api/tools/quiz/' + quiz.id + '/attempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ answers: payload }),
           });
-        });
-      });
-      container.querySelector('.quiz-submit').addEventListener('click', function () {
-        submitQuiz(container, quiz, answers);
-      });
-    }
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok) {
+            nextBtn.disabled = false;
+            nextBtn.textContent = 'Try again';
+            return;
+          }
 
-    function updateQuizProgress(container, answers, quiz) {
-      var n = Object.keys(answers).length;
-      var total = quiz.questions.length;
-      container.querySelector('.quiz-widget__progress').textContent = n + ' / ' + total + ' answered';
-      var submitBtn = container.querySelector('.quiz-submit');
-      if (n >= total) { submitBtn.disabled = false; submitBtn.textContent = 'Submit answers'; }
-      else { submitBtn.disabled = true; submitBtn.textContent = 'Answer all questions to submit'; }
-    }
+          submitted = true;
+          graded = data.graded || [];
 
-    async function submitQuiz(container, quiz, answers) {
-      var submitBtn = container.querySelector('.quiz-submit');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Scoring…';
-      var answerArray = quiz.questions.map(function (q) {
-        return { questionId: q.id, selected: answers[q.id] || null };
-      });
-      try {
-        var res = await fetch('/api/tools/quiz/' + quiz.id + '/attempt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ answers: answerArray }),
-        });
-        var data = await res.json().catch(function () { return {}; });
-        if (!res.ok) { submitBtn.textContent = 'Error. Try again.'; submitBtn.disabled = false; return; }
-        showQuizResults(container, quiz, data);
-      } catch (_) { submitBtn.textContent = 'Network error.'; submitBtn.disabled = false; }
-    }
+          resultSlot.innerHTML =
+            '<div class="qa-result">' +
+              '<div class="qa-result__score">' + data.attempt.score + ' / ' + data.attempt.total +
+                '<small>Final score</small></div>' +
+              '<button type="button" class="qa-btn qa-btn--primary" data-role="ask-ai">Ask AI about my result</button>' +
+            '</div>';
+          resultSlot.querySelector('[data-role="ask-ai"]').addEventListener('click', function () {
+            sendQuizResultsToAI(quiz, data);
+          });
 
-    function showQuizResults(container, quiz, data) {
-      container.querySelectorAll('.quiz-q').forEach(function (qEl) {
-        var qid = qEl.getAttribute('data-qid');
-        var graded = (data.graded || []).find(function (g) { return g.questionId === qid; });
-        if (!graded) return;
-        qEl.classList.add(graded.isCorrect ? 'is-correct' : 'is-wrong');
-        qEl.querySelectorAll('.quiz-opt').forEach(function (optBtn) {
-          optBtn.disabled = true;
-          var label = optBtn.getAttribute('data-label');
-          if (label === graded.correct) optBtn.classList.add('is-correct-answer');
-          if (label === graded.selected && !graded.isCorrect) optBtn.classList.add('is-wrong-answer');
-        });
-        var q = quiz.questions.find(function (x) { return x.id === qid; });
-        if (q && q.explanation) {
-          var ex = document.createElement('div');
-          ex.className = 'quiz-explanation';
-          ex.innerHTML = '<strong>Why</strong>' + esc(q.explanation);
-          qEl.appendChild(ex);
+          idx = 0;
+          renderCurrent();
+          scrollToBottom();
+        } catch (_) {
+          nextBtn.disabled = false;
+          nextBtn.textContent = 'Network error';
         }
       });
-      var actions = container.querySelector('.quiz-widget__actions');
-      actions.innerHTML = '<div class="quiz-widget__score"><span class="quiz-widget__score-num">' +
-        data.attempt.score + ' / ' + data.attempt.total + '</span></div>' +
-        '<button type="button" class="quiz-ask-ai">Ask AI about my result</button>';
-      actions.querySelector('.quiz-ask-ai').addEventListener('click', function () {
-        sendQuizResultsToAI(quiz, data);
-      });
+
+      renderCurrent();
     }
 
     function sendQuizResultsToAI(quiz, data) {
@@ -1078,7 +1114,7 @@
     }
 
     /* ============================================================
-       INTERACTIVE FLASHCARDS
+       FLASHCARDS
        ============================================================ */
     async function buildInteractiveFlashcards(tool) {
       var deckId = extractIdFromUrl(tool);
@@ -1203,10 +1239,10 @@
             '<h3 class="flashcard-widget__done-title">Deck complete</h3>' +
             '<p class="flashcard-widget__done-desc">You reviewed ' + reviewed + ' card' + (reviewed === 1 ? '' : 's') + '.</p>' +
             '<div class="flashcard-widget__done-actions">' +
-              '<button type="button" class="flashcard-ask-ai">Ask AI about these</button>' +
+              '<button type="button" class="qa-btn qa-btn--primary" data-role="ask-ai">Ask AI about these</button>' +
             '</div>' +
           '</div>';
-        stage.querySelector('.flashcard-ask-ai').addEventListener('click', function () {
+        stage.querySelector('[data-role="ask-ai"]').addEventListener('click', function () {
           var hard = deck.cards.filter(function (c) {
             return ratings[c.id] === 0 || ratings[c.id] === 1;
           });
@@ -1228,7 +1264,7 @@
     }
 
     /* ============================================================
-       INLINE PRACTICE
+       PRACTICE
        ============================================================ */
     async function buildInteractivePractice(tool) {
       var setId = tool.setId || extractIdFromUrl(tool);
@@ -1295,7 +1331,7 @@
     }
 
     /* ============================================================
-       INLINE VISUALIZATION
+       VISUALIZATION
        ============================================================ */
     async function buildInlineVisualization(tool) {
       var container = document.createElement('div');
@@ -1331,7 +1367,7 @@
     }
 
     /* ============================================================
-       INLINE STUDY PLAN
+       STUDY PLAN
        ============================================================ */
     async function buildInlineStudyPlan(tool) {
       var planId = tool.planId || extractIdFromUrl(tool);
@@ -1430,7 +1466,7 @@
     }
 
     /* ============================================================
-       INLINE NOTE CREATOR
+       NOTE (inline creator)
        ============================================================ */
     function buildInlineNote(tool) {
       var container = document.createElement('div');
@@ -1503,13 +1539,13 @@
     }
 
     /* ============================================================
-       INLINE THEORY (fill-in-the-gap)
+       THEORY — one question at a time
        ============================================================ */
     async function buildInteractiveTheory(tool) {
       var setId = tool.setId || extractIdFromUrl(tool);
       if (!setId) return buildToolCard(tool);
       var container = document.createElement('div');
-      container.className = 'theory-widget';
+      container.className = 'qa-widget';
       container.innerHTML = '<div class="widget-loading">Loading theory set…</div>';
       try {
         var res = await fetch('/api/tools/theory/' + setId, { credentials: 'include' });
@@ -1527,150 +1563,205 @@
     }
 
     function renderTheoryWidget(container, set) {
-      var answers = {};
       var total = set.questions.length;
+      var idx = 0;
+      var answers = {};
+      var submitted = false;
+      var graded = null;
+
+      container.className = 'qa-widget';
 
       var html =
-        '<div class="theory-widget__head">' +
-          '<div class="theory-widget__icon"><i class="fa-solid fa-spell-check"></i></div>' +
-          '<div>' +
-            '<div class="theory-widget__title">' + esc(set.title || 'Theory') + '</div>' +
-            '<div class="theory-widget__meta">' + total + ' question' + (total === 1 ? '' : 's') +
-              ' · ' + esc(set.difficulty || 'medium') +
-              (set.topic ? ' · ' + esc(set.topic) : '') + '</div>' +
+        '<div class="qa-widget__head qa-widget__head--theory">' +
+          '<div class="qa-widget__icon"><i class="fa-solid fa-spell-check"></i></div>' +
+          '<div class="qa-widget__headtext">' +
+            '<div class="qa-widget__title">' + esc(set.title || 'Theory') + '</div>' +
+            '<div class="qa-widget__meta">' + esc(set.topic || 'general') +
+              ' · ' + esc(set.difficulty || 'medium') + '</div>' +
+          '</div>' +
+          '<div class="qa-widget__pill" data-role="counter">1 / ' + total + '</div>' +
+        '</div>' +
+        '<div class="qa-progress"><div class="qa-progress__fill" data-role="progress" style="width:' + (1 / total * 100) + '%"></div></div>' +
+        '<div class="qa-body" data-role="body"></div>' +
+        '<div class="qa-actions">' +
+          '<div class="qa-actions__left">' +
+            '<button type="button" class="qa-btn" data-role="prev"><i class="fa-solid fa-arrow-left"></i> Back</button>' +
+          '</div>' +
+          '<div class="qa-actions__right">' +
+            '<button type="button" class="qa-btn qa-btn--primary" data-role="next">Next <i class="fa-solid fa-arrow-right"></i></button>' +
           '</div>' +
         '</div>' +
-        '<div class="theory-widget__body">';
+        '<div data-role="result-slot"></div>';
 
-      set.questions.forEach(function (q, idx) {
-        var qid = q.id;
-        html += '<div class="theory-q" data-qid="' + qid + '">' +
-          '<div class="theory-q__num">Question ' + (idx + 1) + '</div>' +
-          '<div class="theory-q__template" data-template>' + esc(q.template) + '</div>' +
-          '<div class="theory-feedback" data-feedback></div>' +
-        '</div>';
-      });
-
-      html += '</div>' +
-        '<div class="theory-widget__actions">' +
-          '<button type="button" class="theory-submit" disabled>Answer all to submit</button>' +
-          '<span class="theory-widget__progress">0 / ' + total + ' answered</span>' +
-        '</div>';
       container.innerHTML = html;
 
-      container.querySelectorAll('.theory-q').forEach(function (qEl) {
-        var qid = qEl.getAttribute('data-qid');
-        var templateEl = qEl.querySelector('[data-template]');
-        var text = templateEl.textContent;
-        templateEl.textContent = '';
+      var bodyEl     = container.querySelector('[data-role="body"]');
+      var counterEl  = container.querySelector('[data-role="counter"]');
+      var progressEl = container.querySelector('[data-role="progress"]');
+      var prevBtn    = container.querySelector('[data-role="prev"]');
+      var nextBtn    = container.querySelector('[data-role="next"]');
+      var resultSlot = container.querySelector('[data-role="result-slot"]');
 
-        var parts = text.split('___');
-        if (parts.length < 2) { templateEl.textContent = text; return; }
+      function renderCurrent() {
+        var q = set.questions[idx];
 
-        templateEl.appendChild(document.createTextNode(parts[0]));
+        counterEl.textContent = (idx + 1) + ' / ' + total;
+        progressEl.style.width = ((idx + 1) / total * 100) + '%';
+        prevBtn.disabled = idx === 0;
 
-        var input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'theory-blank';
-        input.setAttribute('autocomplete', 'off');
-        input.setAttribute('autocapitalize', 'off');
-        input.setAttribute('spellcheck', 'false');
-        input.placeholder = 'answer';
-        input.addEventListener('input', function () {
-          answers[qid] = input.value;
-          updateTheoryProgress(container, answers, total);
-        });
-        templateEl.appendChild(input);
+        var isLast = idx === total - 1;
+        if (submitted) {
+          nextBtn.innerHTML = isLast ? 'Done' : 'Next <i class="fa-solid fa-arrow-right"></i>';
+          nextBtn.disabled = false;
+        } else {
+          nextBtn.innerHTML = isLast
+            ? 'Submit <i class="fa-solid fa-check"></i>'
+            : 'Next <i class="fa-solid fa-arrow-right"></i>';
+          nextBtn.disabled = false;
+        }
 
-        if (parts[1]) templateEl.appendChild(document.createTextNode(parts.slice(1).join('___')));
-      });
+        bodyEl.innerHTML =
+          '<div class="qa-qnum">Question ' + (idx + 1) + ' of ' + total + '</div>' +
+          '<div class="qa-qtext qa-qtext--template" data-role="template"></div>' +
+          '<div class="qa-feedback" data-role="feedback"></div>';
 
-      container.querySelector('.theory-submit').addEventListener('click', function () {
-        submitTheory(container, set, answers);
-      });
-    }
+        var templateEl = bodyEl.querySelector('[data-role="template"]');
+        var parts = String(q.template).split('___');
+        if (parts.length < 2) {
+          templateEl.textContent = q.template;
+        } else {
+          templateEl.appendChild(document.createTextNode(parts[0]));
+          var inp = document.createElement('input');
+          inp.type = 'text';
+          inp.setAttribute('autocomplete', 'off');
+          inp.setAttribute('autocapitalize', 'off');
+          inp.setAttribute('spellcheck', 'false');
+          inp.placeholder = 'answer';
+          inp.value = answers[q.id] || '';
 
-    function updateTheoryProgress(container, answers, total) {
-      var n = 0;
-      Object.keys(answers).forEach(function (k) { if (String(answers[k] || '').trim()) n++; });
-      var btn = container.querySelector('.theory-submit');
-      var label = container.querySelector('.theory-widget__progress');
-      if (label) label.textContent = n + ' / ' + total + ' answered';
-      if (btn) {
-        if (n >= total) { btn.disabled = false; btn.textContent = 'Submit answers'; }
-        else { btn.disabled = true; btn.textContent = 'Answer all to submit'; }
-      }
-    }
-
-    async function submitTheory(container, set, answers) {
-      var btn = container.querySelector('.theory-submit');
-      btn.disabled = true;
-      btn.textContent = 'Scoring…';
-
-      var payload = set.questions.map(function (q) {
-        return { questionId: q.id, answer: answers[q.id] || '' };
-      });
-
-      try {
-        var res = await fetch('/api/tools/theory/' + set.id + '/attempt', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ answers: payload }),
-        });
-        var data = await res.json().catch(function () { return {}; });
-        if (!res.ok) { btn.textContent = 'Error. Try again.'; btn.disabled = false; return; }
-
-        (data.graded || []).forEach(function (g) {
-          var qEl = container.querySelector('.theory-q[data-qid="' + g.questionId + '"]');
-          if (!qEl) return;
-          var inputEl = qEl.querySelector('.theory-blank');
-          if (inputEl) {
-            inputEl.disabled = true;
-            inputEl.classList.add(g.correct ? 'is-correct' : 'is-wrong');
-          }
-          var fb = qEl.querySelector('[data-feedback]');
-          if (fb) {
-            fb.classList.add('is-visible');
-            fb.classList.add(g.correct ? 'theory-feedback--correct' : 'theory-feedback--wrong');
-            var inner = '<strong>' + (g.correct ? '✓ Correct' : '✗ Not quite') + '</strong>';
-            if (!g.correct) {
-              inner += '<div>Accepted: ' + esc((g.acceptedAnswers || []).join(' / ')) + '</div>';
+          if (submitted && graded) {
+            var g = graded.find(function (x) { return x.questionId === q.id; });
+            if (g) {
+              inp.disabled = true;
+              inp.classList.add(g.correct ? 'is-correct' : 'is-wrong');
             }
-            if (g.explanation) inner += '<div style="margin-top:4px">' + esc(g.explanation) + '</div>';
+          } else {
+            inp.addEventListener('input', function () { answers[q.id] = inp.value; });
+          }
+
+          templateEl.appendChild(inp);
+          if (parts[1]) templateEl.appendChild(document.createTextNode(parts.slice(1).join('___')));
+
+          if (!submitted) setTimeout(function () { inp.focus(); }, 60);
+        }
+
+        if (submitted && graded) {
+          var g2 = graded.find(function (x) { return x.questionId === q.id; });
+          if (g2) {
+            var fb = bodyEl.querySelector('[data-role="feedback"]');
+            fb.classList.add('is-visible');
+            fb.classList.add(g2.correct ? 'qa-feedback--correct' : 'qa-feedback--wrong');
+            var inner = '<strong>' + (g2.correct ? '✓ Correct' : '✗ Not quite') + '</strong>';
+            if (!g2.correct) inner += '<div>Accepted: ' + esc((g2.acceptedAnswers || []).join(' / ')) + '</div>';
+            if (g2.explanation) inner += '<div style="margin-top:6px">' + esc(g2.explanation) + '</div>';
             fb.innerHTML = inner;
           }
+        }
+      }
+
+      prevBtn.addEventListener('click', function () {
+        if (idx > 0) { idx--; renderCurrent(); }
+      });
+
+      nextBtn.addEventListener('click', async function () {
+        if (submitted) {
+          if (idx === total - 1) { scrollToBottom(); return; }
+          idx++;
+          renderCurrent();
+          return;
+        }
+
+        if (idx < total - 1) {
+          idx++;
+          renderCurrent();
+          return;
+        }
+
+        var missing = set.questions.filter(function (q) {
+          return !String(answers[q.id] || '').trim();
+        });
+        if (missing.length) {
+          alert('Please fill all blanks before submitting. ' + missing.length + ' left.');
+          var firstMissingIdx = set.questions.findIndex(function (q) {
+            return !String(answers[q.id] || '').trim();
+          });
+          idx = firstMissingIdx;
+          renderCurrent();
+          return;
+        }
+
+        nextBtn.disabled = true;
+        nextBtn.textContent = 'Submitting…';
+
+        var payload = set.questions.map(function (q) {
+          return { questionId: q.id, answer: answers[q.id] || '' };
         });
 
-        var actions = container.querySelector('.theory-widget__actions');
-        actions.innerHTML =
-          '<div class="theory-widget__score">' + data.attempt.score + ' / ' + data.attempt.total + '</div>' +
-          '<button type="button" class="theory-ask-ai">Ask AI about my result</button>';
-        actions.querySelector('.theory-ask-ai').addEventListener('click', function () {
-          var wrong = (data.graded || []).filter(function (g) { return !g.correct; });
-          var summary = 'I just submitted the theory set "' + (set.title || '') + '". I scored ' +
-                        data.attempt.score + ' / ' + data.attempt.total + '.';
-          if (!wrong.length) summary += '\n\nI got everything right. What should I study next?';
-          else {
-            summary += '\n\nQuestions I missed:\n';
-            wrong.forEach(function (w) {
-              var q = set.questions.find(function (x) { return x.id === w.questionId; });
-              if (q) summary += '• ' + q.template.replace('___', '[' + (w.userAnswer || 'blank') + ']') + '\n';
-            });
-            summary += '\nPlease help me understand what I got wrong.';
+        try {
+          var res = await fetch('/api/tools/theory/' + set.id + '/attempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ answers: payload }),
+          });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok) {
+            nextBtn.disabled = false;
+            nextBtn.textContent = 'Try again';
+            return;
           }
-          input.value = summary;
-          autoGrow();
-          form.requestSubmit();
-        });
-      } catch (_) {
-        btn.textContent = 'Network error. Try again.';
-        btn.disabled = false;
-      }
+
+          submitted = true;
+          graded = data.graded || [];
+
+          resultSlot.innerHTML =
+            '<div class="qa-result">' +
+              '<div class="qa-result__score">' + data.attempt.score + ' / ' + data.attempt.total +
+                '<small>Final score</small></div>' +
+              '<button type="button" class="qa-btn qa-btn--primary" data-role="ask-ai">Ask AI about my result</button>' +
+            '</div>';
+          resultSlot.querySelector('[data-role="ask-ai"]').addEventListener('click', function () {
+            var wrong = (data.graded || []).filter(function (g) { return !g.correct; });
+            var summary = 'I just submitted the theory set "' + (set.title || '') + '". I scored ' +
+                          data.attempt.score + ' / ' + data.attempt.total + '.';
+            if (!wrong.length) summary += '\n\nI got everything right. What should I study next?';
+            else {
+              summary += '\n\nQuestions I missed:\n';
+              wrong.forEach(function (w) {
+                var q = set.questions.find(function (x) { return x.id === w.questionId; });
+                if (q) summary += '• ' + q.template.replace('___', '[' + (w.userAnswer || 'blank') + ']') + '\n';
+              });
+              summary += '\nPlease help me understand what I got wrong.';
+            }
+            input.value = summary;
+            autoGrow();
+            form.requestSubmit();
+          });
+
+          idx = 0;
+          renderCurrent();
+          scrollToBottom();
+        } catch (_) {
+          nextBtn.disabled = false;
+          nextBtn.textContent = 'Network error';
+        }
+      });
+
+      renderCurrent();
     }
 
     /* ============================================================
-       INLINE SKETCH
+       SKETCH
        ============================================================ */
     async function buildInlineSketch(tool) {
       var container = document.createElement('div');
@@ -1747,13 +1838,13 @@
     }
 
     /* ============================================================
-       INLINE EXAM (timed)
+       EXAM — one question at a time with countdown
        ============================================================ */
     async function buildInteractiveExam(tool) {
       var examId = tool.examId || extractIdFromUrl(tool);
       if (!examId) return buildToolCard(tool);
       var container = document.createElement('div');
-      container.className = 'exam-widget';
+      container.className = 'qa-widget';
       container.innerHTML = '<div class="widget-loading">Loading exam…</div>';
       try {
         var res = await fetch('/api/tools/quiz/' + examId, { credentials: 'include' });
@@ -1775,79 +1866,52 @@
     function renderExamWidget(container, exam) {
       var questions   = exam.questions || [];
       var total       = questions.length;
+      var idx         = 0;
       var answers     = {};
+      var submitted   = false;
+      var graded      = null;
       var durationMin = exam.time_limit_seconds
         ? Math.max(1, Math.round(exam.time_limit_seconds / 60))
         : Math.max(5, total * 2);
       var durationSec = durationMin * 60;
       var remaining   = durationSec;
-      var submitted   = false;
       var timerId     = null;
 
-      function keyFor(q, idx) { return String(q.id != null ? q.id : 'q' + idx); }
+      function keyFor(q, i) { return String(q.id != null ? q.id : 'q' + i); }
 
       var html =
-        '<div class="exam-widget__head">' +
-          '<div class="exam-widget__icon"><i class="fa-solid fa-stopwatch"></i></div>' +
-          '<div class="exam-widget__headtext">' +
-            '<div class="exam-widget__title">' + esc(exam.title || 'Exam') + '</div>' +
-            '<div class="exam-widget__meta">' + total + ' question' + (total === 1 ? '' : 's') +
-              ' · ' + durationMin + ' min · ' + esc(exam.topic || 'general') + '</div>' +
+        '<div class="qa-widget__head qa-widget__head--exam">' +
+          '<div class="qa-widget__icon"><i class="fa-solid fa-stopwatch"></i></div>' +
+          '<div class="qa-widget__headtext">' +
+            '<div class="qa-widget__title">' + esc(exam.title || 'Exam') + '</div>' +
+            '<div class="qa-widget__meta">' + total + ' question' + (total === 1 ? '' : 's') +
+              ' · ' + esc(exam.topic || 'general') + '</div>' +
           '</div>' +
-          '<div class="exam-widget__timer" id="exam-timer">' +
-            '<i class="fa-regular fa-clock" aria-hidden="true"></i><span>--:--</span>' +
+          '<div class="exam-widget__timer" data-role="timer">' +
+            '<i class="fa-regular fa-clock"></i><span>--:--</span>' +
           '</div>' +
         '</div>' +
-        '<div class="exam-widget__bar"><div class="exam-widget__bar-fill" id="exam-bar-fill"></div></div>' +
-        '<div class="exam-widget__body">';
-
-      questions.forEach(function (q, idx) {
-        html += '<div class="exam-q" data-qid="' + esc(keyFor(q, idx)) + '">' +
-          '<div class="exam-q__num">Question ' + (idx + 1) + ' of ' + total + '</div>' +
-          '<div class="exam-q__text">' + esc(q.question) + '</div>';
-        if (q.options && q.options.length) {
-          html += '<div class="exam-q__opts">';
-          q.options.forEach(function (opt) {
-            html += '<button type="button" class="exam-opt" data-label="' + esc(opt.label) + '">' +
-              '<span class="exam-opt__label">' + esc(opt.label) + '</span>' +
-              '<span class="exam-opt__text">' + esc(opt.text) + '</span>' +
-            '</button>';
-          });
-          html += '</div>';
-        } else {
-          html += '<textarea class="exam-q__written" rows="4" placeholder="Write your answer…"></textarea>';
-        }
-        html += '</div>';
-      });
-
-      html += '</div>' +
-        '<div class="exam-widget__actions" id="exam-actions">' +
-          '<span class="exam-widget__progress" id="exam-progress"></span>' +
-          '<button type="button" class="exam-submit" id="exam-submit" disabled>Submit exam</button>' +
-        '</div>';
+        '<div class="qa-progress"><div class="qa-progress__fill" data-role="progress" style="width:' + (1 / total * 100) + '%"></div></div>' +
+        '<div class="qa-body" data-role="body"></div>' +
+        '<div class="qa-actions">' +
+          '<div class="qa-actions__left">' +
+            '<button type="button" class="qa-btn" data-role="prev"><i class="fa-solid fa-arrow-left"></i> Back</button>' +
+          '</div>' +
+          '<div class="qa-actions__right">' +
+            '<button type="button" class="qa-btn qa-btn--primary" data-role="next">Next <i class="fa-solid fa-arrow-right"></i></button>' +
+          '</div>' +
+        '</div>' +
+        '<div data-role="result-slot"></div>';
 
       container.innerHTML = html;
 
-      var timerEl    = container.querySelector('#exam-timer');
+      var bodyEl     = container.querySelector('[data-role="body"]');
+      var progressEl = container.querySelector('[data-role="progress"]');
+      var prevBtn    = container.querySelector('[data-role="prev"]');
+      var nextBtn    = container.querySelector('[data-role="next"]');
+      var resultSlot = container.querySelector('[data-role="result-slot"]');
+      var timerEl    = container.querySelector('[data-role="timer"]');
       var timerText  = timerEl.querySelector('span');
-      var barFill    = container.querySelector('#exam-bar-fill');
-      var progressEl = container.querySelector('#exam-progress');
-      var submitBtn  = container.querySelector('#exam-submit');
-
-      function answeredCount() {
-        var n = 0;
-        questions.forEach(function (q, i) {
-          var v = answers[keyFor(q, i)];
-          if (v != null && String(v).trim() !== '') n++;
-        });
-        return n;
-      }
-      function updateProgress() {
-        if (submitted) return;
-        var n = answeredCount();
-        progressEl.textContent = n + ' / ' + total + ' answered' + (n < total ? ' — answer all to submit' : '');
-        submitBtn.disabled = n < total;
-      }
 
       function fmtTime(s) {
         var m = Math.floor(s / 60), sec = s % 60;
@@ -1855,7 +1919,6 @@
       }
       function paintTimer() {
         timerText.textContent = fmtTime(remaining);
-        barFill.style.width = (durationSec ? (remaining / durationSec) * 100 : 0) + '%';
         timerEl.classList.toggle('is-warning', remaining <= 60 && remaining > 30);
         timerEl.classList.toggle('is-danger',  remaining <= 30);
       }
@@ -1872,34 +1935,114 @@
         }, 1000);
       }
 
-      container.querySelectorAll('.exam-q').forEach(function (qEl) {
-        var qid = qEl.getAttribute('data-qid');
-        qEl.querySelectorAll('.exam-opt').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            if (submitted) return;
-            qEl.querySelectorAll('.exam-opt').forEach(function (o) { o.classList.remove('is-selected'); });
-            btn.classList.add('is-selected');
-            answers[qid] = btn.getAttribute('data-label');
-            updateProgress();
+      function renderCurrent() {
+        var q = questions[idx];
+        var k = keyFor(q, idx);
+
+        progressEl.style.width = ((idx + 1) / total * 100) + '%';
+        prevBtn.disabled = idx === 0;
+
+        var isLast = idx === total - 1;
+        if (submitted) {
+          nextBtn.innerHTML = isLast ? 'Done' : 'Next <i class="fa-solid fa-arrow-right"></i>';
+        } else {
+          nextBtn.innerHTML = isLast
+            ? 'Submit <i class="fa-solid fa-check"></i>'
+            : 'Next <i class="fa-solid fa-arrow-right"></i>';
+        }
+
+        var bodyHtml =
+          '<div class="qa-qnum">Question ' + (idx + 1) + ' of ' + total + '</div>' +
+          '<p class="qa-qtext">' + esc(q.question) + '</p>';
+
+        if (q.options && q.options.length) {
+          bodyHtml += '<div class="qa-opts" data-role="opts"></div>';
+        } else {
+          bodyHtml += '<textarea data-role="written" placeholder="Write your answer…" style="width:100%;min-height:120px;padding:12px 14px;border:1.5px solid var(--border);border-radius:11px;font-family:var(--font-body);font-size:0.94rem;color:var(--ink);resize:vertical;outline:none"></textarea>';
+        }
+        bodyHtml += '<div class="qa-feedback" data-role="feedback"></div>';
+
+        bodyEl.innerHTML = bodyHtml;
+
+        var optsEl = bodyEl.querySelector('[data-role="opts"]');
+        if (optsEl) {
+          (q.options || []).forEach(function (opt) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'qa-opt';
+            b.setAttribute('data-label', opt.label);
+            b.innerHTML =
+              '<span class="qa-opt__label">' + esc(opt.label) + '</span>' +
+              '<span class="qa-opt__text">' + esc(opt.text) + '</span>';
+
+            if (submitted && graded) {
+              var g = graded.find(function (x) { return String(x.questionId) === k; });
+              if (g) {
+                b.disabled = true;
+                if (g.correct != null && String(opt.label) === String(g.correct)) b.classList.add('is-correct-answer');
+                if (g.selected != null && String(opt.label) === String(g.selected) && !g.isCorrect) b.classList.add('is-wrong-answer');
+              }
+            } else {
+              if (answers[k] === opt.label) b.classList.add('is-selected');
+              b.addEventListener('click', function () {
+                optsEl.querySelectorAll('.qa-opt').forEach(function (o) { o.classList.remove('is-selected'); });
+                b.classList.add('is-selected');
+                answers[k] = opt.label;
+              });
+            }
+            optsEl.appendChild(b);
           });
-        });
-        var ta = qEl.querySelector('.exam-q__written');
-        if (ta) ta.addEventListener('input', function () {
-          answers[qid] = ta.value;
-          updateProgress();
-        });
+        }
+
+        var ta = bodyEl.querySelector('[data-role="written"]');
+        if (ta) {
+          ta.value = answers[k] || '';
+          if (submitted) ta.disabled = true;
+          else ta.addEventListener('input', function () { answers[k] = ta.value; });
+        }
+
+        if (submitted && graded) {
+          var g2 = graded.find(function (x) { return String(x.questionId) === k; });
+          if (g2) {
+            var fb = bodyEl.querySelector('[data-role="feedback"]');
+            fb.classList.add('is-visible');
+            fb.classList.add(g2.isCorrect ? 'qa-feedback--correct' : 'qa-feedback--wrong');
+            var inner = '<strong>' + (g2.isCorrect ? '✓ Correct' : '✗ Missed') + '</strong>';
+            if (!g2.isCorrect && g2.correct != null) inner += '<div>Correct: <b>' + esc(g2.correct) + '</b></div>';
+            if (q.explanation) inner += '<div style="margin-top:6px">' + esc(q.explanation) + '</div>';
+            fb.innerHTML = inner;
+          }
+        }
+      }
+
+      prevBtn.addEventListener('click', function () {
+        if (idx > 0) { idx--; renderCurrent(); }
       });
 
-      submitBtn.addEventListener('click', function () { submitExam(false); });
+      nextBtn.addEventListener('click', async function () {
+        if (submitted) {
+          if (idx === total - 1) { scrollToBottom(); return; }
+          idx++;
+          renderCurrent();
+          return;
+        }
+
+        if (idx < total - 1) {
+          idx++;
+          renderCurrent();
+          return;
+        }
+
+        // Last question — submit
+        submitExam(false);
+      });
 
       async function submitExam(auto) {
         if (submitted) return;
         submitted = true;
         if (timerId) { clearInterval(timerId); timerId = null; }
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Scoring…';
-        progressEl.textContent = 'Scoring…';
-        container.querySelectorAll('.exam-opt, .exam-q__written').forEach(function (el) { el.disabled = true; });
+        nextBtn.disabled = true;
+        nextBtn.textContent = 'Scoring…';
 
         var payload = questions.map(function (q, i) {
           var k = keyFor(q, i);
@@ -1915,106 +2058,53 @@
           });
           var data = await res.json().catch(function () { return {}; });
           if (!res.ok) throw new Error(data.error || 'Scoring failed');
-          showExamResults(exam, data, auto);
+
+          graded = data.graded || [];
+          var attempt = data.attempt || { score: 0, total: total };
+          var pct = attempt.total ? Math.round((attempt.score / attempt.total) * 100) : 0;
+
+          resultSlot.innerHTML =
+            '<div class="qa-result">' +
+              '<div class="qa-result__score">' + attempt.score + ' / ' + attempt.total +
+                '<small>' + pct + '%</small></div>' +
+              '<button type="button" class="qa-btn qa-btn--primary" data-role="ask-ai">Ask AI about my result</button>' +
+            '</div>' +
+            (auto ? '<div class="exam-widget__note">Time ran out — your exam was submitted automatically.</div>' : '');
+
+          resultSlot.querySelector('[data-role="ask-ai"]').addEventListener('click', function () {
+            var wrong = graded.filter(function (g) { return !g.isCorrect; });
+            var summary = 'I just finished the exam "' + (exam.title || 'exam') + '" and scored ' +
+              attempt.score + ' / ' + attempt.total + '.';
+            if (!wrong.length) summary += '\n\nI got everything right. What should I study next?';
+            else {
+              summary += '\n\nQuestions I missed:\n';
+              wrong.forEach(function (w) {
+                var q = questions.find(function (x, i) { return keyFor(x, i) === String(w.questionId); });
+                if (!q) return;
+                summary += '• ' + q.question + '\n' +
+                  '  I answered: ' + (w.selected || '(nothing)') + '\n' +
+                  '  Correct: ' + (w.correct || '(see explanation)') + '\n';
+              });
+              summary += '\nPlease explain what I got wrong and how to fix it.';
+            }
+            input.value = summary;
+            autoGrow();
+            form.requestSubmit();
+          });
+
+          idx = 0;
+          nextBtn.disabled = false;
+          renderCurrent();
+          scrollToBottom();
         } catch (err) {
           submitted = false;
-          container.querySelectorAll('.exam-opt, .exam-q__written').forEach(function (el) { el.disabled = false; });
-          submitBtn.textContent = 'Try submitting again';
-          updateProgress();
-          var note = container.querySelector('#exam-note');
-          if (!note) {
-            note = document.createElement('div');
-            note.id = 'exam-note';
-            note.className = 'exam-widget__note';
-            container.appendChild(note);
-          }
-          note.textContent = 'Could not submit: ' + (err.message || 'network error') + '. Your answers are still here.';
+          nextBtn.disabled = false;
+          nextBtn.textContent = 'Try submitting again';
+          // Let the user try again
         }
       }
 
-      function showExamResults(exam, data, auto) {
-        var graded  = data.graded  || [];
-        var attempt = data.attempt || { score: 0, total: total };
-
-        container.querySelectorAll('.exam-q').forEach(function (qEl) {
-          var qid = qEl.getAttribute('data-qid');
-          var g = graded.find(function (x) { return String(x.questionId) === qid; });
-          if (!g) return;
-
-          qEl.classList.add(g.isCorrect ? 'is-correct' : 'is-wrong');
-
-          qEl.querySelectorAll('.exam-opt').forEach(function (btn) {
-            var label = btn.getAttribute('data-label');
-            if (g.correct != null && String(label) === String(g.correct)) btn.classList.add('is-correct-answer');
-            if (g.selected != null && String(label) === String(g.selected) && !g.isCorrect) btn.classList.add('is-wrong-answer');
-          });
-
-          var ta = qEl.querySelector('.exam-q__written');
-          if (ta && g.correct) {
-            var model = document.createElement('div');
-            model.className = 'exam-q__model';
-            model.innerHTML = '<strong>Model answer</strong>' + esc(g.correct);
-            qEl.appendChild(model);
-          }
-
-          var q = questions.find(function (x, i) { return keyFor(x, i) === qid; });
-          if (q && q.explanation) {
-            var ex = document.createElement('div');
-            ex.className = 'quiz-explanation';
-            ex.innerHTML = '<strong>Why</strong>' + esc(q.explanation);
-            qEl.appendChild(ex);
-          }
-        });
-
-        var pct = attempt.total ? Math.round((attempt.score / attempt.total) * 100) : 0;
-        var actions = container.querySelector('#exam-actions');
-        actions.innerHTML =
-          '<div class="exam-widget__score">' +
-            '<span class="exam-widget__score-num">' + attempt.score + ' / ' + attempt.total + '</span>' +
-            '<span class="exam-widget__score-pct">' + pct + '%</span>' +
-          '</div>' +
-          '<button type="button" class="exam-ask-ai">Ask AI about my result</button>';
-        actions.querySelector('.exam-ask-ai').addEventListener('click', function () {
-          sendExamResultsToAI(exam, data);
-        });
-
-        if (auto) {
-          var note = document.createElement('div');
-          note.className = 'exam-widget__note';
-          note.textContent = 'Time ran out — your exam was submitted automatically.';
-          container.appendChild(note);
-        }
-        scrollToBottom();
-      }
-
-      function sendExamResultsToAI(exam, data) {
-        var graded  = data.graded  || [];
-        var attempt = data.attempt || { score: 0, total: total };
-        var wrong   = graded.filter(function (g) { return !g.isCorrect; });
-
-        var summary = 'I just finished the exam "' + (exam.title || 'exam') + '" and scored ' +
-          attempt.score + ' / ' + attempt.total + '.';
-
-        if (!wrong.length) {
-          summary += '\n\nI got everything right. What should I study next?';
-        } else {
-          summary += '\n\nQuestions I missed:\n';
-          wrong.forEach(function (w) {
-            var q = questions.find(function (x, i) { return keyFor(x, i) === String(w.questionId); });
-            if (!q) return;
-            summary += '• ' + q.question + '\n' +
-              '  I answered: ' + (w.selected || '(nothing)') + '\n' +
-              '  Correct: ' + (w.correct || '(see explanation)') + '\n';
-          });
-          summary += '\nPlease explain what I got wrong and how to fix it.';
-        }
-
-        input.value = summary;
-        autoGrow();
-        form.requestSubmit();
-      }
-
-      updateProgress();
+      renderCurrent();
       startTimer();
     }
 
