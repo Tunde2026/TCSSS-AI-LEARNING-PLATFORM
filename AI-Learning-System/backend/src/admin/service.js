@@ -118,6 +118,63 @@ async function getUserActivity(userId, limit = 40) {
   return { ok: true, user: target, activity };
 }
 
+async function getUserConversations(userId) {
+  const target = await db.users.findById(userId);
+  if (!target) return { ok: false, code: 'NOT_FOUND' };
+
+  const rows = await db.pool.query(
+    `SELECT c.id, c.title, c.pinned, c.created_at, c.updated_at,
+            (SELECT COUNT(*)::int FROM messages m WHERE m.conversation_id = c.id) AS message_count
+       FROM conversations c
+      WHERE c.user_id = $1
+      ORDER BY c.updated_at DESC`,
+    [userId]
+  );
+
+  return {
+    ok: true,
+    user: {
+      id: target.id,
+      name: target.name,
+      email: target.email,
+      role: target.role,
+      suspended: target.suspended || false,
+      created_at: target.created_at,
+    },
+    conversations: rows.rows,
+  };
+}
+
+async function getConversationForAdmin(conversationId) {
+  const conv = await db.pool.query(
+    `SELECT c.id, c.title, c.pinned, c.created_at, c.updated_at,
+            u.id   AS user_id,
+            u.name AS user_name,
+            u.email AS user_email
+       FROM conversations c
+       JOIN users u ON u.id = c.user_id
+      WHERE c.id = $1
+      LIMIT 1`,
+    [conversationId]
+  );
+
+  if (!conv.rowCount) return { ok: false, code: 'NOT_FOUND' };
+
+  const msgs = await db.pool.query(
+    `SELECT id, role, content, provider, media, created_at
+       FROM messages
+      WHERE conversation_id = $1
+      ORDER BY created_at ASC`,
+    [conversationId]
+  );
+
+  return {
+    ok: true,
+    conversation: conv.rows[0],
+    messages: msgs.rows,
+  };
+}
+
 async function getStats() {
   const [total, admins, students, newThisWeek] = await Promise.all([
     db.users.countAll(), db.users.countAdmins(),
@@ -299,6 +356,7 @@ async function addManualKnowledge({ adminId, title, subject, level, text }) {
 module.exports = {
   createUser, listUsers, changeRole, deleteUser,
   resetPassword, setSuspended, forceLogout, getUserActivity,
+  getUserConversations, getConversationForAdmin,   // ← new
   getStats,
   getSettings, updateSettings,
   listOllamaModels,

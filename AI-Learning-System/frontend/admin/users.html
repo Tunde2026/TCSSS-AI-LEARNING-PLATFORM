@@ -659,13 +659,17 @@
       var menu = document.createElement('div');
       menu.className = 'row-menu';
 
-      menu.innerHTML =
+            menu.innerHTML =
         '<button class="row-menu__item" data-action="activity" type="button">' +
           '<i class="fa-solid fa-clock-rotate-left"></i> View activity' +
+        '</button>' +
+        '<button class="row-menu__item" data-action="conversations" type="button">' +
+          '<i class="fa-solid fa-comments"></i> Read conversations' +
         '</button>' +
         '<button class="row-menu__item" data-action="reset" type="button">' +
           '<i class="fa-solid fa-key"></i> Reset password' +
         '</button>' +
+
         '<div class="row-menu__sep"></div>' +
         '<button class="row-menu__item" data-action="toggle-role" type="button"' +
           (isSelf ? ' disabled' : '') + '>' +
@@ -697,12 +701,18 @@
         var action = btn.getAttribute('data-action');
         closeMenu();
         if (action === 'activity')     openActivity(user);
+
+        if (action === 'conversations') {
+          window.location.href = 'user-activity.html?id=' + encodeURIComponent(user.id);
+          return;
+        }
         if (action === 'reset')        promptReset(user);
         if (action === 'toggle-role')  toggleRole(user);
         if (action === 'force-logout') doForceLogout(user);
         if (action === 'suspend')      promptSuspend(user);
         if (action === 'unsuspend')    doUnsuspend(user);
         if (action === 'delete')       promptDelete(user);
+        
       });
 
       openMenu = menu;

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User Activity — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .page-inner, .ua-inner { max-width: 1200px; }
+
+  .ua-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .ua-header__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--slate);
+    text-decoration: none;
+  }
+  .ua-header__back:hover { color: var(--navy); }
+
+  .ua-user {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .ua-user__avatar {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--navy), var(--soft-navy));
+    color: #FFFFFF;
+    display: grid; place-items: center;
+    font-family: var(--font-head);
+    font-size: 1.3rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .ua-user__body { flex: 1; min-width: 0; }
+  .ua-user__name {
+    font-family: var(--font-head);
+    font-size: 1.15rem;
+    color: var(--navy);
+    margin: 0 0 3px;
+  }
+  .ua-user__email {
+    font-family: var(--font-ui);
+    font-size: 0.74rem;
+    color: var(--slate);
+    letter-spacing: 0.03em;
+  }
+  .ua-user__badge {
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--blush);
+    color: var(--navy);
+    font-weight: 600;
+  }
+  .ua-user__badge--suspended {
+    background: #FDECEC;
+    color: var(--deep-red);
+  }
+
+  .ua-readonly-banner {
+    background: var(--gold-50);
+    border-left: 3px solid var(--gold);
+    padding: 12px 16px;
+    border-radius: 0 10px 10px 0;
+    font-size: 0.84rem;
+    color: #6A4F13;
+    line-height: 1.5;
+    margin-bottom: 20px;
+  }
+  .ua-readonly-banner strong { color: var(--navy); }
+
+  .ua-layout {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) {
+    .ua-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Conversation list */
+  .ua-conv-list {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    max-height: 640px;
+    display: flex;
+    flex-direction: column;
+  }
+  .ua-conv-list__head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+    font-weight: 600;
+    background: var(--blush);
+  }
+  .ua-conv-list__body {
+    overflow-y: auto;
+    flex: 1;
+  }
+  .ua-conv {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 18px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-soft);
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: background var(--transition);
+  }
+  .ua-conv:last-child { border-bottom: none; }
+  .ua-conv:hover { background: var(--blush); }
+  .ua-conv.is-active {
+    background: var(--blush);
+    border-left: 3px solid var(--red);
+    padding-left: 15px;
+  }
+  .ua-conv__title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--navy);
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ua-conv__meta {
+    font-family: var(--font-ui);
+    font-size: 0.66rem;
+    color: var(--slate);
+    letter-spacing: 0.04em;
+  }
+  .ua-conv__empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--slate);
+    font-size: 0.88rem;
+  }
+
+  /* Messages pane */
+  .ua-messages {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    min-height: 400px;
+    max-height: 640px;
+    display: flex;
+    flex-direction: column;
+  }
+  .ua-messages__head {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--blush);
+  }
+  .ua-messages__title {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    color: var(--navy);
+    margin: 0 0 2px;
+  }
+  .ua-messages__sub {
+    font-family: var(--font-ui);
+    font-size: 0.66rem;
+    color: var(--slate);
+    letter-spacing: 0.04em;
+  }
+  .ua-messages__body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .ua-msg {
+    max-width: 78%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    line-height: 1.55;
+    font-size: 0.9rem;
+    word-wrap: break-word;
+  }
+  .ua-msg--user {
+    align-self: flex-end;
+    background: var(--navy);
+    color: #FFFFFF;
+    border-top-right-radius: 4px;
+  }
+  .ua-msg--assistant {
+    align-self: flex-start;
+    background: var(--blush);
+    color: var(--ink);
+    border-top-left-radius: 4px;
+  }
+  .ua-msg__meta {
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    opacity: 0.7;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .ua-msg__body { white-space: pre-wrap; }
+
+  .ua-empty {
+    padding: 60px 30px;
+    text-align: center;
+    color: var(--slate);
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .ua-empty i { font-size: 2rem; opacity: 0.3; }
+
+  .ua-loading {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--slate);
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner ua-inner">
+
+          <div class="ua-header">
+            <div>
+              <h1 class="page-header__title">User activity</h1>
+              <p class="page-header__sub">Read-only view of a student's conversations.</p>
+            </div>
+            <a class="ua-header__back" href="users.html">
+              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+              Back to users
+            </a>
+          </div>
+
+          <div class="ua-readonly-banner">
+            <strong>Read-only view.</strong> You can read this user's conversations
+            for support and moderation. You cannot send messages, edit content, or
+            reply as the user. Every access is recorded in the audit log.
+          </div>
+
+          <div id="ua-user-card" class="ua-loading">Loading user…</div>
+
+          <div class="ua-layout" id="ua-layout" style="display:none">
+            <div class="ua-conv-list">
+              <div class="ua-conv-list__head" id="ua-conv-head">Conversations</div>
+              <div class="ua-conv-list__body" id="ua-conv-body"></div>
+            </div>
+            <div class="ua-messages" id="ua-messages-pane">
+              <div class="ua-empty">
+                <i class="fa-solid fa-comment-dots" aria-hidden="true"></i>
+                <div>Select a conversation on the left to read its messages.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var userId = new URLSearchParams(location.search).get('id');
+    if (!userId) {
+      document.getElementById('ua-user-card').innerHTML =
+        '<div class="ua-empty"><i class="fa-solid fa-triangle-exclamation"></i>' +
+        '<div>No user selected. <a href="users.html">Go back to users</a>.</div></div>';
+      return;
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function fmtDate(s) {
+      if (!s) return '';
+      try {
+        return new Date(s).toLocaleString(undefined, {
+          month: 'short', day: 'numeric',
+          hour: '2-digit', minute: '2-digit',
+        });
+      } catch (_) { return ''; }
+    }
+
+    async function load() {
+      var res = await fetch('/api/admin/users/' + userId + '/conversations', {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        document.getElementById('ua-user-card').innerHTML =
+          '<div class="ua-empty"><i class="fa-solid fa-triangle-exclamation"></i>' +
+          '<div>Could not load user.</div></div>';
+        return;
+      }
+      var data = await res.json();
+      renderUser(data.user);
+      renderConversations(data.conversations || []);
+      document.getElementById('ua-layout').style.display = '';
+    }
+
+    function renderUser(user) {
+      var initial = (user.name || user.email || '?').charAt(0).toUpperCase();
+      var suspendedBadge = user.suspended
+        ? '<span class="ua-user__badge ua-user__badge--suspended">Suspended</span>'
+        : '<span class="ua-user__badge">' + esc(user.role || 'student') + '</span>';
+
+      document.getElementById('ua-user-card').outerHTML =
+        '<div class="ua-user" id="ua-user-card">' +
+          '<div class="ua-user__avatar">' + esc(initial) + '</div>' +
+          '<div class="ua-user__body">' +
+            '<h2 class="ua-user__name">' + esc(user.name || 'Unknown') + '</h2>' +
+            '<div class="ua-user__email">' + esc(user.email || '') + '</div>' +
+          '</div>' +
+          suspendedBadge +
+        '</div>';
+    }
+
+    function renderConversations(list) {
+      var body = document.getElementById('ua-conv-body');
+      var head = document.getElementById('ua-conv-head');
+
+      head.textContent = 'Conversations (' + list.length + ')';
+
+      if (!list.length) {
+        body.innerHTML = '<div class="ua-conv__empty">No conversations yet.</div>';
+        return;
+      }
+
+      body.innerHTML = list.map(function (c) {
+        return '<button class="ua-conv" data-id="' + c.id + '" type="button">' +
+          '<div class="ua-conv__title">' + esc(c.title || 'Untitled') + '</div>' +
+          '<div class="ua-conv__meta">' + c.message_count + ' message' +
+            (c.message_count === 1 ? '' : 's') + ' · ' + fmtDate(c.updated_at) +
+          '</div>' +
+        '</button>';
+      }).join('');
+
+      body.querySelectorAll('.ua-conv').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          body.querySelectorAll('.ua-conv').forEach(function (b) {
+            b.classList.remove('is-active');
+          });
+          btn.classList.add('is-active');
+          loadConversation(btn.getAttribute('data-id'));
+        });
+      });
+    }
+
+    async function loadConversation(conversationId) {
+      var pane = document.getElementById('ua-messages-pane');
+      pane.innerHTML = '<div class="ua-loading">Loading conversation…</div>';
+
+      var res = await fetch('/api/admin/conversations/' + conversationId + '/messages', {
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        pane.innerHTML =
+          '<div class="ua-empty"><i class="fa-solid fa-triangle-exclamation"></i>' +
+          '<div>Could not load conversation.</div></div>';
+        return;
+      }
+      var data = await res.json();
+      renderMessages(data.conversation, data.messages || []);
+    }
+
+    function renderMessages(conv, messages) {
+      var pane = document.getElementById('ua-messages-pane');
+
+      var html =
+        '<div class="ua-messages__head">' +
+          '<h3 class="ua-messages__title">' + esc(conv.title || 'Untitled') + '</h3>' +
+          '<div class="ua-messages__sub">' +
+            'Owner: ' + esc(conv.user_name || '') + ' · ' +
+            messages.length + ' message' + (messages.length === 1 ? '' : 's') +
+          '</div>' +
+        '</div>' +
+        '<div class="ua-messages__body">';
+
+      if (!messages.length) {
+        html += '<div class="ua-empty"><i class="fa-solid fa-inbox"></i>' +
+                '<div>This conversation has no messages.</div></div>';
+      } else {
+        messages.forEach(function (m) {
+          var roleClass = m.role === 'user' ? 'ua-msg--user' : 'ua-msg--assistant';
+          html +=
+            '<div class="ua-msg ' + roleClass + '">' +
+              '<div class="ua-msg__meta">' +
+                esc(m.role === 'user' ? (conv.user_name || 'User') : 'AI Tutor') +
+                ' · ' + fmtDate(m.created_at) +
+              '</div>' +
+              '<div class="ua-msg__body">' + esc(m.content || '') + '</div>' +
+            '</div>';
+        });
+      }
+
+      html += '</div>';
+      pane.innerHTML = html;
+    }
+
+    load();
+  })();
+</script>
+</body>
+</html>

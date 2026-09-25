@@ -136,12 +136,51 @@ router.post('/users/:id/force-logout', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.get('/users/:id/activity', requireAdmin, async (req, res, next) => {
+router.get('/users/:id/conversations', requireAdmin, async (req, res, next) => {
   try {
-    const limit = Math.min(100, parseInt(req.query.limit, 10) || 40);
-    const result = await service.getUserActivity(req.params.id, limit);
+    const result = await service.getUserConversations(req.params.id);
     if (!result.ok) return res.status(404).json({ error: 'User not found' });
-    res.json({ user: result.user, activity: result.activity });
+
+    // Audit: record that an admin opened this user's conversation list.
+    await audit.log({
+      req,
+      action: 'user.view_conversations',
+      targetType: 'user',
+      targetId: result.user.id,
+      targetLabel: result.user.email,
+      details: { conversation_count: result.conversations.length },
+    });
+
+    res.json({
+      user: result.user,
+      conversations: result.conversations,
+    });
+  } catch (err) { next(err); }
+});
+
+router.get('/conversations/:id/messages', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await service.getConversationForAdmin(req.params.id);
+    if (!result.ok) return res.status(404).json({ error: 'Conversation not found' });
+
+    // Audit: record that an admin opened this specific conversation.
+    await audit.log({
+      req,
+      action: 'conversation.view',
+      targetType: 'conversation',
+      targetId: result.conversation.id,
+      targetLabel: result.conversation.title,
+      details: {
+        owner_id: result.conversation.user_id,
+        owner_email: result.conversation.user_email,
+        message_count: result.messages.length,
+      },
+    });
+
+    res.json({
+      conversation: result.conversation,
+      messages: result.messages,
+    });
   } catch (err) { next(err); }
 });
 

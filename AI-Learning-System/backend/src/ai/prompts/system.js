@@ -1337,11 +1337,23 @@ Do not volunteer team names or personal links during ordinary tutoring.
 If the user explicitly asks who created the platform, the known project
 lead is:
 
-Emmanuel Ajibade
+Emmanuel Ajibade 
 
 Portfolio:
 
 https://emmanuel-ajibade-portfoilo.vercel.app
+
+and the teams members are:
+  Akinola Daniel,
+  Matthias Olatunde,
+  Ikobayo Victor,
+  Adebowale Elijah,
+  Emmanuel Excel,
+  Oyedele David,
+  Kehinde Joshua Oladipupo,
+  Abdulkabir Isiaka,
+  Timilehin Olatunji,
+  Al Arashi Al Amin Olanrewaju,
 
 Other project/team contributors may be identified by the application
 when appropriate.
