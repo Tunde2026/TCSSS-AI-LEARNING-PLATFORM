@@ -1,3 +1,7 @@
+// ============================================================
+// ai/routes.js
+// ============================================================
+
 const express = require('express');
 const router  = express.Router();
 const { chat, _debugState } = require('./gateway');
@@ -16,6 +20,8 @@ const flashcardService = require('../tools/flashcards/service');
 const practiceService = require('../tools/practice/service');
 const visualizationService = require('../tools/visualization/service');
 const studyPlanService = require('../tools/studyplans/service');
+const theoryService = require('../tools/theory/service');
+const sketchService = require('../tools/sketch/service');
 
 function detectQuizIntent(t) {
   return /(?:create|make|generate|give me|start|prepare|set up|build)\s+(?:a\s+|an\s+)?(?:quiz|test|assessment|questions?)/i.test(t) ||
@@ -37,6 +43,12 @@ function detectNotesIntent(t) {
 function detectPracticeIntent(t) {
   return /(?:create|make|generate|give me|build)\s+(?:some\s+|a\s+)?practice/i.test(t) ||
          /practice\s+(?:questions?|problems?|set)/i.test(t);
+}
+
+function detectTheoryIntent(t) {
+  return /(?:create|make|generate|give me|build)\s+(?:some\s+|a\s+)?(?:theory|fill[- ]in[- ]the[- ]gap|fill[- ]in[- ]the[- ]blank)/i.test(t) ||
+         /(?:theory|fill[- ]in[- ]the[- ]gap)\s+(?:questions?|quiz|test)\s+(?:on|about|for|covering)/i.test(t) ||
+         /gap[- ]fill\s+(?:questions?|test)/i.test(t);
 }
 
 function detectVisualizationIntent(t) {
@@ -95,7 +107,7 @@ function detectWebSearchIntent(t) {
 function extractTopic(text) {
   return String(text || '')
     .replace(/^(please\s+)?(?:can you\s+)?(?:create|make|generate|give me|start|prepare|set up|build|i need you to|ask me)\s+(?:a\s+|an\s+|some\s+)?/i, '')
-    .replace(/\b(?:quiz|test|exam|assessment|flashcards?|questions?|practice|problems?|diagram|flowchart|mind ?map|image|picture|illustration|drawing|artwork|notes?|study\s+plan|study\s+schedule|formula|equation)\b\s*(?:me|on|about|for|covering|of|showing|with)?\s*/gi, '')
+    .replace(/\b(?:quiz|test|exam|assessment|flashcards?|questions?|practice|problems?|diagram|flowchart|mind ?map|image|picture|illustration|drawing|artwork|notes?|study\s+plan|study\s+schedule|formula|equation|theory|fill[- ]in[- ]the[- ]gap)\b\s*(?:me|on|about|for|covering|of|showing|with)?\s*/gi, '')
     .replace(/[?.!]+$/, '')
     .trim() || 'general knowledge';
 }
@@ -178,6 +190,35 @@ async function runToolDetection({ user, userText }) {
       }
     } catch (err) { logger.warn('[ai/chat] practice tool threw: ' + err.message); }
   }
+  else if (detectTheoryIntent(t)) {
+    const topic = extractTopic(userText);
+    const count = extractNumber(userText, 5);
+    try {
+      const result = await theoryService.generate({
+        userId: user.id,
+        topic: topic,
+        count: count,
+        difficulty: 'medium',
+      });
+      if (result.ok) {
+        tools.push({
+          type: 'theory',
+          title: result.set.title || ('Theory on ' + topic),
+          topic: topic,
+          setId: result.set.id,
+          count: result.set.questions.length,
+          url: '/lab/theory.html?id=' + result.set.id,
+        });
+        injectedContext.push(
+          'A fill-in-the-gap theory set on "' + topic + '" with ' + result.set.questions.length +
+          ' questions has been created. It renders as an interactive widget below. ' +
+          'Introduce it in one short sentence and let the student fill in the blanks.'
+        );
+      } else {
+        logger.warn('[ai/chat] theory tool failed: ' + result.code);
+      }
+    } catch (err) { logger.warn('[ai/chat] theory tool threw: ' + err.message); }
+  }
   else if (detectVisualizationIntent(t)) {
     const topic = extractTopic(userText);
     try {
@@ -220,16 +261,67 @@ async function runToolDetection({ user, userText }) {
   }
   else if (detectExamIntent(t)) {
     const topic = extractTopic(userText);
-    tools.push({ type: 'exam', title: 'Exam Mode', topic: topic, url: '/lab/exam.html' });
-    injectedContext.push('Exam Mode can be opened from the card below. Explain briefly that it is a timed mode with no hints.');
+    const count = extractNumber(userText, 10);
+    try {
+      const result = await quizService.generate({
+        userId: user.id,
+        topic: topic,
+        count: count,
+        difficulty: 'medium',
+        isExam: true,
+        timeLimitSeconds: Math.max(300, count * 90),
+      });
+      if (result.ok) {
+        tools.push({
+          type: 'exam',
+          title: result.quiz.title || ('Exam: ' + topic),
+          topic: topic,
+          examId: result.quiz.id,
+          count: result.quiz.questions.length,
+          duration_minutes: Math.round((result.quiz.time_limit_seconds || count * 90) / 60),
+          url: '/lab/exam.html?id=' + result.quiz.id,
+        });
+        injectedContext.push(
+          'A timed exam on "' + topic + '" with ' + result.quiz.questions.length + ' questions has been created. ' +
+          'It appears as an interactive timed widget below. Explain briefly that it has a countdown and no hints.'
+        );
+      } else {
+        logger.warn('[ai/chat] exam tool failed: ' + result.code);
+      }
+    } catch (err) { logger.warn('[ai/chat] exam tool threw: ' + err.message); }
   }
   else if (detectMistakesIntent(t)) {
     tools.push({ type: 'mistakes', title: 'My Mistakes', url: '/lab/mistakes.html' });
     injectedContext.push('The student\'s Mistake Bank can be opened from the card below. Mention briefly that it shows their weak topics.');
   }
   else if (detectSketchIntent(t)) {
-    tools.push({ type: 'sketch', title: 'Sketch & Formula Studio', url: '/lab/sketch.html' });
-    injectedContext.push('The Sketch and Formula Studio can be opened from the card below. Explain briefly that it helps write things like H₂SO₄ correctly with subscripts and superscripts.');
+    const cleanQuery = String(userText)
+      .replace(/^(?:please\s+)?(?:can you\s+)?(?:help me\s+)?(?:write|type|enter|compose|format)\s+(?:the\s+)?/i, '')
+      .replace(/\s+(?:correctly|properly|as a formula|in a formula|for me)\.?$/i, '')
+      .trim();
+    const query = cleanQuery || extractTopic(userText);
+    try {
+      const result = await sketchService.generateFormula({ query: query });
+      if (result.ok) {
+        tools.push({
+          type: 'sketch',
+          title: 'Sketch: ' + query,
+          topic: query,
+          kind: result.result.kind,
+          plain: result.result.plain,
+          unicode: result.result.unicode,
+          latex: result.result.latex,
+          explanation: result.result.explanation,
+          url: '/lab/sketch.html',
+        });
+        injectedContext.push(
+          'A formula for "' + query + '" has been prepared in the Sketch widget below. ' +
+          'Explain in one short sentence and let the student use the widget.'
+        );
+      } else {
+        logger.warn('[ai/chat] sketch tool failed: ' + result.code);
+      }
+    } catch (err) { logger.warn('[ai/chat] sketch tool threw: ' + err.message); }
   }
   else if (detectImageGenerateIntent(t)) {
     const prompt = extractTopic(userText);
