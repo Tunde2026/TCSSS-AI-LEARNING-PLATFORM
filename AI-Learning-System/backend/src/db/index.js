@@ -23,9 +23,8 @@ const studyPlans       = require('./queries/studyPlans');
 const chatAttachments  = require('./queries/chatAttachments');
 const spark            = require('./queries/spark');
 const theory           = require('./queries/theory');
-// const spark            = require('./queries/spark');
-// const theory           = require('./queries/theory');
-const sketches         = require('./queries/sketches');  // ← new
+const sketches         = require('./queries/sketches');
+const support          = require('./queries/support');
 
 module.exports = {
   pool, ping,
@@ -33,5 +32,5 @@ module.exports = {
   flashcards, library, documentChunks, settings,
   knowledge, analytics, providerKeys, auditLog,
   notes, practice, studyPlans, chatAttachments, spark, theory,
-  sketches,                                              // ← new
+  sketches, support,
 };

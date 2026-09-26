@@ -1750,3 +1750,56 @@ body:has(.lab-bar) .tool-grid,
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
 }
+/* ---------- Sidebar support link ---------- */
+.nav-item--support {
+  position: relative;
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.nav-item--support:hover {
+  color: #FFFFFF !important;
+  background: rgba(230, 17, 30, 0.15) !important;
+}
+
+.nav-item--support i {
+  color: var(--gold) !important;
+}
+
+.nav-item__badge {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(230, 17, 30, 0.4);
+}
+/* ---------- Admin bar support badge ---------- */
+.admin-bar__badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: var(--red);
+  color: #FFFFFF;
+  font-family: var(--font-ui);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 6px rgba(230, 17, 30, 0.4);
+  flex-shrink: 0;
+  vertical-align: middle;
+}

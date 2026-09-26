@@ -1,6 +1,13 @@
 // ============================================================
 // admin/routes.js
 // ------------------------------------------------------------
+// Admin endpoints. All routes require an admin session.
+//
+// Route ordering rule:
+//   Static paths like /support/folders MUST come before
+//   parameterized paths like /support/:id, or Express will
+//   treat "folders" as an :id and match the wrong handler.
+// ============================================================
 
 const express = require('express');
 const multer  = require('multer');
@@ -10,6 +17,7 @@ const backup  = require('./backup');
 const { requireAdmin } = require('../auth');
 const core = require('../core');
 const db   = require('../db');
+const supportService = require('../support/service');
 
 const { audit } = core;
 
@@ -23,7 +31,9 @@ const backupUpload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
-// ---------- Users ----------
+// ============================================================
+// USERS
+// ============================================================
 
 router.get('/users', requireAdmin, async (req, res, next) => {
   try { res.json({ users: await service.listUsers() }); }
@@ -136,12 +146,20 @@ router.post('/users/:id/force-logout', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.get('/users/:id/activity', requireAdmin, async (req, res, next) => {
+  try {
+    const limit = Math.min(100, parseInt(req.query.limit, 10) || 40);
+    const result = await service.getUserActivity(req.params.id, limit);
+    if (!result.ok) return res.status(404).json({ error: 'User not found' });
+    res.json({ user: result.user, activity: result.activity });
+  } catch (err) { next(err); }
+});
+
 router.get('/users/:id/conversations', requireAdmin, async (req, res, next) => {
   try {
     const result = await service.getUserConversations(req.params.id);
     if (!result.ok) return res.status(404).json({ error: 'User not found' });
 
-    // Audit: record that an admin opened this user's conversation list.
     await audit.log({
       req,
       action: 'user.view_conversations',
@@ -154,32 +172,6 @@ router.get('/users/:id/conversations', requireAdmin, async (req, res, next) => {
     res.json({
       user: result.user,
       conversations: result.conversations,
-    });
-  } catch (err) { next(err); }
-});
-
-router.get('/conversations/:id/messages', requireAdmin, async (req, res, next) => {
-  try {
-    const result = await service.getConversationForAdmin(req.params.id);
-    if (!result.ok) return res.status(404).json({ error: 'Conversation not found' });
-
-    // Audit: record that an admin opened this specific conversation.
-    await audit.log({
-      req,
-      action: 'conversation.view',
-      targetType: 'conversation',
-      targetId: result.conversation.id,
-      targetLabel: result.conversation.title,
-      details: {
-        owner_id: result.conversation.user_id,
-        owner_email: result.conversation.user_email,
-        message_count: result.messages.length,
-      },
-    });
-
-    res.json({
-      conversation: result.conversation,
-      messages: result.messages,
     });
   } catch (err) { next(err); }
 });
@@ -205,14 +197,47 @@ router.delete('/users/:id', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ---------- Stats ----------
+// ============================================================
+// CONVERSATION VIEWING (read-only, spec §61–62)
+// ============================================================
+
+router.get('/conversations/:id/messages', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await service.getConversationForAdmin(req.params.id);
+    if (!result.ok) return res.status(404).json({ error: 'Conversation not found' });
+
+    await audit.log({
+      req,
+      action: 'conversation.view',
+      targetType: 'conversation',
+      targetId: result.conversation.id,
+      targetLabel: result.conversation.title,
+      details: {
+        owner_id: result.conversation.user_id,
+        owner_email: result.conversation.user_email,
+        message_count: result.messages.length,
+      },
+    });
+
+    res.json({
+      conversation: result.conversation,
+      messages: result.messages,
+    });
+  } catch (err) { next(err); }
+});
+
+// ============================================================
+// STATS
+// ============================================================
 
 router.get('/stats', requireAdmin, async (req, res, next) => {
   try { res.json(await service.getStats()); }
   catch (err) { next(err); }
 });
 
-// ---------- Settings ----------
+// ============================================================
+// SETTINGS
+// ============================================================
 
 router.get('/settings', requireAdmin, async (req, res, next) => {
   try { res.json({ settings: await service.getSettings() }); }
@@ -244,7 +269,9 @@ router.patch('/settings', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ---------- Ollama ----------
+// ============================================================
+// OLLAMA
+// ============================================================
 
 router.get('/models', requireAdmin, async (req, res, next) => {
   try {
@@ -254,7 +281,9 @@ router.get('/models', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ---------- Provider keys ----------
+// ============================================================
+// PROVIDER KEYS
+// ============================================================
 
 router.get('/keys', requireAdmin, async (req, res, next) => {
   try { res.json({ keys: await service.listProviderKeys() }); }
@@ -305,7 +334,9 @@ router.delete('/keys/:id', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ---------- Branding ----------
+// ============================================================
+// BRANDING
+// ============================================================
 
 router.post('/branding/logo', requireAdmin, logoUpload.single('logo'), async (req, res, next) => {
   try {
@@ -326,7 +357,9 @@ router.delete('/branding/logo', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ---------- Knowledge ----------
+// ============================================================
+// KNOWLEDGE
+// ============================================================
 
 router.get('/knowledge/stats', requireAdmin, async (req, res, next) => {
   try { res.json({ stats: await db.knowledge.getStats() }); }
@@ -460,7 +493,9 @@ router.post('/knowledge/documents/:id/reprocess', requireAdmin, async (req, res,
   } catch (err) { next(err); }
 });
 
-// ---------- Library admin ----------
+// ============================================================
+// LIBRARY ADMIN
+// ============================================================
 
 router.patch('/library/:id/rename', requireAdmin, async (req, res, next) => {
   try {
@@ -518,7 +553,9 @@ router.post('/library/bulk', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ---------- Analytics ----------
+// ============================================================
+// ANALYTICS
+// ============================================================
 
 router.get('/analytics/summary', requireAdmin, async (req, res, next) => {
   try { res.json(await db.analytics.getSummary()); }
@@ -556,7 +593,9 @@ router.get('/analytics/topics', requireAdmin, async (req, res, next) => {
   catch (err) { next(err); }
 });
 
-// ---------- Audit log ----------
+// ============================================================
+// AUDIT LOG
+// ============================================================
 
 router.get('/audit', requireAdmin, async (req, res, next) => {
   try {
@@ -590,7 +629,9 @@ router.delete('/audit/old', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-// ---------- Backup ----------
+// ============================================================
+// BACKUP
+// ============================================================
 
 router.get('/backup/export', requireAdmin, async (req, res, next) => {
   try {
@@ -630,7 +671,9 @@ router.post('/backup/import', requireAdmin, backupUpload.single('backup'), async
   } catch (err) { next(err); }
 });
 
-// ---------- Manual library sync ----------
+// ============================================================
+// LIBRARY SYNC
+// ============================================================
 
 router.post('/library/sync', requireAdmin, async (req, res, next) => {
   try {
@@ -649,6 +692,285 @@ router.get('/library/sync-status', requireAdmin, async (req, res, next) => {
     const { pool } = require('../db');
     const r = await pool.query('SELECT COUNT(*)::int AS n FROM library_documents');
     res.json({ running: fetcher.isRunning(), total_books: r.rows[0].n });
+  } catch (err) { next(err); }
+});
+
+// ============================================================
+// SUPPORT — ORDER MATTERS
+// Static-segment routes MUST come before /:id patterns.
+// ============================================================
+
+// --- Static-string routes first ---
+
+router.get('/support', requireAdmin, async (req, res, next) => {
+  try {
+    const { status, category, priority, folder } = req.query || {};
+    const tickets = await db.support.listAllTickets({ status, category, priority, folder });
+    const unread  = await db.support.countUnreadForAdmin();
+    const open    = await db.support.countOpenTickets();
+    res.json({ tickets, unread, open });
+  } catch (err) { next(err); }
+});
+
+router.get('/support/folders', requireAdmin, async (req, res, next) => {
+  try {
+    const folders = await db.support.listAdminFolders();
+    const counts  = await db.support.folderCounts();
+    res.json({ folders, counts });
+  } catch (err) { next(err); }
+});
+
+router.post('/support/folders', requireAdmin, async (req, res, next) => {
+  try {
+    const name = String(req.body && req.body.name || '').trim().slice(0, 40);
+    const icon = String(req.body && req.body.icon || 'fa-folder').slice(0, 40);
+    if (!name) return res.status(400).json({ error: 'Name required' });
+    const folder = await db.support.createAdminFolder(name, icon);
+    await audit.log({
+      req, action: 'support.create_folder', targetType: 'folder',
+      targetLabel: name,
+    });
+    res.status(201).json({ folder });
+  } catch (err) {
+    if (err.message && err.message.indexOf('unique') !== -1) {
+      return res.status(409).json({ error: 'Folder already exists' });
+    }
+    next(err);
+  }
+});
+
+router.delete('/support/folders/:name', requireAdmin, async (req, res, next) => {
+  try {
+    const ok = await db.support.deleteAdminFolder(req.params.name);
+    if (!ok) return res.status(400).json({ error: 'Cannot delete that folder' });
+    await audit.log({
+      req, action: 'support.delete_folder', targetType: 'folder',
+      targetLabel: req.params.name,
+    });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+router.get('/support/unread/count', requireAdmin, async (req, res, next) => {
+  try {
+    const unread = await db.support.countUnreadForAdmin();
+    res.json({ unread });
+  } catch (err) { next(err); }
+});
+
+// Message-level routes (two-segment path — safe with :id routes)
+router.patch('/support/message/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await supportService.editMessage({
+      messageId: req.params.id,
+      userId: req.user.id,
+      isAdmin: true,
+      newBody: req.body && req.body.body,
+    });
+    if (!result.ok) {
+      const status =
+        result.code === 'NOT_FOUND' ? 404 :
+        result.code === 'FORBIDDEN' ? 403 :
+        result.code === 'DELETED'   ? 410 :
+        400;
+      return res.status(status).json({ error: result.code });
+    }
+    await audit.log({
+      req,
+      action: 'support.edit_message',
+      targetType: 'ticket_message',
+      targetId: req.params.id,
+    });
+    res.json({ message: result.message });
+  } catch (err) { next(err); }
+});
+
+router.delete('/support/message/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await supportService.deleteMessage({
+      messageId: req.params.id,
+      userId: req.user.id,
+      isAdmin: true,
+    });
+    if (!result.ok) {
+      const status =
+        result.code === 'NOT_FOUND' ? 404 :
+        result.code === 'FORBIDDEN' ? 403 :
+        result.code === 'DELETED'   ? 410 :
+        400;
+      return res.status(status).json({ error: result.code });
+    }
+    await audit.log({
+      req,
+      action: 'support.delete_message',
+      targetType: 'ticket_message',
+      targetId: req.params.id,
+    });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+/* PATCH /admin/support/folders/:name — rename or change icon */
+router.patch('/support/folders/:name', requireAdmin, async (req, res, next) => {
+  try {
+    const newName = req.body && req.body.name ? String(req.body.name).trim().slice(0, 40) : null;
+    const icon = req.body && req.body.icon ? String(req.body.icon).trim().slice(0, 40) : null;
+    const updated = await db.support.renameAdminFolder(req.params.name, newName, icon);
+    if (!updated) return res.status(400).json({ error: 'Cannot rename that folder' });
+    await audit.log({
+      req, action: 'support.rename_folder', targetType: 'folder',
+      targetLabel: newName || req.params.name,
+    });
+    res.json({ folder: updated });
+  } catch (err) {
+    if (err.message && err.message.indexOf('unique') !== -1) {
+      return res.status(409).json({ error: 'A folder with that name already exists' });
+    }
+    next(err);
+  }
+});
+
+/* POST /admin/support/folders/reorder — { order: ['inbox','urgent',...] } */
+router.post('/support/folders/reorder', requireAdmin, async (req, res, next) => {
+  try {
+    const order = req.body && req.body.order;
+    if (!Array.isArray(order) || !order.length) {
+      return res.status(400).json({ error: 'order array required' });
+    }
+    await db.support.reorderAdminFolders(order);
+    await audit.log({
+      req, action: 'support.reorder_folders', targetType: 'folder',
+      details: { order },
+    });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+/* POST /admin/support/bulk — { ids: [...], action: 'move'|'read'|'unread'|'close', folder? } */
+router.post('/support/bulk', requireAdmin, async (req, res, next) => {
+  try {
+    const { ids, action, folder } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length) {
+      return res.status(400).json({ error: 'ids required' });
+    }
+    if (!['move', 'read', 'unread', 'close', 'reopen'].includes(action)) {
+      return res.status(400).json({ error: 'invalid action' });
+    }
+
+    let affected = 0;
+    if (action === 'move') {
+      if (!folder) return res.status(400).json({ error: 'folder required for move' });
+      affected = await db.support.bulkSetFolder(ids, String(folder).slice(0, 60));
+    } else if (action === 'read') {
+      affected = await db.support.bulkSetRead(ids, true);
+    } else if (action === 'unread') {
+      affected = await db.support.bulkSetRead(ids, false);
+    } else if (action === 'close') {
+      affected = await db.support.bulkSetStatus(ids, 'closed');
+    } else if (action === 'reopen') {
+      affected = await db.support.bulkSetStatus(ids, 'open');
+    }
+
+    await audit.log({
+      req, action: 'support.bulk_' + action, targetType: 'ticket',
+      details: { count: affected, ids: ids.slice(0, 20), folder: folder || null },
+    });
+    res.json({ ok: true, affected });
+  } catch (err) { next(err); }
+});
+
+// --- Parameterized routes last ---
+
+router.get('/support/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await supportService.getTicket({
+      ticketId: req.params.id,
+      userId: null,
+      isAdmin: true,
+    });
+    if (!result.ok) return res.status(404).json({ error: 'Ticket not found' });
+
+    await audit.log({
+      req,
+      action: 'support.view',
+      targetType: 'ticket',
+      targetId: result.ticket.id,
+      targetLabel: result.ticket.subject,
+    });
+
+    res.json({ ticket: result.ticket, messages: result.messages });
+  } catch (err) { next(err); }
+});
+
+router.patch('/support/:id/read', requireAdmin, async (req, res, next) => {
+  try {
+    const read = !!(req.body && req.body.read);
+    const updated = await db.support.setTicketRead(req.params.id, read);
+    if (!updated) return res.status(404).json({ error: 'Not found' });
+    res.json({ ticket: updated });
+  } catch (err) { next(err); }
+});
+
+router.patch('/support/:id/folder', requireAdmin, async (req, res, next) => {
+  try {
+    const folder = String(req.body && req.body.folder || 'inbox').slice(0, 60);
+    const updated = await db.support.setTicketFolder(req.params.id, folder);
+    if (!updated) return res.status(404).json({ error: 'Not found' });
+    await audit.log({
+      req, action: 'support.move_folder', targetType: 'ticket',
+      targetId: req.params.id, targetLabel: updated.subject,
+      details: { folder },
+    });
+    res.json({ ticket: updated });
+  } catch (err) { next(err); }
+});
+
+router.patch('/support/:id/status', requireAdmin, async (req, res, next) => {
+  try {
+    const status = req.body && req.body.status;
+    const result = await supportService.setStatus({
+      ticketId: req.params.id,
+      status,
+    });
+    if (!result.ok) {
+      return res.status(result.code === 'NOT_FOUND' ? 404 : 400).json({ error: 'Could not update status.' });
+    }
+    await audit.log({
+      req,
+      action: 'support.status_change',
+      targetType: 'ticket',
+      targetId: req.params.id,
+      targetLabel: result.ticket.subject,
+      details: { newStatus: status },
+    });
+    res.json({ ticket: result.ticket });
+  } catch (err) { next(err); }
+});
+
+router.post('/support/:id/reply', requireAdmin, async (req, res, next) => {
+  try {
+    const body = req.body && req.body.body;
+    const result = await supportService.adminReply({
+      ticketId: req.params.id,
+      admin: req.user,
+      body,
+    });
+    if (!result.ok) {
+      const status =
+        result.code === 'NOT_FOUND' ? 404 :
+        result.code === 'EMPTY'     ? 400 :
+        result.code === 'TOO_LONG'  ? 413 :
+        400;
+      return res.status(status).json({ error: 'Could not send reply.' });
+    }
+    await audit.log({
+      req,
+      action: 'support.reply',
+      targetType: 'ticket',
+      targetId: req.params.id,
+      targetLabel: 'admin reply',
+    });
+    res.status(201).json({ message: result.message });
   } catch (err) { next(err); }
 });
 

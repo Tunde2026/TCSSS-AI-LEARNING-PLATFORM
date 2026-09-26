@@ -167,18 +167,18 @@
   var SETTINGS_ITEM = { href: 'settings.html', icon: 'fa-gear', label: 'Settings' };
   var SCHOOL_URL = 'https://gideon-olukanni.github.io/TCSSS/';
 
-  var ADMIN_SECTIONS = [
-    { href: 'dashboard.html', icon: 'fa-gauge-high', label: 'Dashboard' },
-    { href: 'users.html',     icon: 'fa-users',      label: 'Users'     },
-    { href: 'library.html',   icon: 'fa-book',       label: 'Library'   },
-    { href: 'knowledge.html', icon: 'fa-brain',      label: 'Knowledge' },
-    { href: 'models.html',    icon: 'fa-microchip',  label: 'Models'    },
-    { href: 'analytics.html', icon: 'fa-chart-line', label: 'Analytics' },
-    { href: 'audit.html',     icon: 'fa-clipboard-list', label: 'Audit' },
-    { href: 'backup.html',    icon: 'fa-database',   label: 'Backup'    },
-    { href: 'settings.html',  icon: 'fa-gears',      label: 'Settings'  }
+      var ADMIN_SECTIONS = [
+    { href: 'dashboard.html', icon: 'fa-gauge-high',  label: 'Dashboard' },
+    { href: 'users.html',     icon: 'fa-users',       label: 'Users'     },
+    { href: 'support.html',   icon: 'fa-headset',     label: 'Support'   },
+    { href: 'library.html',   icon: 'fa-book',        label: 'Library'   },
+    { href: 'knowledge.html', icon: 'fa-brain',       label: 'Knowledge' },
+    { href: 'models.html',    icon: 'fa-microchip',   label: 'Models'    },
+    { href: 'analytics.html', icon: 'fa-chart-line',  label: 'Analytics' },
+    { href: 'audit.html',     icon: 'fa-clipboard-list', label: 'Audit'  },
+    { href: 'backup.html',    icon: 'fa-database',    label: 'Backup'    },
+    { href: 'settings.html',  icon: 'fa-gears',       label: 'Settings'  }
   ];
-
     var LAB_SECTIONS = [
     { href: 'notes.html',         icon: 'fa-note-sticky',       label: 'Notes' },
     { href: 'flashcards.html',    icon: 'fa-clone',             label: 'Flashcards' },
@@ -287,17 +287,22 @@
     var main = document.querySelector('main.page');
     if (!main) return;
 
-    var linksHtml = ADMIN_SECTIONS.map(function (s) {
+        var linksHtml = ADMIN_SECTIONS.map(function (s) {
       var active = s.href === current ? ' is-active' : '';
+      var badge = '';
+      if (s.href === 'support.html') {
+        badge = '<span class="admin-bar__badge-count" id="admin-support-badge" style="display:none"></span>';
+      }
       return (
         '<a class="admin-bar__link' + active + '" href="' + s.href + '">' +
           '<i class="fa-solid ' + s.icon + '" aria-hidden="true"></i>' +
           '<span>' + s.label + '</span>' +
+          badge +
         '</a>'
       );
     }).join('');
 
-    main.insertAdjacentHTML('afterbegin',
+        main.insertAdjacentHTML('afterbegin',
       '<div class="admin-bar" id="admin-bar">' +
         '<div class="admin-bar__row">' +
           '<a class="admin-bar__back" href="' + BASE + 'chat.html">' +
@@ -312,6 +317,22 @@
         '<nav class="admin-bar__nav">' + linksHtml + '</nav>' +
       '</div>'
     );
+
+    loadAdminSupportBadge();
+  }
+
+  async function loadAdminSupportBadge() {
+    try {
+      var res = await fetch('/api/admin/support/unread/count', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      var n = data.unread || 0;
+      var badge = document.getElementById('admin-support-badge');
+      if (badge && n > 0) {
+        badge.textContent = n > 9 ? '9+' : String(n);
+        badge.style.display = '';
+      }
+    } catch (_) {}
   }
 
   function ensureLabBar() {
@@ -381,8 +402,13 @@
           '<nav class="sidebar__nav">' + mainLinks + adminLinkHTML + '</nav>' +
           '<div id="sidebar-slot"></div>' +
         '</div>' +
-        '<div class="sidebar__footer">' +
+                '<div class="sidebar__footer">' +
           settingsLink +
+          '<a class="nav-item nav-item--support" href="' + BASE + 'support.html" title="Contact support">' +
+            '<i class="fa-solid fa-headset" aria-hidden="true"></i>' +
+            '<span>Contact Us</span>' +
+            '<span class="nav-item__badge" id="support-badge" style="display:none"></span>' +
+          '</a>' +
           '<a class="nav-item nav-item--utility" href="' + SCHOOL_URL + '" target="_blank" rel="noopener noreferrer" title="Official School Website">' +
             '<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>' +
             '<span>Official School Website</span>' +
@@ -460,6 +486,21 @@
     loadUserChip();
     ensureAdminBar();
     ensureLabBar();
+    loadSupportBadge();
+  }
+
+  async function loadSupportBadge() {
+    try {
+      var res = await fetch('/api/support/unread/count', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      var n = data.unread || 0;
+      var badge = document.getElementById('support-badge');
+      if (badge && n > 0) {
+        badge.textContent = n > 9 ? '9+' : String(n);
+        badge.style.display = '';
+      }
+    } catch (_) {}
   }
 
   if (document.readyState === 'loading') {

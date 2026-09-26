@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .sup-layout { display: grid; grid-template-columns: 220px 340px 1fr; gap: 16px; height: calc(100vh - 220px); min-height: 560px; }
+  @media (max-width: 1200px) { .sup-layout { grid-template-columns: 200px 1fr; } .sup-thread { grid-column: 2; } }
+  @media (max-width: 900px)  { .sup-layout { grid-template-columns: 1fr; height: auto; } .sup-thread { grid-column: auto; } }
+
+  /* Rail */
+  .sup-rail { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .sup-rail__head { padding: 12px 14px; border-bottom: 1px solid var(--border); background: var(--blush); font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+  .sup-rail__body { overflow-y: auto; flex: 1; padding: 8px; }
+  .sup-rail__item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 9px; cursor: pointer; color: var(--navy); font-size: 0.85rem; font-weight: 500; transition: background .15s; position: relative; }
+  .sup-rail__item:hover { background: var(--blush); }
+  .sup-rail__item.is-active { background: var(--blush-deep); font-weight: 600; }
+  .sup-rail__item i.folder-icon { width: 16px; text-align: center; font-size: 0.82rem; color: var(--slate); }
+  .sup-rail__item.is-active i.folder-icon { color: var(--red); }
+  .sup-rail__item-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sup-rail__item-count { font-family: var(--font-ui); font-size: 0.64rem; color: var(--slate); font-weight: 600; }
+  .sup-rail__item.is-active .sup-rail__item-count { color: var(--red); }
+  .sup-rail__menu-btn { width: 22px; height: 22px; border: none; background: transparent; border-radius: 6px; cursor: pointer; display: none; place-items: center; color: var(--slate); font-size: 0.72rem; flex-shrink: 0; }
+  .sup-rail__item:hover .sup-rail__menu-btn { display: grid; }
+  .sup-rail__menu-btn:hover { background: var(--blush-deep); color: var(--navy); }
+  .sup-rail__add { margin: 6px 8px 10px; padding: 8px 12px; border-radius: 9px; background: transparent; border: 1.5px dashed var(--border); font-family: var(--font-body); font-size: 0.82rem; color: var(--slate); cursor: pointer; width: calc(100% - 16px); text-align: left; display: inline-flex; align-items: center; gap: 8px; }
+  .sup-rail__add:hover { border-color: var(--navy); color: var(--navy); background: var(--blush); }
+
+  /* List */
+  .sup-list { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .sup-list__head { padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--blush); display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+  .sup-list__title { font-family: var(--font-ui); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); font-weight: 700; }
+  .sup-list__count { font-family: var(--font-ui); font-size: 0.68rem; color: var(--slate); }
+  .sup-search { padding: 10px 12px; border-bottom: 1px solid var(--border-soft); position: relative; }
+  .sup-search input { width: 100%; padding: 8px 12px 8px 32px; border: 1px solid var(--border); border-radius: 999px; font-family: var(--font-body); font-size: 0.84rem; background: var(--blush); outline: none; }
+  .sup-search input:focus { border-color: var(--gold); background: var(--white); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
+  .sup-search i { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); color: var(--slate); font-size: 0.78rem; pointer-events: none; }
+  .sup-list__filters { padding: 8px 12px; border-bottom: 1px solid var(--border-soft); display: flex; gap: 6px; flex-wrap: wrap; }
+  .sup-chip { padding: 5px 11px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--white); font-family: var(--font-body); font-size: 0.72rem; font-weight: 600; cursor: pointer; color: var(--navy); }
+  .sup-chip:hover { border-color: var(--navy); }
+  .sup-chip.is-active { background: var(--navy); color: var(--white); border-color: var(--navy); }
+  .sup-list__body { overflow-y: auto; flex: 1; }
+
+  /* Bulk bar */
+  .sup-bulk { display: none; padding: 10px 14px; background: var(--navy); color: var(--white); border-bottom: 1px solid var(--border); align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sup-bulk.is-visible { display: flex; }
+  .sup-bulk__count { font-family: var(--font-ui); font-size: 0.72rem; font-weight: 700; margin-right: 8px; }
+  .sup-bulk__btn { padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.14); color: var(--white); font-family: var(--font-body); font-size: 0.74rem; font-weight: 600; cursor: pointer; }
+  .sup-bulk__btn:hover { background: rgba(255,255,255,0.24); }
+  .sup-bulk__close { margin-left: auto; background: transparent; border: none; color: rgba(255,255,255,0.8); cursor: pointer; font-size: 0.86rem; }
+
+  /* Ticket item */
+  .sup-item { display: flex; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border-soft); cursor: pointer; transition: background .15s; position: relative; }
+  .sup-item:last-child { border-bottom: none; }
+  .sup-item:hover { background: var(--blush); }
+  .sup-item.is-active { background: var(--blush); border-left: 3px solid var(--red); padding-left: 11px; }
+  .sup-item--high { border-left: 3px solid var(--deep-red); padding-left: 11px; background: #FEF6F6; }
+  .sup-item.is-selected { background: #EEF3FB; }
+  .sup-item__check { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; background: var(--white); cursor: pointer; flex-shrink: 0; margin-top: 4px; accent-color: var(--red); }
+  .sup-item--unread .sup-item__subject::before { content: '● '; color: var(--red); margin-right: 2px; }
+  .sup-item__body { flex: 1; min-width: 0; }
+  .sup-item__subject { font-weight: 600; font-size: 0.88rem; color: var(--navy); margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sup-item__meta { font-family: var(--font-ui); font-size: 0.6rem; color: var(--slate); letter-spacing: 0.05em; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .sup-item__badge { display: inline-block; padding: 2px 7px; border-radius: 999px; font-family: var(--font-ui); font-size: 0.54rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; }
+  .sup-item__badge--open { background: #EEF3FB; color: var(--navy); }
+  .sup-item__badge--in_progress { background: var(--gold-50); color: #6A4F13; }
+  .sup-item__badge--resolved { background: #EAF7EE; color: #1F6B35; }
+  .sup-item__badge--closed { background: var(--blush); color: var(--slate); }
+  .sup-item__badge--high { background: #FDECEC; color: var(--deep-red); }
+  .sup-item__unread { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 999px; background: var(--red); color: #FFF; font-family: var(--font-ui); font-size: 0.54rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+  .sup-item__move { width: 26px; height: 26px; border-radius: 7px; border: none; background: transparent; color: var(--slate); cursor: pointer; display: grid; place-items: center; font-size: 0.76rem; opacity: 0; transition: opacity .15s; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+  .sup-item:hover .sup-item__move { opacity: 1; }
+  .sup-item__move:hover { background: var(--blush-deep); color: var(--navy); }
+
+  .sup-empty { padding: 60px 20px; text-align: center; color: var(--slate); font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .sup-empty i { font-size: 2rem; opacity: 0.3; }
+
+  /* Thread */
+  .sup-thread { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; }
+  .sup-thread__head { padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--blush); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .sup-thread__title { font-family: var(--font-head); font-size: 1.1rem; color: var(--navy); margin: 0 0 4px; }
+  .sup-thread__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.04em; color: var(--slate); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .sup-thread__actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+  .status-select, .folder-select { padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-family: var(--font-body); font-size: 0.82rem; color: var(--navy); background: var(--white); cursor: pointer; outline: none; }
+  .icon-btn { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border); background: var(--white); color: var(--navy); cursor: pointer; display: grid; place-items: center; font-size: 0.8rem; }
+  .icon-btn:hover { border-color: var(--navy); background: var(--blush); }
+
+  .contact-card { margin: 14px 20px 0; padding: 12px 16px; background: #EEF3FB; border-radius: 12px; font-size: 0.86rem; color: var(--navy); line-height: 1.6; }
+  .contact-card__row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .contact-card__row i { color: var(--slate); width: 14px; }
+  .contact-card__row a { color: var(--navy); text-decoration: none; font-weight: 600; }
+  .contact-card__row a:hover { color: var(--red); }
+  .contact-card__label { font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); margin-right: 6px; }
+  .contact-card--high { background: #FDECEC; border: 1px solid #F3C5C5; }
+  .contact-card--high .contact-card__row a, .contact-card--high .contact-card__label { color: var(--deep-red); }
+
+  .sup-thread__body { padding: 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; flex: 1; }
+  .thread-msg { max-width: 82%; padding: 12px 16px; border-radius: 14px; line-height: 1.55; font-size: 0.92rem; word-wrap: break-word; position: relative; }
+  .thread-msg--student { align-self: flex-start; background: var(--blush); color: var(--ink); border-top-left-radius: 4px; }
+  .thread-msg--admin { align-self: flex-end; background: linear-gradient(135deg, var(--navy), var(--soft-navy)); color: #FFF; border-top-right-radius: 4px; }
+  .thread-msg--system { align-self: center; max-width: 90%; background: var(--gold-50); color: #6A4F13; border-left: 3px solid var(--gold); border-radius: 0 10px 10px 0; font-style: italic; text-align: center; }
+  .thread-msg__sender { font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; margin-bottom: 6px; }
+  .thread-msg__meta { font-family: var(--font-ui); font-size: 0.58rem; letter-spacing: 0.06em; opacity: 0.55; margin-top: 6px; }
+  .thread-msg__actions { display: flex; gap: 6px; margin-top: 8px; opacity: 0; transition: opacity .15s; }
+  .thread-msg:hover .thread-msg__actions { opacity: 1; }
+  .thread-msg__actions button { padding: 3px 9px; border-radius: 999px; border: none; background: rgba(17,16,74,0.12); color: var(--navy); font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.04em; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .thread-msg--admin .thread-msg__actions button { background: rgba(255,255,255,0.2); color: #FFF; }
+  .thread-msg--deleted { opacity: 0.55; font-style: italic; }
+  .thread-msg__deleted-note { font-size: 0.85rem; }
+
+  .sup-thread__reply { padding: 12px 20px; background: var(--blush); border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-end; }
+  .sup-thread__reply textarea { flex: 1; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--font-body); font-size: 0.92rem; color: var(--ink); outline: none; resize: none; min-height: 44px; max-height: 180px; }
+  .sup-thread__reply textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
+
+  .sup-placeholder { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 80px 30px; color: var(--slate); font-size: 0.92rem; height: 100%; }
+  .sup-placeholder i { font-size: 2.4rem; opacity: 0.28; }
+
+  /* Floating menus */
+  .float-menu { position: fixed; z-index: 300; min-width: 180px; background: var(--white); border-radius: 12px; box-shadow: 0 12px 32px rgba(17,16,74,0.28); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+  .float-menu__label { font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); font-weight: 700; padding: 6px 10px 4px; }
+  .float-menu__item { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 8px; border: none; background: transparent; color: var(--navy); font-family: var(--font-body); font-size: 0.86rem; text-align: left; cursor: pointer; }
+  .float-menu__item:hover { background: var(--blush); }
+  .float-menu__item i { width: 14px; text-align: center; font-size: 0.82rem; color: var(--slate); }
+  .float-menu__item--danger { color: var(--deep-red); }
+  .float-menu__item--danger:hover { background: #FCECEC; }
+  .float-menu__item--danger i { color: var(--deep-red); }
+  .float-menu__sep { height: 1px; background: var(--border-soft); margin: 4px 0; }
+
+  /* Icon grid */
+  .icon-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 10px; }
+  .icon-pick { aspect-ratio: 1; border-radius: 10px; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; display: grid; place-items: center; font-size: 1rem; color: var(--navy); }
+  .icon-pick:hover { border-color: var(--navy); background: var(--blush); }
+  .icon-pick.is-selected { border-color: var(--red); background: #FDECEC; color: var(--red); }
+
+  /* Modal */
+  .sup-modal-overlay { position: fixed; inset: 0; background: rgba(17,16,74,0.5); display: none; align-items: center; justify-content: center; z-index: 400; padding: 20px; }
+  .sup-modal-overlay.is-open { display: flex; }
+  .sup-modal { width: 100%; max-width: 520px; background: var(--white); border-radius: 16px; padding: 24px; }
+  .sup-modal__title { font-family: var(--font-head); font-size: 1.15rem; color: var(--navy); margin: 0 0 14px; }
+  .sup-modal label { display: block; font-family: var(--font-ui); font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); margin: 12px 0 6px; font-weight: 600; }
+  .sup-modal input, .sup-modal textarea { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--font-body); font-size: 0.94rem; color: var(--ink); outline: none; }
+  .sup-modal input:focus, .sup-modal textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
+  .sup-modal__actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-soft); }
+  .btn-danger { background: var(--deep-red); color: #FFF; border: none; padding: 10px 20px; border-radius: 999px; font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #FFF; padding: 12px 22px; border-radius: 999px; font-size: 0.9rem; box-shadow: 0 12px 32px rgba(17,16,74,0.35); z-index: 500; }
+  .toast--error { background: var(--deep-red); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner" style="max-width:1500px">
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Support inbox</h1>
+              <p class="page-header__sub">Organize tickets by folder, mark read/unread, reply, and edit your own messages.</p>
+            </div>
+            <button class="btn btn-ghost" id="refresh-btn" type="button">
+              <i class="fa-solid fa-rotate" aria-hidden="true"></i> Refresh
+            </button>
+          </header>
+
+          <div class="sup-layout">
+            <aside class="sup-rail">
+              <div class="sup-rail__head">
+                <span>Folders</span>
+              </div>
+              <div class="sup-rail__body" id="rail-body"></div>
+              <button class="sup-rail__add" id="add-folder-btn" type="button">
+                <i class="fa-solid fa-plus"></i> New folder
+              </button>
+            </aside>
+
+            <section class="sup-list">
+              <div class="sup-list__head">
+                <span class="sup-list__title" id="list-title">Inbox</span>
+                <span class="sup-list__count" id="list-count">—</span>
+              </div>
+              <div class="sup-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" id="sup-search" placeholder="Search subject, name, email…">
+              </div>
+              <div class="sup-list__filters">
+                <button class="sup-chip is-active" data-filter="all" type="button">All</button>
+                <button class="sup-chip" data-filter="unread" type="button">Unread</button>
+                <button class="sup-chip" data-filter="bullying" type="button">🚨</button>
+                <button class="sup-chip" data-filter="open" type="button">Open</button>
+              </div>
+              <div class="sup-bulk" id="sup-bulk">
+                <span class="sup-bulk__count" id="bulk-count">0 selected</span>
+                <button class="sup-bulk__btn" data-bulk="read" type="button">Read</button>
+                <button class="sup-bulk__btn" data-bulk="unread" type="button">Unread</button>
+                <button class="sup-bulk__btn" data-bulk="close" type="button">Close</button>
+                <button class="sup-bulk__btn" data-bulk="move" type="button">Move…</button>
+                <button class="sup-bulk__close" id="bulk-clear" type="button" title="Clear selection">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+              <div class="sup-list__body" id="list-body">
+                <div class="sup-empty"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div>
+              </div>
+            </section>
+
+            <section class="sup-thread" id="thread-pane">
+              <div class="sup-placeholder">
+                <i class="fa-solid fa-inbox"></i>
+                <div>Pick a ticket on the left to read and reply.</div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Folder create/rename modal -->
+  <div class="sup-modal-overlay" id="folder-modal">
+    <div class="sup-modal">
+      <h3 class="sup-modal__title" id="folder-modal-title">New folder</h3>
+      <label for="folder-name">Folder name</label>
+      <input type="text" id="folder-name" placeholder="e.g. Follow up" maxlength="40" autocomplete="off">
+      <label>Icon</label>
+      <div class="icon-grid" id="icon-grid"></div>
+      <div class="sup-modal__actions">
+        <button class="btn btn-ghost" id="folder-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="folder-save" type="button">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete folder confirmation -->
+  <div class="sup-modal-overlay" id="delete-folder-modal">
+    <div class="sup-modal">
+      <h3 class="sup-modal__title">Delete folder?</h3>
+      <p style="font-size:0.92rem;color:var(--slate);line-height:1.55;margin:0 0 4px" id="delete-folder-body">—</p>
+      <div class="sup-modal__actions">
+        <button class="btn btn-ghost" id="df-cancel" type="button">Cancel</button>
+        <button class="btn btn-danger" id="df-confirm" type="button">Delete folder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit message modal -->
+  <div class="sup-modal-overlay" id="edit-modal">
+    <div class="sup-modal">
+      <h3 class="sup-modal__title">Edit message</h3>
+      <textarea id="edit-input" rows="6" placeholder="Your message…" style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:var(--font-body);font-size:0.94rem;color:var(--ink);resize:vertical;min-height:140px;outline:none;"></textarea>
+      <div class="sup-modal__actions">
+        <button class="btn btn-ghost" id="edit-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="edit-save" type="button">Save changes</button>
+      </div>
+    </div>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var FOLDER_ICONS = [
+      'fa-inbox','fa-fire','fa-clock','fa-box-archive','fa-folder','fa-folder-open',
+      'fa-star','fa-heart','fa-flag','fa-bell','fa-bookmark','fa-tag',
+      'fa-tags','fa-comments','fa-question','fa-circle-exclamation','fa-lightbulb',
+      'fa-bug','fa-shield-halved','fa-user','fa-users','fa-graduation-cap','fa-book',
+      'fa-briefcase'
+    ];
+
+    var folders = [];
+    var counts = {};
+    var allTickets = [];
+    var currentFolder = 'inbox';
+    var currentFilter = 'all';
+    var currentSearch = '';
+    var currentTicketId = null;
+    var currentAdminId = null;
+    var editingMessageId = null;
+    var lastMessages = [];
+    var selectedIds = {};
+    var menuEl = null;
+    var menuCloseHandler = null;
+    var editingFolderName = null;
+    var pickedIcon = 'fa-folder';
+    var deletingFolderName = null;
+
+    var CATEGORY_LABELS = { bug: 'Bug', feature: 'Feature', question: 'Question', bullying: 'Bullying', other: 'Other' };
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.className = 'toast' + (isError ? ' toast--error' : '');
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2400);
+    }
+    function fmtDateTime(iso) {
+      if (!iso) return '';
+      try { return new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (_) { return ''; }
+    }
+    function selectedCount() { return Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; }).length; }
+    function clearSelection() { selectedIds = {}; updateBulkBar(); }
+
+    function updateBulkBar() {
+      var n = selectedCount();
+      document.getElementById('bulk-count').textContent = n + ' selected';
+      document.getElementById('sup-bulk').classList.toggle('is-visible', n > 0);
+    }
+
+    function closeMenu() {
+      if (menuEl) { menuEl.remove(); menuEl = null; }
+      if (menuCloseHandler) {
+        document.removeEventListener('click', menuCloseHandler, true);
+        menuCloseHandler = null;
+      }
+    }
+
+    function openMenu(anchor, items) {
+      closeMenu();
+      var menu = document.createElement('div');
+      menu.className = 'float-menu';
+      var html = '';
+      items.forEach(function (item) {
+        if (item.sep) { html += '<div class="float-menu__sep"></div>'; return; }
+        if (item.label && !item.onClick) { html += '<div class="float-menu__label">' + esc(item.label) + '</div>'; return; }
+        html += '<button type="button" class="float-menu__item' + (item.danger ? ' float-menu__item--danger' : '') + '" data-key="' + esc(item.key) + '">' +
+                  '<i class="fa-solid ' + esc(item.icon) + '"></i> ' + esc(item.label) +
+                '</button>';
+      });
+      menu.innerHTML = html;
+      document.body.appendChild(menu);
+
+      var rect = anchor.getBoundingClientRect();
+      menu.style.top = (rect.bottom + 6) + 'px';
+      menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 220)) + 'px';
+
+      menu.querySelectorAll('[data-key]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var key = b.getAttribute('data-key');
+          var item = items.find(function (x) { return x.key === key; });
+          closeMenu();
+          if (item && item.onClick) item.onClick();
+        });
+      });
+
+      menuEl = menu;
+      menuCloseHandler = function (e) {
+        if (menuEl && !menuEl.contains(e.target) && !anchor.contains(e.target)) closeMenu();
+      };
+      setTimeout(function () {
+        document.addEventListener('click', menuCloseHandler, true);
+      }, 0);
+    }
+
+    async function guard() {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      var data = await res.json();
+      if (!data.user || data.user.role !== 'admin') { window.location.href = '../chat.html'; return false; }
+      currentAdminId = data.user.id;
+      return true;
+    }
+
+    /* ---------- Folders ---------- */
+    async function loadFolders() {
+      var res = await fetch('/api/admin/support/folders', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      folders = data.folders || [];
+      counts = data.counts || {};
+      renderRail();
+    }
+
+    function renderRail() {
+      var body = document.getElementById('rail-body');
+      if (!folders.length) {
+        body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--slate);font-size:0.82rem">Loading…</div>';
+        return;
+      }
+      body.innerHTML = folders.map(function (f, i) {
+        var active = currentFolder === f.name ? ' is-active' : '';
+        var c = counts[f.name] || 0;
+        return '<div class="sup-rail__item' + active + '" data-name="' + esc(f.name) + '" data-index="' + i + '">' +
+                 '<i class="fa-solid ' + esc(f.icon || 'fa-folder') + ' folder-icon"></i>' +
+                 '<span class="sup-rail__item-label">' + esc(f.name.charAt(0).toUpperCase() + f.name.slice(1)) + '</span>' +
+                 '<span class="sup-rail__item-count">' + (c > 0 ? c : '') + '</span>' +
+                 '<button type="button" class="sup-rail__menu-btn" data-menu="' + esc(f.name) + '" title="Folder options">' +
+                   '<i class="fa-solid fa-ellipsis"></i>' +
+                 '</button>' +
+               '</div>';
+      }).join('');
+
+      body.querySelectorAll('.sup-rail__item').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          if (e.target.closest('[data-menu]')) return;
+          currentFolder = el.getAttribute('data-name');
+          clearSelection();
+          renderRail();
+          loadTickets();
+        });
+      });
+
+      body.querySelectorAll('[data-menu]').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var name = btn.getAttribute('data-menu');
+          var idx = folders.findIndex(function (f) { return f.name === name; });
+          openFolderMenu(btn, name, idx);
+        });
+      });
+    }
+
+    function openFolderMenu(anchor, name, idx) {
+      var isDefault = ['inbox', 'urgent', 'later', 'archive'].includes(name);
+      var items = [];
+
+      if (!isDefault) {
+        items.push({ key: 'rename', icon: 'fa-pen', label: 'Rename folder',
+          onClick: function () { openFolderModal('edit', name); } });
+        items.push({ key: 'icon', icon: 'fa-image', label: 'Change icon',
+          onClick: function () { openFolderModal('icon', name); } });
+        items.push({ sep: true });
+      }
+
+      if (idx > 0) {
+        items.push({ key: 'up', icon: 'fa-arrow-up', label: 'Move up',
+          onClick: function () { moveFolder(idx, -1); } });
+      }
+      if (idx < folders.length - 1) {
+        items.push({ key: 'down', icon: 'fa-arrow-down', label: 'Move down',
+          onClick: function () { moveFolder(idx, 1); } });
+      }
+
+      if (!isDefault) {
+        items.push({ sep: true });
+        items.push({ key: 'delete', icon: 'fa-trash', label: 'Delete folder', danger: true,
+          onClick: function () { promptDeleteFolder(name); } });
+      }
+
+      if (!items.length) return;
+      openMenu(anchor, items);
+    }
+
+    async function moveFolder(idx, delta) {
+      var names = folders.map(function (f) { return f.name; });
+      var target = idx + delta;
+      if (target < 0 || target >= names.length) return;
+      var tmp = names[idx]; names[idx] = names[target]; names[target] = tmp;
+      var res = await fetch('/api/admin/support/folders/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ order: names }),
+      });
+      if (!res.ok) { toast('Could not reorder.', true); return; }
+      toast('Folder reordered.');
+      loadFolders();
+    }
+
+    function promptDeleteFolder(name) {
+      deletingFolderName = name;
+      document.getElementById('delete-folder-body').textContent =
+        '"' + name + '" will be deleted. Any tickets inside will be moved to Inbox.';
+      document.getElementById('delete-folder-modal').classList.add('is-open');
+    }
+
+    async function confirmDeleteFolder() {
+      if (!deletingFolderName) return;
+      var name = deletingFolderName;
+      var res = await fetch('/api/admin/support/folders/' + encodeURIComponent(name), {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) { toast('Could not delete.', true); return; }
+      document.getElementById('delete-folder-modal').classList.remove('is-open');
+      deletingFolderName = null;
+      toast('Folder deleted.');
+      if (currentFolder === name) currentFolder = 'inbox';
+      await loadFolders();
+      loadTickets();
+    }
+
+    /* ---------- Folder create/edit modal ---------- */
+    function buildIconPicker() {
+      var grid = document.getElementById('icon-grid');
+      grid.innerHTML = FOLDER_ICONS.map(function (ic) {
+        return '<button type="button" class="icon-pick' + (ic === pickedIcon ? ' is-selected' : '') + '" data-icon="' + ic + '">' +
+                 '<i class="fa-solid ' + ic + '"></i>' +
+               '</button>';
+      }).join('');
+      grid.querySelectorAll('.icon-pick').forEach(function (b) {
+        b.addEventListener('click', function () {
+          pickedIcon = b.getAttribute('data-icon');
+          grid.querySelectorAll('.icon-pick').forEach(function (x) { x.classList.remove('is-selected'); });
+          b.classList.add('is-selected');
+        });
+      });
+    }
+
+    function openFolderModal(mode, folderName) {
+      editingFolderName = mode === 'edit' ? folderName : null;
+      var current = folders.find(function (f) { return f.name === folderName; });
+
+      document.getElementById('folder-modal-title').textContent =
+        mode === 'edit' ? 'Rename folder' : mode === 'icon' ? 'Change folder icon' : 'New folder';
+
+      var nameInput = document.getElementById('folder-name');
+      if (mode === 'icon') {
+        nameInput.value = current ? current.name : '';
+        nameInput.disabled = true;
+      } else {
+        nameInput.value = mode === 'edit' && current ? current.name : '';
+        nameInput.disabled = false;
+      }
+
+      pickedIcon = (current && current.icon) || 'fa-folder';
+      buildIconPicker();
+
+      document.getElementById('folder-modal').classList.add('is-open');
+      setTimeout(function () { if (mode !== 'icon') nameInput.focus(); }, 60);
+    }
+
+    function closeFolderModal() {
+      editingFolderName = null;
+      document.getElementById('folder-name').disabled = false;
+      document.getElementById('folder-modal').classList.remove('is-open');
+    }
+
+    async function saveFolder() {
+      var name = document.getElementById('folder-name').value.trim();
+      var isIconMode = document.getElementById('folder-name').disabled;
+
+      if (!isIconMode && !name) { toast('Please enter a name.', true); return; }
+
+      var btn = document.getElementById('folder-save');
+      btn.disabled = true;
+
+      try {
+        if (editingFolderName) {
+          // Rename / icon change
+          var payload = { icon: pickedIcon };
+          if (!isIconMode) payload.name = name;
+          var res = await fetch('/api/admin/support/folders/' + encodeURIComponent(editingFolderName), {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(payload),
+          });
+          var d = await res.json().catch(function () { return {}; });
+          if (!res.ok) { toast(d.error || 'Could not save.', true); return; }
+          toast('Folder updated.');
+          if (!isIconMode && currentFolder === editingFolderName) currentFolder = name;
+        } else {
+          var res2 = await fetch('/api/admin/support/folders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ name: name, icon: pickedIcon }),
+          });
+          var d2 = await res2.json().catch(function () { return {}; });
+          if (!res2.ok) { toast(d2.error || 'Could not create.', true); return; }
+          toast('Folder created.');
+        }
+        closeFolderModal();
+        await loadFolders();
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    /* ---------- Ticket list ---------- */
+    async function loadTickets() {
+      var url = '/api/admin/support?folder=' + encodeURIComponent(currentFolder);
+      if (currentSearch) url += '&q=' + encodeURIComponent(currentSearch);
+
+      var res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) {
+        document.getElementById('list-body').innerHTML = '<div class="sup-empty"><i class="fa-solid fa-triangle-exclamation"></i><div>Could not load tickets.</div></div>';
+        return;
+      }
+      var data = await res.json();
+      allTickets = data.tickets || [];
+      document.getElementById('list-title').textContent =
+        currentFolder.charAt(0).toUpperCase() + currentFolder.slice(1);
+      renderList();
+      loadFolders();
+    }
+
+    function filtered() {
+      if (currentFilter === 'all') return allTickets;
+      if (currentFilter === 'unread') return allTickets.filter(function (t) { return !t.admin_read; });
+      if (currentFilter === 'bullying') return allTickets.filter(function (t) { return t.category === 'bullying'; });
+      if (currentFilter === 'open') return allTickets.filter(function (t) { return t.status === 'open'; });
+      return allTickets;
+    }
+
+    function renderList() {
+      var body = document.getElementById('list-body');
+      var list = filtered();
+      document.getElementById('list-count').textContent = list.length + ' ticket' + (list.length === 1 ? '' : 's');
+
+      if (!list.length) {
+        body.innerHTML = '<div class="sup-empty"><i class="fa-solid fa-inbox"></i><div>No tickets here.</div></div>';
+        return;
+      }
+
+      body.innerHTML = list.map(function (t) {
+        var isHigh = t.priority === 'high';
+        var unread = !t.admin_read;
+        var cls = 'sup-item'
+          + (t.id === currentTicketId ? ' is-active' : '')
+          + (isHigh ? ' sup-item--high' : '')
+          + (unread ? ' sup-item--unread' : '')
+          + (selectedIds[t.id] ? ' is-selected' : '');
+        var unreadBadge = t.unread_for_admin > 0
+          ? '<span class="sup-item__unread">' + t.unread_for_admin + ' new</span>' : '';
+        var highBadge = isHigh ? '<span class="sup-item__badge sup-item__badge--high">🚨</span>' : '';
+        return '<div class="' + cls + '" data-id="' + t.id + '">' +
+                 '<input type="checkbox" class="sup-item__check" data-check="' + t.id + '"' + (selectedIds[t.id] ? ' checked' : '') + '>' +
+                 '<div class="sup-item__body">' +
+                   '<div class="sup-item__subject">' + esc(t.subject) + '</div>' +
+                   '<div class="sup-item__meta">' +
+                     '<span>' + esc(t.name) + '</span>' +
+                     '<span>' + fmtDateTime(t.last_message_at) + '</span>' +
+                     '<span class="sup-item__badge sup-item__badge--' + esc(t.status) + '">' + esc(t.status.replace('_', ' ')) + '</span>' +
+                     highBadge + unreadBadge +
+                   '</div>' +
+                 '</div>' +
+                 '<button class="sup-item__move" data-id="' + t.id + '" title="Move to folder" type="button">' +
+                   '<i class="fa-solid fa-folder-tree"></i>' +
+                 '</button>' +
+               '</div>';
+      }).join('');
+
+      body.querySelectorAll('.sup-item').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          if (e.target.closest('.sup-item__move') || e.target.closest('.sup-item__check')) return;
+          openTicket(el.getAttribute('data-id'));
+        });
+      });
+
+      body.querySelectorAll('.sup-item__check').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+          var id = cb.getAttribute('data-check');
+          if (cb.checked) selectedIds[id] = true;
+          else delete selectedIds[id];
+          cb.closest('.sup-item').classList.toggle('is-selected', cb.checked);
+          updateBulkBar();
+        });
+      });
+
+      body.querySelectorAll('.sup-item__move').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          openMoveMenu(btn, btn.getAttribute('data-id'));
+        });
+      });
+    }
+
+    function openMoveMenu(anchor, ticketId) {
+      var items = folders.map(function (f) {
+        return {
+          key: 'move-' + f.name,
+          icon: f.icon || 'fa-folder',
+          label: f.name.charAt(0).toUpperCase() + f.name.slice(1),
+          onClick: function () { moveTicket(ticketId, f.name); },
+        };
+      });
+      items.unshift({ label: 'Move to folder' });
+      openMenu(anchor, items);
+    }
+
+    async function moveTicket(ticketId, folder) {
+      var res = await fetch('/api/admin/support/' + ticketId + '/folder', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ folder: folder }),
+      });
+      if (!res.ok) { toast('Could not move.', true); return; }
+      toast('Moved to ' + folder + '.');
+      loadTickets();
+    }
+
+    /* ---------- Bulk actions ---------- */
+    document.querySelectorAll('[data-bulk]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        var action = btn.getAttribute('data-bulk');
+        var ids = Object.keys(selectedIds).filter(function (k) { return selectedIds[k]; });
+        if (!ids.length) return;
+
+        if (action === 'move') {
+          var pick = window.prompt(
+            'Move to folder:\n' + folders.map(function (f) { return '  • ' + f.name; }).join('\n'),
+            'inbox'
+          );
+          if (!pick) return;
+          var exists = folders.some(function (f) { return f.name === pick.trim(); });
+          if (!exists) { toast('Folder not found.', true); return; }
+          var r = await fetch('/api/admin/support/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ ids: ids, action: 'move', folder: pick.trim() }),
+          });
+          if (!r.ok) { toast('Could not move.', true); return; }
+          toast('Moved ' + ids.length + ' ticket(s).');
+        } else {
+          var r2 = await fetch('/api/admin/support/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ ids: ids, action: action }),
+          });
+          if (!r2.ok) { toast('Could not update.', true); return; }
+          toast('Updated ' + ids.length + ' ticket(s).');
+        }
+
+        clearSelection();
+        loadTickets();
+      });
+    });
+
+    document.getElementById('bulk-clear').addEventListener('click', function () {
+      clearSelection();
+      renderList();
+    });
+
+    /* ---------- Thread ---------- */
+    async function openTicket(ticketId) {
+      currentTicketId = ticketId;
+      var pane = document.getElementById('thread-pane');
+      pane.innerHTML = '<div class="sup-placeholder"><i class="fa-solid fa-spinner fa-spin"></i><div>Loading…</div></div>';
+
+      var res = await fetch('/api/admin/support/' + ticketId, { credentials: 'include' });
+      if (!res.ok) {
+        pane.innerHTML = '<div class="sup-placeholder"><i class="fa-solid fa-triangle-exclamation"></i><div>Could not load.</div></div>';
+        return;
+      }
+      var data = await res.json();
+      lastMessages = data.messages || [];
+      renderThread(data.ticket, lastMessages);
+
+      if (!data.ticket.admin_read) {
+        fetch('/api/admin/support/' + ticketId + '/read', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ read: true }),
+        }).then(function () { loadTickets(); });
+      } else {
+        loadTickets();
+      }
+    }
+
+    function renderThread(ticket, messages) {
+      var pane = document.getElementById('thread-pane');
+      var isHigh = ticket.priority === 'high';
+
+      var contactHtml =
+        '<div class="contact-card' + (isHigh ? ' contact-card--high' : '') + '">' +
+          '<div class="contact-card__row"><i class="fa-solid fa-user"></i><span class="contact-card__label">Name</span>' + esc(ticket.name) + '</div>' +
+          '<div class="contact-card__row"><i class="fa-solid fa-envelope"></i><span class="contact-card__label">Email</span><a href="mailto:' + esc(ticket.email) + '">' + esc(ticket.email) + '</a></div>' +
+          '<div class="contact-card__row"><i class="fa-brands fa-whatsapp"></i><span class="contact-card__label">WhatsApp</span><a href="https://wa.me/' + esc(ticket.whatsapp.replace(/[^\d]/g, '')) + '" target="_blank" rel="noopener">' + esc(ticket.whatsapp) + '</a></div>' +
+        '</div>';
+
+      var folderOptions = folders.map(function (f) {
+        return '<option value="' + esc(f.name) + '"' + (ticket.admin_folder === f.name ? ' selected' : '') + '>' +
+                 esc(f.name.charAt(0).toUpperCase() + f.name.slice(1)) +
+               '</option>';
+      }).join('');
+
+      var messagesHtml = messages.map(function (m) {
+        var isDeleted = !!m.deleted_at;
+        var cls = 'thread-msg thread-msg--' + m.sender_type + (isDeleted ? ' thread-msg--deleted' : '');
+        var senderLabel =
+          m.sender_type === 'admin'  ? 'Support team' :
+          m.sender_type === 'system' ? 'Automatic reply' :
+          ticket.name;
+        var canEdit = !isDeleted && m.sender_type === 'admin' && m.sender_id === currentAdminId;
+        var inner = isDeleted ? '<div class="thread-msg__deleted-note">[message deleted]</div>' : '<div>' + esc(m.body) + '</div>';
+        var editedMark = (!isDeleted && m.edited_at) ? ' · edited' : '';
+        var actions = canEdit
+          ? '<div class="thread-msg__actions">' +
+              '<button type="button" data-action="edit" data-id="' + m.id + '"><i class="fa-solid fa-pen"></i> Edit</button>' +
+              '<button type="button" data-action="delete" data-id="' + m.id + '"><i class="fa-solid fa-trash"></i> Delete</button>' +
+            '</div>'
+          : '';
+        return '<div class="' + cls + '">' +
+                 '<div class="thread-msg__sender">' + esc(senderLabel) + '</div>' +
+                 inner +
+                 '<div class="thread-msg__meta">' + fmtDateTime(m.created_at) + editedMark + '</div>' +
+                 actions +
+               '</div>';
+      }).join('');
+
+      pane.innerHTML =
+        '<div class="sup-thread__head">' +
+          '<div style="min-width:0;flex:1">' +
+            '<h2 class="sup-thread__title">' + esc(ticket.subject) + '</h2>' +
+            '<div class="sup-thread__meta">' +
+              '<span>' + esc(CATEGORY_LABELS[ticket.category] || ticket.category) + '</span>' +
+              '<span>Opened ' + fmtDateTime(ticket.created_at) + '</span>' +
+              (isHigh ? '<span class="sup-item__badge sup-item__badge--high">🚨 Escalated</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="sup-thread__actions">' +
+            '<select class="folder-select" id="folder-sel" title="Move to folder">' + folderOptions + '</select>' +
+            '<select class="status-select" id="status-sel">' +
+              '<option value="open"' + (ticket.status === 'open' ? ' selected' : '') + '>Open</option>' +
+              '<option value="in_progress"' + (ticket.status === 'in_progress' ? ' selected' : '') + '>In progress</option>' +
+              '<option value="resolved"' + (ticket.status === 'resolved' ? ' selected' : '') + '>Resolved</option>' +
+              '<option value="closed"' + (ticket.status === 'closed' ? ' selected' : '') + '>Closed</option>' +
+            '</select>' +
+            '<button class="icon-btn" id="read-toggle" title="' + (ticket.admin_read ? 'Mark unread' : 'Mark read') + '">' +
+              '<i class="fa-solid ' + (ticket.admin_read ? 'fa-envelope-open' : 'fa-envelope') + '"></i>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+        contactHtml +
+        '<div class="sup-thread__body" id="th-body">' + messagesHtml + '</div>' +
+        (ticket.status === 'closed' ? '' :
+          '<div class="sup-thread__reply">' +
+            '<textarea id="th-input" rows="1" placeholder="Write a reply… (Enter to send, Shift+Enter for new line)"></textarea>' +
+            '<button class="btn btn-primary" id="th-send" type="button"><i class="fa-solid fa-arrow-up"></i></button>' +
+          '</div>');
+
+      var thBody = document.getElementById('th-body');
+      if (thBody) thBody.scrollTop = thBody.scrollHeight;
+
+      thBody.querySelectorAll('[data-action="edit"]').forEach(function (b) {
+        b.addEventListener('click', function () { openEdit(b.getAttribute('data-id')); });
+      });
+      thBody.querySelectorAll('[data-action="delete"]').forEach(function (b) {
+        b.addEventListener('click', function () { deleteMsg(b.getAttribute('data-id')); });
+      });
+
+      document.getElementById('folder-sel').addEventListener('change', function () {
+        moveTicket(ticket.id, this.value);
+      });
+
+      document.getElementById('status-sel').addEventListener('change', async function () {
+        var newStatus = this.value;
+        var res = await fetch('/api/admin/support/' + ticket.id + '/status', {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ status: newStatus }),
+        });
+        if (!res.ok) { toast('Could not update status.', true); return; }
+        toast('Status updated.');
+        openTicket(ticket.id);
+      });
+
+      document.getElementById('read-toggle').addEventListener('click', async function () {
+        var newRead = !ticket.admin_read;
+        var res = await fetch('/api/admin/support/' + ticket.id + '/read', {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ read: newRead }),
+        });
+        if (!res.ok) { toast('Could not update.', true); return; }
+        toast(newRead ? 'Marked as read.' : 'Marked as unread.');
+        openTicket(ticket.id);
+      });
+
+      var sendBtn = document.getElementById('th-send');
+      var inputEl = document.getElementById('th-input');
+      if (sendBtn && inputEl) {
+        sendBtn.addEventListener('click', function () { sendReply(ticket.id); });
+        inputEl.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(ticket.id); }
+        });
+        inputEl.addEventListener('input', function (e) {
+          var el = e.target;
+          el.style.height = 'auto';
+          el.style.height = Math.min(el.scrollHeight, 180) + 'px';
+        });
+        inputEl.focus();
+      }
+    }
+
+    /* ---------- Message edit/delete ---------- */
+    function openEdit(messageId) {
+      var m = lastMessages.find(function (x) { return x.id === messageId; });
+      if (!m) return;
+      editingMessageId = messageId;
+      document.getElementById('edit-input').value = m.body;
+      document.getElementById('edit-modal').classList.add('is-open');
+      setTimeout(function () { document.getElementById('edit-input').focus(); }, 60);
+    }
+    function closeEdit() {
+      editingMessageId = null;
+      document.getElementById('edit-modal').classList.remove('is-open');
+    }
+    async function saveEdit() {
+      if (!editingMessageId) return;
+      var body = document.getElementById('edit-input').value.trim();
+      if (!body) { toast('Message cannot be empty.', true); return; }
+      var btn = document.getElementById('edit-save');
+      btn.disabled = true;
+      try {
+        var res = await fetch('/api/admin/support/message/' + editingMessageId, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ body }),
+        });
+        if (!res.ok) { toast('Could not save.', true); return; }
+        closeEdit();
+        toast('Message updated.');
+        openTicket(currentTicketId);
+      } finally { btn.disabled = false; }
+    }
+    async function deleteMsg(messageId) {
+      if (!confirm('Delete this message? It will show as [message deleted] for everyone.')) return;
+      var res = await fetch('/api/admin/support/message/' + messageId, { method: 'DELETE', credentials: 'include' });
+      if (!res.ok) { toast('Could not delete.', true); return; }
+      toast('Message deleted.');
+      openTicket(currentTicketId);
+    }
+    async function sendReply(ticketId) {
+      var inputEl = document.getElementById('th-input');
+      if (!inputEl) return;
+      var body = inputEl.value.trim();
+      if (!body) return;
+      var btn = document.getElementById('th-send');
+      btn.disabled = true;
+      var res = await fetch('/api/admin/support/' + ticketId + '/reply', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ body }),
+      });
+      if (!res.ok) { toast('Could not send reply.', true); btn.disabled = false; return; }
+      inputEl.value = '';
+      toast('Reply sent.');
+      openTicket(ticketId);
+    }
+
+    /* ---------- Wire up ---------- */
+    document.querySelectorAll('.sup-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('.sup-chip').forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        currentFilter = chip.getAttribute('data-filter');
+        renderList();
+      });
+    });
+
+    var searchTimer = null;
+    document.getElementById('sup-search').addEventListener('input', function (e) {
+      currentSearch = e.target.value.trim();
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadTickets, 300);
+    });
+
+    document.getElementById('refresh-btn').addEventListener('click', loadTickets);
+    document.getElementById('add-folder-btn').addEventListener('click', function () {
+      openFolderModal('new');
+    });
+    document.getElementById('folder-cancel').addEventListener('click', closeFolderModal);
+    document.getElementById('folder-save').addEventListener('click', saveFolder);
+    document.getElementById('folder-name').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); saveFolder(); }
+    });
+    document.getElementById('folder-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'folder-modal') closeFolderModal();
+    });
+
+    document.getElementById('df-cancel').addEventListener('click', function () {
+      deletingFolderName = null;
+      document.getElementById('delete-folder-modal').classList.remove('is-open');
+    });
+    document.getElementById('df-confirm').addEventListener('click', confirmDeleteFolder);
+    document.getElementById('delete-folder-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'delete-folder-modal') {
+        deletingFolderName = null;
+        this.classList.remove('is-open');
+      }
+    });
+
+    document.getElementById('edit-cancel').addEventListener('click', closeEdit);
+    document.getElementById('edit-save').addEventListener('click', saveEdit);
+    document.getElementById('edit-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'edit-modal') closeEdit();
+    });
+
+    (async function init() {
+      if (!(await guard())) return;
+      await loadFolders();
+      await loadTickets();
+    })();
+  })();
+</script>
+</body>
+</html>

@@ -124,6 +124,7 @@ app.use('/api/agents',        require('./src/agents').router);
 app.use('/api/library',       require('./src/library').router);
 app.use('/api/voice',         require('./src/voice').router);
 app.use('/api/admin',         require('./src/admin').router);
+app.use('/api/support',       require('./src/support').router);
 
 // ---- Static uploads ----
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {

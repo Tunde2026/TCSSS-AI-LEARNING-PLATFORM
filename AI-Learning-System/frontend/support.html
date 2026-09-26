@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Support — AI Learning Platform</title>
+<link rel="stylesheet" href="assets/shell.css">
+<style>
+  .support-inner { max-width: 820px; margin: 0 auto; }
+
+  .support-hero { text-align: center; padding: 20px 20px 16px; margin-bottom: 20px; }
+  .support-hero__icon { width: 72px; height: 72px; border-radius: 20px; background: linear-gradient(155deg, var(--navy), var(--soft-navy)); color: #FFF; display: grid; place-items: center; font-size: 1.9rem; margin: 0 auto 16px; box-shadow: 0 10px 26px rgba(17,16,74,0.22); }
+  .support-hero__title { font-family: var(--font-head); font-size: 1.9rem; color: var(--navy); margin: 0 0 8px; letter-spacing: -0.02em; }
+  .support-hero__sub { color: var(--slate); font-size: 1rem; line-height: 1.6; max-width: 520px; margin: 0 auto; }
+
+  .cat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 700px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+  .cat-card { padding: 14px 10px; background: var(--white); border: 1.5px solid var(--border); border-radius: 12px; cursor: pointer; text-align: center; font-family: var(--font-body); transition: border-color .2s, background .2s, transform .2s; }
+  .cat-card:hover { border-color: var(--navy); transform: translateY(-1px); }
+  .cat-card.is-active { border-color: var(--red); background: #FDECEC; }
+  .cat-card i { font-size: 1.25rem; color: var(--red); display: block; margin-bottom: 8px; }
+  .cat-card span { font-size: 0.78rem; font-weight: 600; color: var(--navy); letter-spacing: 0.02em; }
+  .cat-card--bullying i { color: var(--deep-red); }
+
+  .cat-info { padding: 14px 18px; background: var(--blush); border-radius: 12px; font-size: 0.88rem; color: var(--ink); line-height: 1.55; margin-bottom: 22px; display: flex; gap: 12px; }
+  .cat-info i { color: var(--red); font-size: 1rem; flex-shrink: 0; margin-top: 3px; }
+  .cat-info--bullying { background: #FDECEC; color: var(--deep-red); border: 1px solid #F3C5C5; }
+  .cat-info--bullying i { color: var(--deep-red); }
+
+  /* Urgent team panel */
+  .team-panel { margin-bottom: 22px; border: 1.5px solid var(--gold); border-radius: 14px; overflow: hidden; background: var(--white); }
+  .team-panel__toggle { width: 100%; padding: 14px 20px; background: var(--gold-50); border: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-family: var(--font-body); text-align: left; }
+  .team-panel__toggle:hover { background: #F9ECD2; }
+  .team-panel__label { display: flex; align-items: center; gap: 10px; font-weight: 600; color: #6A4F13; font-size: 0.92rem; }
+  .team-panel__label i { color: var(--gold); font-size: 1.05rem; }
+  .team-panel__arrow { color: #6A4F13; transition: transform .25s; }
+  .team-panel.is-open .team-panel__arrow { transform: rotate(180deg); }
+  .team-panel__body { display: none; padding: 16px 20px; border-top: 1px solid var(--border-soft); }
+  .team-panel.is-open .team-panel__body { display: block; }
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .team-member { padding: 12px 14px; background: var(--blush); border-radius: 10px; }
+  .team-member__name { font-family: var(--font-head); font-weight: 600; font-size: 0.94rem; color: var(--navy); margin: 0 0 4px; }
+  .team-member__role { font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); margin-bottom: 8px; }
+  .team-member__phones { display: flex; flex-direction: column; gap: 4px; }
+  .team-member__phone { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 0.78rem; color: var(--navy); text-decoration: none; padding: 4px 8px; border-radius: 6px; transition: background .2s, color .2s; }
+  .team-member__phone:hover { background: var(--gold); color: var(--white); }
+  .team-member__phone i { font-size: 0.72rem; }
+
+  /* Form */
+  .support-form-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; padding: 26px; box-shadow: var(--shadow-sm); margin-bottom: 26px; }
+  .sf-field { margin-bottom: 16px; }
+  .sf-field label { display: block; font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); margin-bottom: 6px; font-weight: 600; }
+  .sf-field input, .sf-field textarea { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--font-body); font-size: 0.94rem; color: var(--ink); outline: none; transition: border-color .2s, box-shadow .2s; }
+  .sf-field input:focus, .sf-field textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
+  .sf-field textarea { resize: vertical; min-height: 120px; }
+  .sf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .sf-row { grid-template-columns: 1fr; } }
+  .sf-hint { font-size: 0.74rem; color: var(--slate); margin-top: 4px; line-height: 1.4; }
+  .sf-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border-soft); }
+
+  /* My tickets */
+  .mt-section { margin-top: 40px; }
+  .mt-section__title { font-family: var(--font-head); font-size: 1.15rem; color: var(--navy); margin: 0 0 14px; display: flex; align-items: center; gap: 10px; }
+  .mt-section__title i { color: var(--red); font-size: 1rem; }
+  .mt-item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 18px; background: var(--white); border: 1.5px solid var(--border); border-radius: 14px; margin-bottom: 10px; cursor: pointer; transition: border-color .2s, transform .2s; }
+  .mt-item:hover { border-color: var(--gold); transform: translateY(-1px); }
+  .mt-item__icon { width: 40px; height: 40px; border-radius: 10px; background: var(--blush); color: var(--navy); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
+  .mt-item__body { flex: 1; min-width: 0; }
+  .mt-item__subject { font-family: var(--font-head); font-weight: 600; font-size: 0.96rem; color: var(--navy); margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mt-item__meta { font-family: var(--font-ui); font-size: 0.68rem; color: var(--slate); letter-spacing: 0.04em; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .mt-item__badge { display: inline-block; font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; font-weight: 600; }
+  .mt-item__badge--open { background: #EEF3FB; color: var(--navy); }
+  .mt-item__badge--in_progress { background: var(--gold-50); color: #6A4F13; }
+  .mt-item__badge--resolved { background: #EAF7EE; color: #1F6B35; }
+  .mt-item__badge--closed { background: var(--blush); color: var(--slate); }
+  .mt-item__unread { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: var(--red); color: #FFF; font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 700; }
+
+  /* Thread */
+  .thread-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+  .thread-header__title { font-family: var(--font-head); font-size: 1.25rem; color: var(--navy); margin: 0 0 6px; }
+  .thread-header__meta { font-family: var(--font-ui); font-size: 0.7rem; color: var(--slate); letter-spacing: 0.04em; display: flex; gap: 12px; flex-wrap: wrap; }
+  .thread-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  .thread-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 560px; overflow-y: auto; }
+  .thread-msg { max-width: 82%; padding: 12px 16px; border-radius: 14px; line-height: 1.55; font-size: 0.92rem; word-wrap: break-word; position: relative; }
+  .thread-msg--student { align-self: flex-end; background: linear-gradient(135deg, var(--navy), var(--soft-navy)); color: #FFF; border-top-right-radius: 4px; }
+  .thread-msg--admin { align-self: flex-start; background: var(--blush); color: var(--ink); border-top-left-radius: 4px; }
+  .thread-msg--system { align-self: center; max-width: 90%; background: var(--gold-50); color: #6A4F13; border-left: 3px solid var(--gold); border-radius: 0 10px 10px 0; font-style: italic; text-align: center; }
+  .thread-msg__sender { font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; margin-bottom: 6px; }
+  .thread-msg__meta { font-family: var(--font-ui); font-size: 0.58rem; letter-spacing: 0.06em; opacity: 0.55; margin-top: 6px; }
+  .thread-msg__actions { display: flex; gap: 6px; margin-top: 8px; opacity: 0; transition: opacity .15s; }
+  .thread-msg:hover .thread-msg__actions { opacity: 1; }
+  .thread-msg__actions button { padding: 3px 9px; border-radius: 999px; border: none; background: rgba(255,255,255,0.18); color: inherit; font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.04em; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .thread-msg--student .thread-msg__actions button { background: rgba(255,255,255,0.2); color: #FFF; }
+  .thread-msg--admin .thread-msg__actions button { background: rgba(17,16,74,0.12); color: var(--navy); }
+  .thread-msg__actions button:hover { opacity: 0.85; }
+  .thread-msg--deleted { opacity: 0.55; font-style: italic; }
+  .thread-msg__deleted-note { font-size: 0.85rem; }
+
+  .thread-reply { padding: 16px 20px; background: var(--blush); border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-end; }
+  .thread-reply textarea { flex: 1; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--font-body); font-size: 0.92rem; color: var(--ink); outline: none; resize: none; min-height: 44px; max-height: 160px; }
+  .thread-reply textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
+  .thread-closed-note { padding: 14px 20px; background: var(--blush); border-top: 1px solid var(--border); font-size: 0.86rem; color: var(--slate); text-align: center; font-style: italic; }
+
+  /* Edit modal */
+  .sup-modal-overlay { position: fixed; inset: 0; background: rgba(17,16,74,0.5); display: none; align-items: center; justify-content: center; z-index: 400; padding: 20px; }
+  .sup-modal-overlay.is-open { display: flex; }
+  .sup-modal { width: 100%; max-width: 520px; background: var(--white); border-radius: 16px; padding: 26px; }
+  .sup-modal__title { font-family: var(--font-head); font-size: 1.15rem; color: var(--navy); margin: 0 0 14px; }
+  .sup-modal textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: var(--font-body); font-size: 0.94rem; color: var(--ink); resize: vertical; min-height: 140px; outline: none; }
+  .sup-modal textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
+  .sup-modal__actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-soft); }
+
+  .support-empty { padding: 40px 24px; text-align: center; background: var(--white); border: 1.5px dashed var(--border); border-radius: 14px; }
+  .support-empty i { font-size: 2rem; color: var(--slate); opacity: 0.4; display: block; margin-bottom: 14px; }
+  .support-empty p { color: var(--slate); font-size: 0.9rem; margin: 0; }
+
+  .support-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #FFF; padding: 12px 22px; border-radius: 999px; font-size: 0.9rem; box-shadow: 0 12px 32px rgba(17,16,74,0.35); z-index: 500; }
+  .support-toast--error { background: var(--deep-red); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner support-inner">
+
+          <div id="stage-main">
+            <div class="support-hero">
+              <div class="support-hero__icon"><i class="fa-solid fa-headset" aria-hidden="true"></i></div>
+              <h1 class="support-hero__title">How can we help?</h1>
+              <p class="support-hero__sub">Tell us what's happening. Our team replies here — you'll see a message from us the next time you come back.</p>
+            </div>
+
+            <div class="cat-grid" id="cat-grid">
+              <button class="cat-card is-active" data-cat="bug" type="button">
+                <i class="fa-solid fa-bug"></i><span>Bug</span>
+              </button>
+              <button class="cat-card" data-cat="feature" type="button">
+                <i class="fa-solid fa-lightbulb"></i><span>Feature</span>
+              </button>
+              <button class="cat-card" data-cat="question" type="button">
+                <i class="fa-solid fa-circle-question"></i><span>Question</span>
+              </button>
+              <button class="cat-card cat-card--bullying" data-cat="bullying" type="button">
+                <i class="fa-solid fa-shield-halved"></i><span>Bullying</span>
+              </button>
+              <button class="cat-card" data-cat="other" type="button">
+                <i class="fa-solid fa-comment-dots"></i><span>Other</span>
+              </button>
+            </div>
+
+            <div class="cat-info" id="cat-info">
+              <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+              <div id="cat-info-text">—</div>
+            </div>
+
+            <div class="team-panel" id="team-panel">
+              <button class="team-panel__toggle" id="team-toggle" type="button">
+                <span class="team-panel__label">
+                  <i class="fa-solid fa-phone-volume" aria-hidden="true"></i>
+                  Need immediate help? Call a team member directly
+                </span>
+                <i class="fa-solid fa-chevron-down team-panel__arrow" aria-hidden="true"></i>
+              </button>
+              <div class="team-panel__body" id="team-body">
+                <div class="team-grid" id="team-grid">Loading…</div>
+              </div>
+            </div>
+
+            <div class="support-form-card">
+              <div class="sf-row">
+                <div class="sf-field">
+                  <label for="sf-name">Your name</label>
+                  <input type="text" id="sf-name" placeholder="e.g. Ada Okonkwo" autocomplete="name">
+                </div>
+                <div class="sf-field">
+                  <label for="sf-email">Email</label>
+                  <input type="email" id="sf-email" placeholder="you@example.com" autocomplete="email">
+                </div>
+              </div>
+              <div class="sf-field">
+                <label for="sf-whatsapp">WhatsApp number</label>
+                <input type="tel" id="sf-whatsapp" placeholder="e.g. +2348012345678" autocomplete="tel">
+                <div class="sf-hint">Include country code so we can reach you quickly if needed.</div>
+              </div>
+              <div class="sf-field">
+                <label for="sf-subject">Subject</label>
+                <input type="text" id="sf-subject" placeholder="A short title for your message" maxlength="200">
+              </div>
+              <div class="sf-field">
+                <label for="sf-body">Details</label>
+                <textarea id="sf-body" placeholder="Tell us what happened, what you expected, and anything else that helps us help you…" maxlength="5000"></textarea>
+              </div>
+              <div class="sf-actions">
+                <button class="btn btn-primary" id="sf-submit" type="button">
+                  <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Send message
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-section" id="my-tickets-section" style="display:none">
+              <h2 class="mt-section__title"><i class="fa-solid fa-inbox" aria-hidden="true"></i> Your messages</h2>
+              <div id="my-tickets-list"></div>
+            </div>
+          </div>
+
+          <div id="stage-thread" style="display:none">
+            <div class="thread-header">
+              <div style="min-width:0;flex:1">
+                <h2 class="thread-header__title" id="th-subject">—</h2>
+                <div class="thread-header__meta" id="th-meta"></div>
+              </div>
+              <button class="btn btn-ghost" id="th-back" type="button">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back
+              </button>
+            </div>
+            <div class="thread-card">
+              <div class="thread-body" id="th-body"></div>
+              <div class="thread-reply" id="th-reply">
+                <textarea id="th-input" rows="1" placeholder="Write a reply…"></textarea>
+                <button class="btn btn-primary" id="th-send" type="button">
+                  <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="thread-closed-note" id="th-closed" style="display:none">
+                This ticket is closed. Create a new one if you need more help.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Edit modal -->
+  <div class="sup-modal-overlay" id="edit-modal">
+    <div class="sup-modal">
+      <h3 class="sup-modal__title">Edit message</h3>
+      <textarea id="edit-input" placeholder="Your message…"></textarea>
+      <div class="sup-modal__actions">
+        <button class="btn btn-ghost" id="edit-cancel" type="button">Cancel</button>
+        <button class="btn btn-primary" id="edit-save" type="button">Save changes</button>
+      </div>
+    </div>
+  </div>
+
+<script src="assets/shell.js"></script>
+<script>
+  (function () {
+    'use strict';
+
+    var CATEGORY = 'bug';
+    var currentUser = null;
+    var currentTicketId = null;
+    var editingMessageId = null;
+
+    var CATEGORY_LABELS = {
+      bug: 'Bug report',
+      feature: 'Feature request',
+      question: 'Question',
+      bullying: 'Report bullying',
+      other: 'Other',
+    };
+
+    var CATEGORY_INFO = {
+      bug: 'Something is broken — a page won\'t load, a button doesn\'t work, or you\'re seeing an error. Tell us what happened and what you were doing.',
+      feature: 'You have an idea to make the platform better. Suggest a new tool, an improvement, or something you wish existed.',
+      question: 'Ask us anything about how to use the platform — how to study, how to find resources, how exam mode works, or anything else.',
+      bullying: 'Report harassment, threats, or unsafe behavior. Handled urgently by the team. You can also call a team member directly using the phone list above.',
+      other: 'Anything that doesn\'t fit the categories above. Tell us what\'s on your mind.',
+    };
+
+    var CATEGORY_ICON = {
+      bug: 'fa-bug',
+      feature: 'fa-lightbulb',
+      question: 'fa-circle-question',
+      bullying: 'fa-shield-halved',
+      other: 'fa-comment-dots',
+    };
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    function toast(msg, isError) {
+      var t = document.createElement('div');
+      t.className = 'support-toast' + (isError ? ' support-toast--error' : '');
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () { t.remove(); }, 2800);
+    }
+
+    function fmtDateTime(iso) {
+      if (!iso) return '';
+      try {
+        return new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      } catch (_) { return ''; }
+    }
+
+    function showStage(name) {
+      document.getElementById('stage-main').style.display   = (name === 'main')   ? '' : 'none';
+      document.getElementById('stage-thread').style.display = (name === 'thread') ? '' : 'none';
+      window.scrollTo(0, 0);
+    }
+
+    function updateCategoryInfo(cat) {
+      var el = document.getElementById('cat-info');
+      var text = document.getElementById('cat-info-text');
+      text.textContent = CATEGORY_INFO[cat] || '';
+      el.classList.toggle('cat-info--bullying', cat === 'bullying');
+
+      // Auto-open team panel on bullying
+      if (cat === 'bullying') {
+        document.getElementById('team-panel').classList.add('is-open');
+      }
+    }
+
+    async function loadUser() {
+      try {
+        var res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!res.ok) return;
+        var data = await res.json();
+        currentUser = data.user || null;
+        if (currentUser) {
+          document.getElementById('sf-name').value  = currentUser.name || '';
+          document.getElementById('sf-email').value = currentUser.email || '';
+          document.getElementById('my-tickets-section').style.display = '';
+          loadMyTickets();
+        }
+      } catch (_) {}
+    }
+
+    async function loadTeam() {
+      try {
+        var res = await fetch('/api/support/team');
+        if (!res.ok) return;
+        var data = await res.json();
+        var team = data.team || [];
+        var wrap = document.getElementById('team-grid');
+
+        if (!team.length) {
+          wrap.innerHTML = '<p style="color:var(--slate);font-size:0.88rem;margin:0">Team list coming soon.</p>';
+          return;
+        }
+
+        wrap.innerHTML = team.map(function (m) {
+          var phones = (m.phones || []).map(function (p) {
+            var clean = String(p).replace(/\D/g, '');
+            return '<a class="team-member__phone" href="tel:+234' + clean.replace(/^0/, '') + '">' +
+                     '<i class="fa-solid fa-phone" aria-hidden="true"></i> ' + esc(p) +
+                   '</a>' +
+                   '<a class="team-member__phone" href="https://wa.me/234' + clean.replace(/^0/, '') + '" target="_blank" rel="noopener">' +
+                     '<i class="fa-brands fa-whatsapp" aria-hidden="true"></i> WhatsApp' +
+                   '</a>';
+          }).join('');
+          return '<div class="team-member">' +
+                   '<div class="team-member__name">' + esc(m.name) + '</div>' +
+                   '<div class="team-member__role">' + esc(m.role) + '</div>' +
+                   '<div class="team-member__phones">' + phones + '</div>' +
+                 '</div>';
+        }).join('');
+      } catch (_) {}
+    }
+
+    async function loadMyTickets() {
+      var res = await fetch('/api/support/mine', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      var tickets = data.tickets || [];
+      var wrap = document.getElementById('my-tickets-list');
+
+      if (!tickets.length) {
+        wrap.innerHTML = '<div class="support-empty"><i class="fa-solid fa-inbox"></i><p>No messages yet. Send one above and it will appear here.</p></div>';
+        return;
+      }
+
+      wrap.innerHTML = tickets.map(function (t) {
+        var badge = '<span class="mt-item__badge mt-item__badge--' + esc(t.status) + '">' + esc(t.status.replace('_', ' ')) + '</span>';
+        var unread = t.unread_for_student > 0
+          ? '<span class="mt-item__unread"><i class="fa-solid fa-bell"></i> ' + t.unread_for_student + ' new</span>'
+          : '';
+        return '<div class="mt-item" data-id="' + t.id + '">' +
+                 '<div class="mt-item__icon"><i class="fa-solid ' + (CATEGORY_ICON[t.category] || 'fa-comment-dots') + '"></i></div>' +
+                 '<div class="mt-item__body">' +
+                   '<div class="mt-item__subject">' + esc(t.subject) + '</div>' +
+                   '<div class="mt-item__meta">' +
+                     '<span>' + esc(CATEGORY_LABELS[t.category] || t.category) + '</span>' +
+                     '<span>' + fmtDateTime(t.last_message_at) + '</span>' +
+                     badge + unread +
+                   '</div>' +
+                 '</div>' +
+               '</div>';
+      }).join('');
+
+      wrap.querySelectorAll('.mt-item').forEach(function (el) {
+        el.addEventListener('click', function () { openTicket(el.getAttribute('data-id')); });
+      });
+    }
+
+    async function submitTicket() {
+      var name = document.getElementById('sf-name').value.trim();
+      var email = document.getElementById('sf-email').value.trim();
+      var whatsapp = document.getElementById('sf-whatsapp').value.trim();
+      var subject = document.getElementById('sf-subject').value.trim();
+      var body = document.getElementById('sf-body').value.trim();
+
+      if (!name) { toast('Please enter your name.', true); return; }
+      if (!email || email.indexOf('@') === -1) { toast('Please enter a valid email.', true); return; }
+      if (!whatsapp || whatsapp.replace(/\D/g, '').length < 7) { toast('Please enter a valid WhatsApp number.', true); return; }
+      if (subject.length < 3) { toast('Please enter a subject.', true); return; }
+      if (body.length < 10) { toast('Please describe your issue in a bit more detail.', true); return; }
+
+      var btn = document.getElementById('sf-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending…';
+
+      try {
+        var res = await fetch('/api/support', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ name, email, whatsapp, category: CATEGORY, subject, body }),
+        });
+        var data = await res.json().catch(function () { return {}; });
+
+        if (!res.ok) {
+          toast(data.error || 'Could not send. Try again.', true);
+          return;
+        }
+
+        toast('Sent — our team will message you shortly.');
+        document.getElementById('sf-subject').value = '';
+        document.getElementById('sf-body').value = '';
+        await loadMyTickets();
+        openTicket(data.ticket.id);
+      } catch (_) {
+        toast('Cannot reach the server.', true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send message';
+      }
+    }
+
+    async function openTicket(ticketId) {
+      currentTicketId = ticketId;
+      var res = await fetch('/api/support/' + ticketId, { credentials: 'include' });
+      if (!res.ok) { toast('Could not open message.', true); return; }
+      var data = await res.json();
+      var ticket = data.ticket;
+      var messages = data.messages || [];
+
+      document.getElementById('th-subject').textContent = ticket.subject;
+      document.getElementById('th-meta').innerHTML =
+        '<span>' + esc(CATEGORY_LABELS[ticket.category] || ticket.category) + '</span>' +
+        '<span class="mt-item__badge mt-item__badge--' + esc(ticket.status) + '">' + esc(ticket.status.replace('_', ' ')) + '</span>' +
+        '<span>Started ' + fmtDateTime(ticket.created_at) + '</span>';
+
+      renderMessages(messages, ticket);
+
+      if (ticket.status === 'closed') {
+        document.getElementById('th-reply').style.display = 'none';
+        document.getElementById('th-closed').style.display = '';
+      } else {
+        document.getElementById('th-reply').style.display = 'flex';
+        document.getElementById('th-closed').style.display = 'none';
+      }
+
+      if (currentUser) loadMyTickets();
+      showStage('thread');
+    }
+
+    function renderMessages(messages, ticket) {
+      var bodyEl = document.getElementById('th-body');
+      var myId = currentUser ? currentUser.id : null;
+
+      bodyEl.innerHTML = messages.map(function (m) {
+        var isDeleted = !!m.deleted_at;
+        var cls = 'thread-msg thread-msg--' + m.sender_type + (isDeleted ? ' thread-msg--deleted' : '');
+        var senderLabel =
+          m.sender_type === 'admin'  ? 'Support team' :
+          m.sender_type === 'system' ? 'Automatic reply' :
+          (m.sender_name || 'You');
+
+        var canEdit = !isDeleted && (
+          (m.sender_type === 'student' && myId && m.sender_id === myId) ||
+          (m.sender_type === 'admin' && myId && m.sender_id === myId)
+        );
+
+        var inner = isDeleted
+          ? '<div class="thread-msg__deleted-note">[message deleted]</div>'
+          : '<div>' + esc(m.body) + '</div>';
+
+        var editedMark = (!isDeleted && m.edited_at) ? ' · edited' : '';
+        var timeLabel = fmtDateTime(m.created_at) + editedMark;
+
+        var actions = '';
+        if (canEdit) {
+          actions =
+            '<div class="thread-msg__actions">' +
+              '<button type="button" data-action="edit" data-id="' + m.id + '"><i class="fa-solid fa-pen"></i> Edit</button>' +
+              '<button type="button" data-action="delete" data-id="' + m.id + '"><i class="fa-solid fa-trash"></i> Delete</button>' +
+            '</div>';
+        }
+
+        return '<div class="' + cls + '">' +
+                 '<div class="thread-msg__sender">' + esc(senderLabel) + '</div>' +
+                 inner +
+                 '<div class="thread-msg__meta">' + timeLabel + '</div>' +
+                 actions +
+               '</div>';
+      }).join('');
+
+      bodyEl.scrollTop = bodyEl.scrollHeight;
+
+      // Wire edit/delete
+      bodyEl.querySelectorAll('[data-action="edit"]').forEach(function (b) {
+        b.addEventListener('click', function () { openEditModal(b.getAttribute('data-id'), messages); });
+      });
+      bodyEl.querySelectorAll('[data-action="delete"]').forEach(function (b) {
+        b.addEventListener('click', function () { deleteMsg(b.getAttribute('data-id')); });
+      });
+    }
+
+    function openEditModal(messageId, messages) {
+      var m = messages.find(function (x) { return x.id === messageId; });
+      if (!m) return;
+      editingMessageId = messageId;
+      var input = document.getElementById('edit-input');
+      input.value = m.body;
+      document.getElementById('edit-modal').classList.add('is-open');
+      setTimeout(function () { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 60);
+    }
+
+    function closeEditModal() {
+      editingMessageId = null;
+      document.getElementById('edit-modal').classList.remove('is-open');
+    }
+
+    async function saveEdit() {
+      if (!editingMessageId) return;
+      var newBody = document.getElementById('edit-input').value.trim();
+      if (!newBody) { toast('Message cannot be empty.', true); return; }
+
+      var btn = document.getElementById('edit-save');
+      btn.disabled = true;
+      try {
+        var res = await fetch('/api/support/message/' + editingMessageId, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ body: newBody }),
+        });
+        if (!res.ok) {
+          var d = await res.json().catch(function () { return {}; });
+          toast(d.error || 'Could not save.', true);
+          return;
+        }
+        closeEditModal();
+        toast('Message updated.');
+        openTicket(currentTicketId);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function deleteMsg(messageId) {
+      if (!confirm('Delete this message? It will show as [message deleted] for everyone.')) return;
+      var res = await fetch('/api/support/message/' + messageId, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!res.ok) { toast('Could not delete.', true); return; }
+      toast('Message deleted.');
+      openTicket(currentTicketId);
+    }
+
+    async function sendReply() {
+      if (!currentTicketId) return;
+      var input = document.getElementById('th-input');
+      var body = input.value.trim();
+      if (!body) return;
+
+      var btn = document.getElementById('th-send');
+      btn.disabled = true;
+      try {
+        var res = await fetch('/api/support/' + currentTicketId + '/reply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ body }),
+        });
+        if (!res.ok) {
+          var d = await res.json().catch(function () { return {}; });
+          toast(d.error || 'Could not send reply.', true);
+          return;
+        }
+        input.value = '';
+        openTicket(currentTicketId);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Category picker
+    document.querySelectorAll('.cat-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        document.querySelectorAll('.cat-card').forEach(function (c) { c.classList.remove('is-active'); });
+        card.classList.add('is-active');
+        CATEGORY = card.getAttribute('data-cat');
+        updateCategoryInfo(CATEGORY);
+      });
+    });
+
+    // Team toggle
+    document.getElementById('team-toggle').addEventListener('click', function () {
+      document.getElementById('team-panel').classList.toggle('is-open');
+    });
+
+    // Wire rest
+    document.getElementById('sf-submit').addEventListener('click', submitTicket);
+    document.getElementById('th-back').addEventListener('click', function () {
+      currentTicketId = null;
+      showStage('main');
+      if (currentUser) loadMyTickets();
+    });
+    document.getElementById('th-send').addEventListener('click', sendReply);
+    document.getElementById('th-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(); }
+    });
+    document.getElementById('th-input').addEventListener('input', function (e) {
+      var el = e.target;
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+    });
+
+    document.getElementById('edit-cancel').addEventListener('click', closeEditModal);
+    document.getElementById('edit-save').addEventListener('click', saveEdit);
+    document.getElementById('edit-modal').addEventListener('click', function (e) {
+      if (e.target.id === 'edit-modal') closeEditModal();
+    });
+
+    (async function init() {
+      await loadUser();
+      await loadTeam();
+      updateCategoryInfo('bug');
+      showStage('main');
+    })();
+  })();
+</script>
+</body>
+</html>
