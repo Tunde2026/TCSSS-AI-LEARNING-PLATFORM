@@ -51,6 +51,7 @@ router.post('/users', requireAdmin, async (req, res, next) => {
         WEAK_PASSWORD: [400, 'Password must be at least 8 characters.'],
         INVALID_ROLE:  [400, 'Role must be either "student" or "admin".'],
         EMAIL_TAKEN:   [409, 'An account with that email already exists.'],
+        PROTECTED_ACCOUNT:  [403, 'This account is protected and cannot be changed.'],
       };
       const [s, m] = map[result.code] || [400, 'Could not create user.'];
       return res.status(s).json({ error: m, code: result.code });
@@ -74,6 +75,7 @@ router.patch('/users/:id/role', requireAdmin, async (req, res, next) => {
         CANNOT_CHANGE_SELF: [400, 'You cannot change your own role.'],
         NOT_FOUND:          [404, 'User not found.'],
         LAST_ADMIN:         [400, 'Cannot demote the last admin.'],
+        PROTECTED_ACCOUNT:  [403, 'This account is protected and cannot be changed.'],
       };
       const [s, m] = map[result.code] || [400, 'Could not update role.'];
       return res.status(s).json({ error: m, code: result.code });
@@ -95,6 +97,7 @@ router.post('/users/:id/reset-password', requireAdmin, async (req, res, next) =>
       const map = {
         WEAK_PASSWORD: [400, 'Password must be at least 8 characters.'],
         NOT_FOUND:     [404, 'User not found.'],
+        PROTECTED_ACCOUNT: [403, 'This account is protected. Use the standard password reset flow.'],
       };
       const [s, m] = map[result.code] || [400, 'Could not reset password.'];
       return res.status(s).json({ error: m, code: result.code });
@@ -119,6 +122,7 @@ router.patch('/users/:id/suspend', requireAdmin, async (req, res, next) => {
         CANNOT_SUSPEND_SELF: [400, 'You cannot suspend your own account.'],
         NOT_FOUND:           [404, 'User not found.'],
         LAST_ADMIN:          [400, 'Cannot suspend the last admin.'],
+        PROTECTED_ACCOUNT:   [403, 'This account is protected and cannot be suspended.'],
       };
       const [s, m] = map[result.code] || [400, 'Could not update suspension.'];
       return res.status(s).json({ error: m, code: result.code });
@@ -185,6 +189,7 @@ router.delete('/users/:id', requireAdmin, async (req, res, next) => {
         CANNOT_DELETE_SELF: [400, 'You cannot delete your own account.'],
         NOT_FOUND:          [404, 'User not found.'],
         LAST_ADMIN:         [400, 'Cannot delete the last admin.'],
+        PROTECTED_ACCOUNT: [403, 'This account is protected. Use the standard password reset flow.'],
       };
       const [s, m] = map[result.code] || [400, 'Could not delete user.'];
       return res.status(s).json({ error: m, code: result.code });

@@ -673,6 +673,7 @@
     function openUserMenu(anchor, user) {
       closeMenu();
       var isSelf = currentUser && user.id === currentUser.id;
+      var isProtected = !!user.is_protected;
 
       var menu = document.createElement('div');
       menu.className = 'row-menu';
@@ -684,7 +685,8 @@
         '<button class="row-menu__item" data-action="conversations" type="button">' +
           '<i class="fa-solid fa-comments"></i> Read conversations' +
         '</button>' +
-        '<button class="row-menu__item" data-action="reset" type="button">' +
+        '<button class="row-menu__item" data-action="reset" type="button"' +
+          (isProtected ? ' disabled title="Protected account"' : '') + '>' +
           '<i class="fa-solid fa-key"></i> Reset password' +
         '</button>' +
 

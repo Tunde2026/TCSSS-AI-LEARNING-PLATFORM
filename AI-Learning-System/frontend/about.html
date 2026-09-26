@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — AI Learning Platform | TCSSS</title>
+<meta name="description" content="The AI Learning Platform is a free study tool for students of Tomia Community Senior Secondary School (TCSSS). Chat with AI tutors, take quizzes, use flashcards, and prepare for exams.">
+<link rel="canonical" href="https://tcsss-ai-learning-platform.onrender.com/about.html">
+<link rel="icon" type="image/png" href="/uploads/branding/logo.png">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="AI Learning Platform — TCSSS">
+<meta property="og:description" content="A free AI-powered learning environment for TCSSS students.">
+<meta property="og:url" content="https://tcsss-ai-learning-platform.onrender.com/about.html">
+<meta property="og:image" content="https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png">
+<meta property="og:site_name" content="TCSSS AI Learning Platform">
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI Learning Platform — TCSSS">
+<meta name="twitter:description" content="Free AI-powered study tools for TCSSS students.">
+<meta name="twitter:image" content="https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png">
+
+<link rel="stylesheet" href="assets/shell.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+
+<style>
+  :root {
+    --navy: #11104A;
+    --soft-navy: #201F6B;
+    --red: #E6111E;
+    --deep-red: #B80F1A;
+    --gold: #C9952E;
+    --blush: #FBEFEF;
+    --blush-deep: #F6E0E0;
+    --white: #FFFFFF;
+    --ink: #1E1D3D;
+    --slate: #5B5A6B;
+    --border: rgba(17,16,74,0.12);
+    --border-soft: rgba(17,16,74,0.08);
+    --font-head: 'Lora', Georgia, serif;
+    --font-body: 'Work Sans', system-ui, sans-serif;
+    --font-ui: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    background: var(--blush);
+    color: var(--ink);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--red); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  img { max-width: 100%; display: block; }
+
+  /* ---------- Header ---------- */
+  .about-header {
+    background: linear-gradient(135deg, var(--navy), var(--soft-navy));
+    color: #FFFFFF;
+    padding: 16px 24px;
+  }
+  .about-header__inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .about-header__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #FFFFFF;
+    text-decoration: none;
+  }
+  .about-header__brand:hover { text-decoration: none; }
+  .about-header__logo {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.15);
+    display: grid; place-items: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .about-header__logo img { width: 100%; height: 100%; object-fit: contain; }
+  .about-header__title {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .about-header__title small {
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .about-header__nav a {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.88rem;
+    margin-left: 18px;
+  }
+  .about-header__nav a:hover { color: #FFFFFF; text-decoration: none; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    background: linear-gradient(155deg, var(--navy), var(--soft-navy));
+    color: #FFFFFF;
+    padding: 64px 24px 72px;
+    text-align: center;
+  }
+  .hero__logo {
+    width: 88px; height: 88px;
+    border-radius: 24px;
+    background: rgba(255,255,255,0.1);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    display: grid; place-items: center;
+    margin: 0 auto 24px;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.6rem;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.24);
+  }
+  .hero__logo img { width: 100%; height: 100%; object-fit: contain; }
+  .hero__title {
+    font-family: var(--font-head);
+    font-size: 2.4rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .hero__sub {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.78);
+    max-width: 560px;
+    margin: 0 auto 26px;
+    letter-spacing: 0.02em;
+  }
+  .hero__answer {
+    font-size: 1.08rem;
+    line-height: 1.7;
+    max-width: 720px;
+    margin: 0 auto 32px;
+    color: #FFFFFF;
+    text-align: left;
+  }
+  .hero__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 26px;
+    background: var(--gold);
+    color: var(--navy);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: 0.94rem;
+    font-weight: 600;
+    box-shadow: 0 6px 18px rgba(201,149,46,0.35);
+    text-decoration: none;
+  }
+  .hero__cta:hover { background: #D6A845; text-decoration: none; }
+  .hero__meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 32px;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+  .hero__meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ---------- Sections ---------- */
+  .section { max-width: 1000px; margin: 0 auto; padding: 64px 24px; }
+  .section__title {
+    font-family: var(--font-head);
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .section__sub {
+    color: var(--slate);
+    font-size: 0.96rem;
+    margin: 0 0 36px;
+    max-width: 620px;
+  }
+
+  /* Features */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .feature {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    transition: border-color 200ms, transform 200ms;
+  }
+  .feature:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .feature__icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--blush);
+    color: var(--red);
+    display: grid; place-items: center;
+    font-size: 1.05rem;
+    margin-bottom: 14px;
+  }
+  .feature__title {
+    font-family: var(--font-head);
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .feature__desc {
+    font-size: 0.88rem;
+    color: var(--slate);
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  /* Team */
+  .team {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+  .member {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 18px;
+    text-align: center;
+    transition: border-color 200ms, transform 200ms;
+  }
+  .member:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .member__avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(155deg, var(--navy), var(--soft-navy));
+    color: #FFFFFF;
+    display: grid; place-items: center;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: 0.04em;
+    margin: 0 auto 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(17,16,74,0.18);
+  }
+  .member__avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .member__name {
+    font-family: var(--font-head);
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0 0 4px;
+  }
+  .member__role {
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin: 0;
+  }
+
+  /* FAQ */
+  .faq { max-width: 780px; margin: 0 auto; }
+  .faq details {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color 200ms;
+  }
+  .faq details[open] { border-color: var(--gold); }
+  .faq summary {
+    padding: 16px 20px;
+    cursor: pointer;
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--navy);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 0.72rem;
+    color: var(--slate);
+    transition: transform 200ms;
+    flex-shrink: 0;
+  }
+  .faq details[open] summary::after { transform: rotate(180deg); }
+  .faq details p {
+    padding: 0 20px 18px;
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--ink);
+    line-height: 1.65;
+  }
+
+  /* Footer */
+  .about-footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.7);
+    padding: 40px 24px;
+    margin-top: 40px;
+    font-size: 0.82rem;
+  }
+  .about-footer__inner {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .about-footer a { color: rgba(255,255,255,0.9); }
+  .about-footer a:hover { color: #FFFFFF; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 48px 18px 56px; }
+    .hero__title { font-size: 1.85rem; }
+    .hero__answer { font-size: 1rem; }
+    .section { padding: 48px 18px; }
+    .section__title { font-size: 1.4rem; }
+    .about-header__nav a { margin-left: 12px; font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="about-header">
+  <div class="about-header__inner">
+    <a class="about-header__brand" href="index.html">
+      <div class="about-header__logo" id="headerLogo">TC</div>
+      <div class="about-header__title">
+        AI Learning Platform
+        <small>Tomia Community Senior Secondary School</small>
+      </div>
+    </a>
+    <nav class="about-header__nav" aria-label="Page navigation">
+      <a href="index.html">Log in</a>
+      <a href="#team">Team</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero__logo" id="heroLogo">TCSSS</div>
+  <h1 class="hero__title">The AI Learning Platform</h1>
+  <p class="hero__sub">A free, all-in-one study environment for students of Tomia Community Senior Secondary School.</p>
+
+  <p class="hero__answer">
+    <strong>The AI Learning Platform</strong> is a free educational tool for
+    students of Tomia Community Senior Secondary School (TCSSS). It combines
+    AI chat, quizzes, flashcards, practice questions, diagrams, and study
+    plans in one place so students can learn, practice, and prepare for
+    WAEC and NECO exams from any device. The platform follows the learning
+    cycle Learn → Visualize → Practice → Analyze → Adapt.
+  </p>
+
+  <a class="hero__cta" href="index.html">
+    <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+    Open the platform
+  </a>
+
+  <div class="hero__meta">
+    <span><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> For TCSSS students</span>
+    <span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Private &amp; safe</span>
+    <span><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> Works on any device</span>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <h2 class="section__title">What you can do on the platform</h2>
+  <p class="section__sub">Every tool is built for the way Nigerian secondary school students actually study.</p>
+
+  <div class="features">
+    <div class="feature">
+      <div class="feature__icon"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i></div>
+      <h3 class="feature__title">Chat with an AI tutor</h3>
+      <p class="feature__desc">Ask any question in plain English. The tutor explains concepts, solves problems, and shows step-by-step reasoning.</p>
+    </div>
+    <div class="feature">
+      <div class="feature__icon"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></div>
+      <h3 class="feature__title">Quizzes</h3>
+      <p class="feature__desc">Take auto-generated multiple-choice quizzes on any topic. Get instant scoring with explanations for every answer.</p>
+    </div>
+    <div class="feature">
+      <div class="feature__icon"><i class="fa-solid fa-clone" aria-hidden="true"></i></div>
+      <h3 class="feature__title">Flashcards</h3>
+      <p class="feature__desc">Review key terms and definitions using spaced repetition, so the cards you struggle with come back sooner.</p>
+    </div>
+    <div class="feature">
+      <div class="feature__icon"><i class="fa-solid fa-spell-check" aria-hidden="true"></i></div>
+      <h3 class="feature__title">Fill-in-the-gap theory</h3>
+      <p class="feature__desc">Practice recall with theory questions that test exactly what exams ask.</p>
+    </div>
+    <div class="feature">
+      <div class="feature__icon"><i class="fa-solid fa-stopwatch" aria-hidden="true"></i></div>
+      <h3 class="feature__title">Exam Mode</h3>
+      <p class="feature__desc">Take timed exams under real conditions — no hints, no second chances, just like WAEC.</p>
+    </div>
+    <div class="feature">
+      <div class="feature__icon"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i></div>
+      <h3 class="feature__title">Visualizations</h3>
+      <p class="feature__desc">Turn any topic into a flowchart, mind map, or diagram you can actually see and remember.</p>
+    </div>
+    <div class="feature">
+      <div class="feature__icon"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i></div>
+      <h3 class="feature__title">Sketch / Formula Studio</h3>
+      <p class="feature__desc">Write chemistry formulas, physics equations, and math notation correctly. H₂SO₄ not H2SO4.</p>
+    </div>
+    <div class="feature">
+      <div class="feature__icon"><i class="fa-solid fa-compass" aria-hidden="true"></i></div>
+      <h3 class="feature__title">Spark</h3>
+      <p class="feature__desc">Discover your academic strengths through an adaptive assessment that measures reasoning, interests, and problem solving.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="team">
+  <h2 class="section__title">Who built this platform</h2>
+  <p class="section__sub">A team of five from Tomia Community Senior Secondary School, working to give every student the tools to learn independently.</p>
+
+  <div class="team">
+    <div class="member">
+      <div class="member__avatar" id="av-ea">EA</div>
+      <div class="member__name">Emmanuel Ajibade</div>
+      <div class="member__role">Project Lead</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-akinola">AD</div>
+      <div class="member__name">Akinola Daniel</div>
+      <div class="member__role">Team</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-matthias">MO</div>
+      <div class="member__name">Matthias Olatunde</div>
+      <div class="member__role">Team</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-victor">IV</div>
+      <div class="member__name">Ikobayo Victor</div>
+      <div class="member__role">Team</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-elijah">AE</div>
+      <div class="member__name">Adebowale Elijah</div>
+      <div class="member__role">Team</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-excel">EE</div>
+      <div class="member__name">Emmanuel Excel</div>
+      <div class="member__role">Team</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-david">OD</div>
+      <div class="member__name">Oyedele David</div>
+      <div class="member__role">Team</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-joshua">JO</div>
+      <div class="member__name">Kehinde Joshua Oladipupo</div>
+      <div class="member__role">Team</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-kabir">AI</div>
+      <div class="member__name">Abdulkabir Isiaka</div>
+      <div class="member__role">Team</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-timi">TO</div>
+      <div class="member__name">Timilehin Olatunji</div>
+      <div class="member__role">Team</div>
+    </div>
+    <div class="member">
+      <div class="member__avatar" id="av-alamin">AA</div>
+      <div class="member__name">Al Arashi Al Amin Olanrewaju</div>
+      <div class="member__role">Team</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <h2 class="section__title">Frequently asked questions</h2>
+  <p class="section__sub">Everything students and parents ask before they start using the platform.</p>
+
+  <div class="faq">
+
+    <details>
+      <summary>What is the AI Learning Platform?</summary>
+      <p>The AI Learning Platform is a free educational tool for students of Tomia Community Senior Secondary School (TCSSS). It combines AI chat, quizzes, flashcards, practice questions, diagrams, exam mode, and study plans into a single learning environment that works on any phone or computer.</p>
+    </details>
+
+    <details>
+      <summary>Who can use the platform?</summary>
+      <p>The platform is available to all students of Tomia Community Senior Secondary School. Every student receives a personal account from the school. Accounts are private — each student sees only their own conversations, quizzes, flashcards, progress, and mistakes.</p>
+    </details>
+
+    <details>
+      <summary>Is the platform free to use?</summary>
+      <p>Yes. The platform is completely free for TCSSS students. There are no ads, no subscriptions, and no hidden charges. It is built and maintained by the school's team as a free learning resource for students.</p>
+    </details>
+
+    <details>
+      <summary>Do I need to install an app?</summary>
+      <p>No. The platform runs entirely in your web browser. You can open it from any device — phone, tablet, or computer — by visiting the site's URL and logging in with your school account. Nothing needs to be downloaded or installed.</p>
+    </details>
+
+    <details>
+      <summary>Does the platform work on my phone?</summary>
+      <p>Yes. The platform is designed mobile-first, meaning it works best on phones. Every page, quiz, flashcard, and chat works on small screens. You can also add the site to your home screen for quick access.</p>
+    </details>
+
+    <details>
+      <summary>What is Spark?</summary>
+      <p>Spark is an adaptive assessment that helps students discover their academic strengths. It asks reasoning, interest, and problem-solving questions that change based on your answers, then shows you which subject areas — Science, Arts, or Commerce — currently align best with your profile. Spark is a guide, not a decision.</p>
+    </details>
+
+    <details>
+      <summary>What is the Studying Lab?</summary>
+      <p>The Studying Lab is the deeper learning workspace inside the platform. It contains nine tools: Notes, Flashcards, Quiz, Quiz History, Practice, Visualization, Study Plans, Exam Mode, and the Mistake Bank. Every one of these tools can also be used directly from Chat.</p>
+    </details>
+
+    <details>
+      <summary>How does the AI tutor work?</summary>
+      <p>The AI tutor answers questions, explains concepts, solves problems, and creates learning material on demand. It follows the same teaching style as a patient older student — simple language, clear steps, real examples. It is powered by a chain of AI models that provides reliable 24/7 access.</p>
+    </details>
+
+    <details>
+      <summary>Are my conversations private?</summary>
+      <p>Yes. Your conversations are private to your account. Other students cannot see them. Only the school's administrator can view conversations for safety and support purposes, and every access is recorded in an audit log. Admins cannot send messages as you or change your content.</p>
+    </details>
+
+    <details>
+      <summary>How do I report a problem or ask for help?</summary>
+      <p>Open the Contact Us page from the sidebar of the platform. You can report a bug, request a feature, ask a question, or report a serious issue. Bullying reports are escalated immediately. For urgent matters, the page lists the phone numbers of team members you can call directly.</p>
+    </details>
+
+    <details>
+      <summary>Which AI model powers the answers?</summary>
+      <p>The platform uses a chain of top AI providers — Groq, Cerebras, Google, NVIDIA, OpenRouter, and self-hosted Ollama — with automatic fallback so answers keep coming even if one provider is down. The platform picks the best available model for each request.</p>
+    </details>
+
+    <details>
+      <summary>Can I use the platform offline?</summary>
+      <p>The platform needs an internet connection to talk to the AI. However, you can download books and PDFs from the Library to read offline. Quizzes you have already generated can be taken offline for a while if your browser has cached the page.</p>
+    </details>
+
+    <details>
+      <summary>Who built the platform?</summary>
+      <p>The platform was built by a team of students and contributors from Tomia Community Senior Secondary School, led by Emmanuel Ajibade. The project is open source and lives on GitHub. See the Team section above for everyone who contributed.</p>
+    </details>
+
+    <details>
+      <summary>How often is the platform updated?</summary>
+      <p>The team actively develops the platform. New tools, fixes, and improvements are deployed regularly through the school's GitHub repository. Features are added based on student feedback and requests collected through the Contact Us page.</p>
+    </details>
+
+    <details>
+      <summary>Where can I find the school's official website?</summary>
+      <p>The official website of Tomia Community Senior Secondary School is maintained by the school community at <a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">gideon-olukanni.github.io/TCSSS</a>. This AI Learning Platform is a separate project, built by students, for students.</p>
+    </details>
+
+  </div>
+</section>
+
+<footer class="about-footer">
+  <div class="about-footer__inner">
+    <div>
+      &copy; <span id="year"></span> AI Learning Platform &mdash; Tomia Community Senior Secondary School
+    </div>
+    <div>
+      <a href="index.html">Log in</a>
+      &nbsp;&middot;&nbsp;
+      <a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">Official school website</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     JSON-LD structured data for Google and AI engines
+     ============================================================ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://tcsss-ai-learning-platform.onrender.com/#website",
+      "url": "https://tcsss-ai-learning-platform.onrender.com/",
+      "name": "TCSSS AI Learning Platform",
+      "description": "Free AI-powered study tools for students of Tomia Community Senior Secondary School.",
+      "inLanguage": "en-NG",
+      "publisher": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "EducationalOrganization",
+      "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization",
+      "name": "Tomia Community Senior Secondary School",
+      "alternateName": "TCSSS",
+      "url": "https://gideon-olukanni.github.io/TCSSS/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Adebayo Close, off Lagos–Abeokuta Express Road",
+        "addressLocality": "Alagbado",
+        "addressRegion": "Lagos State",
+        "addressCountry": "NG"
+      },
+      "areaServed": {
+        "@type": "Place",
+        "name": "Alagbado, Alimosho, Lagos State, Nigeria"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://tcsss-ai-learning-platform.onrender.com/#app",
+      "name": "AI Learning Platform",
+      "url": "https://tcsss-ai-learning-platform.onrender.com/",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web browser (any device)",
+      "description": "A free AI-powered learning environment for TCSSS students. Combines AI tutoring, quizzes, flashcards, practice, exam mode, diagrams, and study plans in one place.",
+      "inLanguage": "en-NG",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "NGN"
+      },
+      "publisher": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" },
+      "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": "student",
+        "audienceType": "Secondary school students"
+      },
+      "featureList": [
+        "AI chat tutor",
+        "Interactive quizzes",
+        "Spaced-repetition flashcards",
+        "Fill-in-the-gap theory practice",
+        "Timed exam mode",
+        "Concept visualization",
+        "Formula and sketch studio",
+        "Adaptive Spark assessment",
+        "Multi-day study plans",
+        "Personal note-taking"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://tcsss-ai-learning-platform.onrender.com/about.html#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the AI Learning Platform?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The AI Learning Platform is a free educational tool for students of Tomia Community Senior Secondary School (TCSSS). It combines AI chat, quizzes, flashcards, practice questions, diagrams, exam mode, and study plans into a single learning environment that works on any phone or computer."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who can use the platform?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The platform is available to all students of Tomia Community Senior Secondary School. Every student receives a personal account from the school. Accounts are private — each student sees only their own conversations, quizzes, flashcards, progress, and mistakes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the platform free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The platform is completely free for TCSSS students. There are no ads, no subscriptions, and no hidden charges. It is built and maintained by the school's team as a free learning resource for students."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to install an app?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. The platform runs entirely in your web browser. You can open it from any device — phone, tablet, or computer — by visiting the site's URL and logging in with your school account."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does the platform work on my phone?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The platform is designed mobile-first, meaning it works best on phones. Every page, quiz, flashcard, and chat works on small screens. You can also add the site to your home screen for quick access."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is Spark?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Spark is an adaptive assessment that helps students discover their academic strengths. It asks reasoning, interest, and problem-solving questions that change based on your answers, then shows you which subject areas — Science, Arts, or Commerce — currently align best with your profile."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the Studying Lab?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The Studying Lab is the deeper learning workspace inside the platform. It contains nine tools: Notes, Flashcards, Quiz, Quiz History, Practice, Visualization, Study Plans, Exam Mode, and the Mistake Bank."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the AI tutor work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The AI tutor answers questions, explains concepts, solves problems, and creates learning material on demand. It is powered by a chain of AI models that provides reliable 24/7 access."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are my conversations private?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Your conversations are private to your account. Other students cannot see them. Only the school's administrator can view conversations for safety and support purposes, and every access is recorded in an audit log."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I report a problem or ask for help?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Open the Contact Us page from the sidebar of the platform. You can report a bug, request a feature, ask a question, or report a serious issue. For urgent matters, the page lists the phone numbers of team members you can call directly."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who built the platform?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The platform was built by a team of students and contributors from Tomia Community Senior Secondary School, led by Emmanuel Ajibade. The project is open source and lives on GitHub."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where can I find the school's official website?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The official website of Tomia Community Senior Secondary School is maintained by the school community at gideon-olukanni.github.io/TCSSS. This AI Learning Platform is a separate project built by students for students."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "Person",
+      "name": "Emmanuel Ajibade",
+      "jobTitle": "Project Lead",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Akinola Daniel",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Matthias Olatunde",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Ikobayo Victor",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Adebowale Elijah",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Emmanuel Excel",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Oyedele David",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Kehinde Joshua Oladipupo",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Abdulkabir Isiaka",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Timilehin Olatunji",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "Person",
+      "name": "Al Arashi Al Amin Olanrewaju",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    }
+  ]
+}
+</script>
+
+<script>
+  // Footer year
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // Load the real logo into header + hero
+  (function () {
+    var src = '/uploads/branding/logo.png';
+    ['headerLogo', 'heroLogo'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var img = new Image();
+      img.onload = function () {
+        el.innerHTML = '';
+        var i = document.createElement('img');
+        i.src = src;
+        i.alt = 'TCSSS logo';
+        el.appendChild(i);
+      };
+      img.onerror = function () { /* keep the initials */ };
+      img.src = src;
+    });
+  })();
+
+  // Also swap in team photos if the file exists.
+  // Convention: /uploads/branding/team/ea.jpg, akinola.jpg, etc.
+  (function () {
+    var mapping = {
+      'av-ea':      'emmanuel-ajibade',
+      'av-akinola': 'akinola-daniel',
+      'av-matthias':'matthias-olatunde',
+      'av-victor':  'ikobayo-victor',
+      'av-elijah':  'adebowale-elijah',
+      'av-excel':   'emmanuel-excel',
+      'av-david':   'oyedele-david',
+      'av-joshua':  'kehinde-joshua',
+      'av-kabir':   'abdulkabir-isiaka',
+      'av-timi':    'timilehin-olatunji',
+      'av-alamin':  'al-arashi-al-amin'
+    };
+    Object.keys(mapping).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var src = '/uploads/branding/team/' + mapping[id] + '.jpg';
+      var img = new Image();
+      img.onload = function () {
+        el.innerHTML = '';
+        var i = document.createElement('img');
+        i.src = src;
+        i.alt = 'Team member';
+        el.appendChild(i);
+      };
+      img.onerror = function () { /* keep the initials */ };
+      img.src = src;
+    });
+  })();
+</script>
+
+</body>
+</html>

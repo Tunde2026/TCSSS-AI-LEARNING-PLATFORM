@@ -409,6 +409,7 @@
             '<span>Contact Us</span>' +
             '<span class="nav-item__badge" id="support-badge" style="display:none"></span>' +
           '</a>' +
+          
           '<a class="nav-item nav-item--utility" href="' + SCHOOL_URL + '" target="_blank" rel="noopener noreferrer" title="Official School Website">' +
             '<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>' +
             '<span>Official School Website</span>' +

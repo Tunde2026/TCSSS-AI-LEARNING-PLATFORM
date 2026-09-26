@@ -1,6 +1,17 @@
 // ============================================================
 // admin/service.js
 // ------------------------------------------------------------
+// Admin business logic.
+//
+// Protected accounts (is_protected = true) cannot be:
+//   - Role-changed (demoted)
+//   - Suspended
+//   - Deleted
+//   - Have their password reset by another admin
+//
+// This is used to lock the primary owner account so a rogue or
+// compromised admin cannot remove it.
+// ============================================================
 
 const bcrypt = require('bcrypt');
 const path   = require('path');
@@ -12,7 +23,15 @@ const storage = require('../library/storage');
 const SALT_ROUNDS = 10;
 const EMAIL_RE    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const VALID_ROLES = ['student', 'admin'];
-const VALID_PROVIDERS = ['groq', 'cerebras', 'google', 'nvidia', 'openrouter', 'tavily', 'pexels', 'pollinations'];
+const VALID_PROVIDERS = ['groq', 'cerebras', 'google', 'nvidia', 'openrouter', 'tavily', 'pexels', 'pollinations', 'openai'];
+
+/**
+ * Protected accounts cannot be suspended, deleted, demoted, or
+ * have their password reset by another admin.
+ */
+function isProtected(user) {
+  return !!(user && user.is_protected);
+}
 
 // ---------- Users ----------
 
@@ -40,6 +59,11 @@ async function changeRole({ targetId, newRole, currentUserId }) {
   const target = await db.users.findById(targetId);
   if (!target) return { ok: false, code: 'NOT_FOUND' };
 
+  // Protected accounts cannot be demoted
+  if (isProtected(target) && newRole !== 'admin') {
+    return { ok: false, code: 'PROTECTED_ACCOUNT' };
+  }
+
   if (target.role === 'admin' && newRole !== 'admin') {
     const adminCount = await db.users.countAdmins();
     if (adminCount <= 1) return { ok: false, code: 'LAST_ADMIN' };
@@ -53,6 +77,10 @@ async function deleteUser({ targetId, currentUserId }) {
   if (targetId === currentUserId) return { ok: false, code: 'CANNOT_DELETE_SELF' };
   const target = await db.users.findById(targetId);
   if (!target) return { ok: false, code: 'NOT_FOUND' };
+
+  // Protected accounts cannot be deleted, ever
+  if (isProtected(target)) return { ok: false, code: 'PROTECTED_ACCOUNT' };
+
   if (target.role === 'admin') {
     const adminCount = await db.users.countAdmins();
     if (adminCount <= 1) return { ok: false, code: 'LAST_ADMIN' };
@@ -69,6 +97,9 @@ async function resetPassword({ targetId, newPassword }) {
   const target = await db.users.findById(targetId);
   if (!target) return { ok: false, code: 'NOT_FOUND' };
 
+  // Protected accounts must use the standard password reset flow
+  if (isProtected(target)) return { ok: false, code: 'PROTECTED_ACCOUNT' };
+
   const hash = await bcrypt.hash(newPassword, SALT_ROUNDS);
   await db.users.updatePassword(targetId, hash);
 
@@ -84,6 +115,12 @@ async function setSuspended({ targetId, suspended, reason, currentUserId }) {
 
   const target = await db.users.findById(targetId);
   if (!target) return { ok: false, code: 'NOT_FOUND' };
+
+  // Protected accounts cannot be suspended.
+  // Unsuspending is allowed as a safety escape hatch.
+  if (isProtected(target) && suspended) {
+    return { ok: false, code: 'PROTECTED_ACCOUNT' };
+  }
 
   if (suspended && target.role === 'admin') {
     const adminCount = await db.users.countAdmins();
@@ -118,13 +155,17 @@ async function getUserActivity(userId, limit = 40) {
   return { ok: true, user: target, activity };
 }
 
+/* ------------------------------------------------------------
+   Read-only conversation viewing (spec §61–62)
+   ------------------------------------------------------------ */
 async function getUserConversations(userId) {
   const target = await db.users.findById(userId);
   if (!target) return { ok: false, code: 'NOT_FOUND' };
 
   const rows = await db.pool.query(
     `SELECT c.id, c.title, c.pinned, c.created_at, c.updated_at,
-            (SELECT COUNT(*)::int FROM messages m WHERE m.conversation_id = c.id) AS message_count
+            (SELECT COUNT(*)::int FROM messages m
+              WHERE m.conversation_id = c.id) AS message_count
        FROM conversations c
       WHERE c.user_id = $1
       ORDER BY c.updated_at DESC`,
@@ -354,13 +395,27 @@ async function addManualKnowledge({ adminId, title, subject, level, text }) {
 }
 
 module.exports = {
+  // Users
   createUser, listUsers, changeRole, deleteUser,
   resetPassword, setSuspended, forceLogout, getUserActivity,
-  getUserConversations, getConversationForAdmin,   // ← new
+  getUserConversations, getConversationForAdmin,
+
+  // Stats and settings
   getStats,
   getSettings, updateSettings,
+
+  // Ollama
   listOllamaModels,
+
+  // Provider keys
   listProviderKeys, createProviderKey, updateProviderKey, deleteProviderKey,
+
+  // Branding
   uploadLogo, removeLogo,
+
+  // Knowledge
   addManualKnowledge,
+
+  // Exposed for reuse elsewhere
+  isProtected,
 };
