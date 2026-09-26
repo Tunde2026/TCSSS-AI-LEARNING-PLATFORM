@@ -6,7 +6,6 @@
 <title>Study Plans — Studying Lab</title>
 <link rel="stylesheet" href="../assets/shell.css">
 <style>
-  /* Wider content area — see shell.css for the shared override */
   .page-inner, .viz-inner, .fc-inner, .pr-inner, .sp-inner, .qh-inner, .exam-inner { max-width: 1440px; }
   .sp-inner { max-width: 1440px; }
 
@@ -14,6 +13,23 @@
   .setup-field { margin-bottom: 18px; }
   .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .setup-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+  .desc-input {
+    width: 100%;
+    resize: vertical;
+    min-height: 62px;
+    padding: 10px 12px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    color: var(--ink);
+  }
+  .desc-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
+  }
 
   .generating { text-align: center; padding: 60px 20px; }
   .generating__spinner {
@@ -25,14 +41,11 @@
     animation: spin 0.9s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .generating__text {
-    font-family: var(--font-head); color: var(--navy);
-    font-size: 1.1rem; margin: 0;
-  }
+  .generating__text { font-family: var(--font-head); color: var(--navy); font-size: 1.1rem; margin: 0; }
 
   .plan-list { display: flex; flex-direction: column; gap: 10px; }
   .plan-row {
-    display: flex; align-items: center; gap: 16px;
+    display: flex; align-items: flex-start; gap: 16px;
     padding: 16px 20px; background: var(--white);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -50,6 +63,7 @@
     background: #FBF3E1; color: var(--gold);
     display: grid; place-items: center;
     font-size: 1.1rem; flex-shrink: 0;
+    margin-top: 2px;
   }
   .plan-body { flex: 1; min-width: 0; }
   .plan-title {
@@ -62,6 +76,17 @@
     font-size: 0.8rem; color: var(--slate);
     display: flex; gap: 10px; flex-wrap: wrap;
   }
+  .plan-desc {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: var(--gold-50);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.8rem;
+    color: #6A4F13;
+    line-height: 1.5;
+    font-style: italic;
+  }
   .plan-del {
     width: 34px; height: 34px;
     border-radius: 8px;
@@ -72,24 +97,25 @@
   }
   .plan-del:hover { background: #FCECEC; color: var(--deep-red); }
 
-  /* Plan viewer */
-  .plan-header {
-    margin-bottom: 20px;
-  }
-  .plan-header__title {
-    font-family: var(--font-head);
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--navy);
-    margin: 0 0 6px;
-  }
-  .plan-header__meta {
-    font-size: 0.88rem;
-    color: var(--slate);
+  .plan-header { margin-bottom: 20px; }
+  .plan-header__title { font-family: var(--font-head); font-size: 1.5rem; font-weight: 600; color: var(--navy); margin: 0 0 6px; }
+  .plan-header__meta { font-size: 0.88rem; color: var(--slate); display: flex; gap: 14px; flex-wrap: wrap; }
+
+  .desc-banner {
     display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px 16px;
+    background: var(--gold-50);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 10px 10px 0;
+    font-size: 0.86rem;
+    color: #6A4F13;
+    line-height: 1.5;
+    margin-bottom: 18px;
+    font-style: italic;
   }
+  .desc-banner i { color: var(--gold); margin-top: 3px; flex-shrink: 0; }
 
   .progress-block {
     background: var(--white);
@@ -100,112 +126,35 @@
     display: flex;
     align-items: center;
     gap: 16px;
+    flex-wrap: wrap;
   }
-  .progress-block__bar {
-    flex: 1;
-    height: 8px;
-    background: var(--blush-deep);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .progress-block__fill {
-    height: 100%;
-    background: var(--red);
-    border-radius: 4px;
-    transition: width 300ms var(--ease);
-  }
-  .progress-block__label {
-    font-family: var(--font-ui);
-    font-size: 0.75rem;
-    color: var(--slate);
-    letter-spacing: 0.06em;
-    white-space: nowrap;
-  }
+  .progress-block__bar { flex: 1; min-width: 160px; height: 8px; background: var(--blush-deep); border-radius: 4px; overflow: hidden; }
+  .progress-block__fill { height: 100%; background: var(--red); border-radius: 4px; transition: width 300ms var(--ease); }
+  .progress-block__label { font-family: var(--font-ui); font-size: 0.75rem; color: var(--slate); letter-spacing: 0.06em; white-space: nowrap; }
 
-  .day-card {
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 12px;
-    overflow: hidden;
-  }
-  .day-head {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 16px 20px;
-    cursor: pointer;
-    transition: background var(--transition);
-  }
+  .day-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .day-head { display: flex; align-items: center; gap: 14px; padding: 16px 20px; cursor: pointer; transition: background var(--transition); }
   .day-head:hover { background: var(--blush); }
-  .day-num {
-    width: 40px; height: 40px;
-    border-radius: 10px;
-    background: var(--navy); color: var(--white);
-    display: grid; place-items: center;
-    font-family: var(--font-head);
-    font-weight: 700;
-    font-size: 0.95rem;
-    flex-shrink: 0;
-  }
+  .day-num { width: 40px; height: 40px; border-radius: 10px; background: var(--navy); color: var(--white); display: grid; place-items: center; font-family: var(--font-head); font-weight: 700; font-size: 0.95rem; flex-shrink: 0; }
   .day-body { flex: 1; min-width: 0; }
-  .day-title {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--navy);
-    margin: 0 0 2px;
-  }
-  .day-meta {
-    font-size: 0.78rem;
-    color: var(--slate);
-  }
-  .day-arrow {
-    color: var(--slate);
-    transition: transform var(--transition);
-    flex-shrink: 0;
-  }
+  .day-title { font-weight: 600; font-size: 0.95rem; color: var(--navy); margin: 0 0 2px; }
+  .day-meta { font-size: 0.78rem; color: var(--slate); }
+  .day-arrow { color: var(--slate); transition: transform var(--transition); flex-shrink: 0; }
   .day-card.is-open .day-arrow { transform: rotate(180deg); }
 
-  .day-tasks {
-    display: none;
-    border-top: 1px solid var(--border-soft);
-    padding: 8px 20px 16px;
-  }
+  .day-tasks { display: none; border-top: 1px solid var(--border-soft); padding: 8px 20px 16px; }
   .day-card.is-open .day-tasks { display: block; }
 
-  .task-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px 0;
-    cursor: pointer;
-  }
+  .task-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; cursor: pointer; }
   .task-check {
-    width: 20px; height: 20px;
-    border-radius: 6px;
-    border: 2px solid var(--border);
-    background: var(--white);
-    display: grid; place-items: center;
-    flex-shrink: 0;
-    margin-top: 2px;
-    cursor: pointer;
-    transition: background var(--transition), border-color var(--transition);
+    width: 20px; height: 20px; border-radius: 6px;
+    border: 2px solid var(--border); background: var(--white);
+    display: grid; place-items: center; flex-shrink: 0; margin-top: 2px;
+    cursor: pointer; transition: background var(--transition), border-color var(--transition);
   }
-  .task-row.is-done .task-check {
-    background: var(--red);
-    border-color: var(--red);
-    color: var(--white);
-  }
-  .task-row.is-done .task-text {
-    text-decoration: line-through;
-    color: var(--slate);
-    opacity: 0.7;
-  }
-  .task-text {
-    font-size: 0.9rem;
-    color: var(--ink);
-    line-height: 1.55;
-  }
+  .task-row.is-done .task-check { background: var(--red); border-color: var(--red); color: var(--white); }
+  .task-row.is-done .task-text { text-decoration: line-through; color: var(--slate); opacity: 0.7; }
+  .task-text { font-size: 0.9rem; color: var(--ink); line-height: 1.55; }
 
   @media (max-width: 860px) {
     .setup-row { grid-template-columns: 1fr; }
@@ -223,13 +172,10 @@
           <header class="page-header">
             <div>
               <h1 class="page-header__title">Study Plans</h1>
-              <p class="page-header__sub">
-                Multi-day schedules built for your topic. Tick off tasks as you go.
-              </p>
+              <p class="page-header__sub">Multi-day schedules built for your topic. Tick off tasks as you go.</p>
             </div>
           </header>
 
-          <!-- Stage: list -->
           <div id="stage-list">
             <section class="section">
               <h2 class="section__title">Create a plan</h2>
@@ -260,6 +206,11 @@
                   <label class="label" for="exam-date">Exam date (optional)</label>
                   <input class="input" type="text" id="exam-date" placeholder="e.g. WAEC May 2026">
                 </div>
+                <div class="setup-field">
+                  <label class="label" for="description">Note to self (optional)</label>
+                  <textarea class="desc-input" id="description" rows="2"
+                            placeholder="How do you want to approach this plan? What's your goal?"></textarea>
+                </div>
                 <div class="setup-actions">
                   <button class="btn btn-primary" id="gen-btn" type="button">
                     <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
@@ -277,7 +228,6 @@
             </section>
           </div>
 
-          <!-- Stage: generating -->
           <div id="stage-generating" style="display:none">
             <div class="card generating">
               <div class="generating__spinner"></div>
@@ -285,7 +235,6 @@
             </div>
           </div>
 
-          <!-- Stage: viewer -->
           <div id="stage-view" style="display:none">
             <div class="plan-header">
               <h2 class="plan-header__title" id="v-title">—</h2>
@@ -295,6 +244,8 @@
                 <span id="v-start"></span>
               </div>
             </div>
+
+            <div id="v-desc-banner" style="display:none"></div>
 
             <div class="progress-block">
               <span class="progress-block__label">Progress</span>
@@ -396,6 +347,9 @@
                 '<span>' + p.duration_days + ' days</span>' +
                 '<span>Started ' + fmtDate(p.start_date) + '</span>' +
               '</div>' +
+              (p.description
+                ? '<div class="plan-desc">' + esc(p.description) + '</div>'
+                : '') +
             '</div>' +
             '<button class="plan-del" data-id="' + p.id + '" title="Delete" type="button">' +
               '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
@@ -431,9 +385,10 @@
       var topic = document.getElementById('topic').value.trim();
       if (!topic) { toast('Please enter a topic.', true); return; }
 
-      var subject  = document.getElementById('subject').value.trim() || null;
-      var days     = parseInt(document.getElementById('days').value, 10);
-      var examDate = document.getElementById('exam-date').value.trim() || null;
+      var subject     = document.getElementById('subject').value.trim() || null;
+      var days        = parseInt(document.getElementById('days').value, 10);
+      var examDate    = document.getElementById('exam-date').value.trim() || null;
+      var description = document.getElementById('description').value.trim() || null;
 
       showStage('generating');
 
@@ -442,7 +397,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ topic, days, subject, examDate }),
+          body: JSON.stringify({ topic, days, subject, examDate, description }),
         });
         var data = await res.json().catch(function () { return {}; });
         if (!res.ok) {
@@ -459,9 +414,7 @@
       }
     }
 
-    function progressKey(planId) {
-      return 'study-plan-progress-' + planId;
-    }
+    function progressKey(planId) { return 'study-plan-progress-' + planId; }
     function loadProgress(planId) {
       try { return JSON.parse(localStorage.getItem(progressKey(planId)) || '{}'); }
       catch (_) { return {}; }
@@ -470,12 +423,29 @@
       try { localStorage.setItem(progressKey(planId), JSON.stringify(progress)); } catch (_) {}
     }
 
+    function renderDescBanner() {
+      var el = document.getElementById('v-desc-banner');
+      if (!currentPlan || !currentPlan.description) {
+        el.style.display = 'none';
+        el.innerHTML = '';
+        return;
+      }
+      el.style.display = '';
+      el.innerHTML =
+        '<div class="desc-banner">' +
+          '<i class="fa-solid fa-note-sticky" aria-hidden="true"></i>' +
+          '<div>' + esc(currentPlan.description) + '</div>' +
+        '</div>';
+    }
+
     function renderPlanView() {
       var p = currentPlan;
       document.getElementById('v-title').textContent = p.title;
       document.getElementById('v-topic').textContent = 'Topic: ' + p.topic;
       document.getElementById('v-duration').textContent = p.duration_days + ' days';
       document.getElementById('v-start').textContent = 'Started ' + fmtDate(p.start_date);
+
+      renderDescBanner();
 
       var days = (p.plan && p.plan.days) || [];
       var progress = loadProgress(p.id);
@@ -512,7 +482,6 @@
         );
       }).join('');
 
-      // Open the first day by default
       var firstCard = wrap.querySelector('.day-card');
       if (firstCard) firstCard.classList.add('is-open');
 

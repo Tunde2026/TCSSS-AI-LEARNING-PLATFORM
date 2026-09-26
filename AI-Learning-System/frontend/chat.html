@@ -104,7 +104,7 @@
   .qa-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
   .qa-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; color: var(--white); }
   .qa-widget__head--quiz   { background: linear-gradient(135deg, var(--navy), var(--soft-navy)); }
-  .qa-widget__head--theory { background: linear-gradient(135deg, #2F8F4A, #1F6B35); color: #FFFFFF; }
+  .qa-widget__head--theory { background: linear-gradient(135deg, #2F8F4A, #1F6B35); }
   .qa-widget__head--exam   { background: linear-gradient(135deg, var(--red), var(--deep-red)); }
   .qa-widget__icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.15); color: var(--white); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
   .qa-widget__headtext { flex: 1; min-width: 0; }
@@ -298,6 +298,40 @@
   @keyframes exam-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
   .exam-widget__note { padding: 12px 18px; background: var(--gold-50); border-top: 1px solid var(--border-soft); font-size: 0.82rem; color: #6A4F13; text-align: center; }
 
+  /* Mistakes widget */
+  .mistakes-widget { margin-top: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm); }
+  .mistakes-widget__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: linear-gradient(135deg, var(--red), var(--deep-red)); color: var(--white); }
+  .mistakes-widget__icon { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,0.15); color: var(--white); display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; }
+  .mistakes-widget__title { font-family: var(--font-head); font-weight: 600; font-size: 0.98rem; margin: 0 0 2px; }
+  .mistakes-widget__meta { font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.9; }
+  .mistakes-widget__body { padding: 6px 0; max-height: 520px; overflow-y: auto; }
+  .mistakes-topic { border-bottom: 1px solid var(--border-soft); }
+  .mistakes-topic:last-child { border-bottom: none; }
+  .mistakes-topic__head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; cursor: pointer; transition: background var(--transition); }
+  .mistakes-topic__head:hover { background: var(--blush); }
+  .mistakes-topic__count { width: 38px; height: 38px; border-radius: 10px; background: #FDECEC; color: var(--red); display: grid; place-items: center; font-family: var(--font-head); font-weight: 700; font-size: 0.95rem; flex-shrink: 0; }
+  .mistakes-topic__body { flex: 1; min-width: 0; }
+  .mistakes-topic__name { font-family: var(--font-head); font-weight: 600; font-size: 0.96rem; color: var(--navy); margin: 0 0 2px; }
+  .mistakes-topic__sub { font-size: 0.76rem; color: var(--slate); }
+  .mistakes-topic__arrow { color: var(--slate); transition: transform var(--transition); flex-shrink: 0; }
+  .mistakes-topic.is-open .mistakes-topic__arrow { transform: rotate(180deg); }
+  .mistakes-topic__questions { display: none; padding: 0 18px 16px; }
+  .mistakes-topic.is-open .mistakes-topic__questions { display: block; }
+  .mistakes-q { padding: 12px 14px; background: var(--blush); border-radius: 10px; margin-bottom: 8px; font-size: 0.86rem; line-height: 1.5; }
+  .mistakes-q:last-child { margin-bottom: 0; }
+  .mistakes-q__text { font-weight: 500; color: var(--ink); margin: 0 0 8px; }
+  .mistakes-q__row { display: flex; gap: 8px; align-items: baseline; margin: 3px 0; font-size: 0.82rem; }
+  .mistakes-q__label { font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); flex-shrink: 0; min-width: 60px; }
+  .mistakes-q__wrong { color: var(--deep-red); font-weight: 600; }
+  .mistakes-q__right { color: #2F8F4A; font-weight: 600; }
+  .mistakes-q__explain { margin-top: 8px; padding: 8px 10px; background: var(--white); border-radius: 8px; font-size: 0.8rem; color: var(--navy); line-height: 1.5; }
+  .mistakes-practice-btn { width: 100%; margin-top: 10px; padding: 9px 14px; border-radius: 999px; border: none; background: linear-gradient(135deg, var(--red), var(--deep-red)); color: var(--white); font-family: var(--font-body); font-size: 0.82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .mistakes-practice-btn:hover { transform: translateY(-1px); }
+  .mistakes-empty { padding: 40px 24px; text-align: center; }
+  .mistakes-empty i { font-size: 2rem; color: #2F8F4A; margin-bottom: 12px; display: block; }
+  .mistakes-empty__title { font-family: var(--font-head); font-size: 1.1rem; color: var(--navy); margin: 0 0 6px; }
+  .mistakes-empty__desc { font-size: 0.88rem; color: var(--slate); margin: 0; }
+
   /* Meta */
   .msg-meta { font-family: var(--font-ui); font-size: 0.65rem; color: var(--slate); margin-top: 8px; opacity: 0.75; padding: 0 4px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .msg-row--user .msg-meta { text-align: right; justify-content: flex-end; }
@@ -464,7 +498,7 @@
   </div>
 
 <script src="assets/shell.js"></script>
-<script>
+  <script>
   (function () {
     'use strict';
 
@@ -1331,214 +1365,6 @@
     }
 
     /* ============================================================
-       VISUALIZATION
-       ============================================================ */
-    async function buildInlineVisualization(tool) {
-      var container = document.createElement('div');
-      container.className = 'viz-widget';
-      var canvasId = 'viz-canvas-' + Math.random().toString(36).slice(2, 10);
-      var html =
-        '<div class="viz-widget__head">' +
-          '<div class="viz-widget__icon"><i class="fa-solid fa-diagram-project"></i></div>' +
-          '<div>' +
-            '<div class="viz-widget__title">' + esc(tool.title || 'Diagram') + '</div>' +
-            '<div class="viz-widget__meta">' + esc(tool.kind || 'flowchart') + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="viz-widget__canvas" id="' + canvasId + '">' +
-          '<div class="widget-loading">Rendering…</div>' +
-        '</div>' +
-        (tool.explanation ? '<div class="viz-widget__explanation">' + esc(tool.explanation) + '</div>' : '');
-      container.innerHTML = html;
-
-      try {
-        var mermaid = await ensureMermaid();
-        var renderId = 'viz-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
-        var result = await mermaid.render(renderId, tool.mermaid);
-        var canvas = document.getElementById(canvasId);
-        if (canvas) canvas.innerHTML = result.svg;
-      } catch (err) {
-        var canvas2 = document.getElementById(canvasId);
-        if (canvas2) {
-          canvas2.innerHTML = '<div class="widget-error">Could not render diagram.<br>' + esc(err.message || '') + '</div>';
-        }
-      }
-      return container;
-    }
-
-    /* ============================================================
-       STUDY PLAN
-       ============================================================ */
-    async function buildInlineStudyPlan(tool) {
-      var planId = tool.planId || extractIdFromUrl(tool);
-      if (!planId) return buildToolCard(tool);
-      var container = document.createElement('div');
-      container.className = 'plan-widget';
-      container.innerHTML = '<div class="widget-loading">Loading study plan…</div>';
-      try {
-        var res = await fetch('/api/tools/studyplans/' + planId, { credentials: 'include' });
-        if (!res.ok) { container.innerHTML = '<div class="widget-error">Could not load plan.</div>'; return container; }
-        var data = await res.json();
-        if (!data.plan || !data.plan.plan || !data.plan.plan.days) {
-          container.innerHTML = '<div class="widget-error">Plan has no days.</div>';
-          return container;
-        }
-        renderStudyPlanWidget(container, data.plan);
-      } catch (_) {
-        container.innerHTML = '<div class="widget-error">Network error.</div>';
-      }
-      return container;
-    }
-
-    function renderStudyPlanWidget(container, plan) {
-      var days = plan.plan.days || [];
-      var totalTasks = days.reduce(function (sum, d) { return sum + (d.tasks || []).length; }, 0);
-      var storageKey = 'inline-plan-progress-' + plan.id;
-      var progress = {};
-      try { progress = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch (_) {}
-
-      var html =
-        '<div class="plan-widget__head">' +
-          '<div class="plan-widget__icon"><i class="fa-solid fa-calendar-days"></i></div>' +
-          '<div>' +
-            '<div class="plan-widget__title">' + esc(plan.title || 'Study Plan') + '</div>' +
-            '<div class="plan-widget__meta">' + plan.duration_days + ' days · ' + esc(plan.topic || 'general') + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="plan-widget__progress">' +
-          '<div class="plan-widget__progress-bar"><div class="plan-widget__progress-fill" id="plan-fill-' + plan.id + '" style="width:0%"></div></div>' +
-          '<span class="plan-widget__progress-label" id="plan-label-' + plan.id + '">0 / ' + totalTasks + '</span>' +
-        '</div>' +
-        '<div class="plan-widget__days">';
-
-      days.forEach(function (d, dayIdx) {
-        var tasksHtml = (d.tasks || []).map(function (task, taskIdx) {
-          var key = dayIdx + ':' + taskIdx;
-          var done = !!progress[key];
-          return '<div class="plan-task' + (done ? ' is-done' : '') + '" data-key="' + key + '">' +
-            '<div class="plan-task__check">' + (done ? '<i class="fa-solid fa-check" style="font-size:0.6rem"></i>' : '') + '</div>' +
-            '<div class="plan-task__text">' + esc(task) + '</div>' +
-          '</div>';
-        }).join('');
-        html += '<div class="plan-day' + (dayIdx === 0 ? ' is-open' : '') + '">' +
-          '<div class="plan-day__head">' +
-            '<div class="plan-day__num">' + (d.day || (dayIdx + 1)) + '</div>' +
-            '<div class="plan-day__body">' +
-              '<div class="plan-day__title">' + esc(d.title || ('Day ' + (dayIdx + 1))) + '</div>' +
-              '<div class="plan-day__sub">' + (d.duration_minutes || 45) + ' min · ' + (d.tasks || []).length + ' tasks</div>' +
-            '</div>' +
-            '<i class="fa-solid fa-chevron-down plan-day__arrow"></i>' +
-          '</div>' +
-          '<div class="plan-day__tasks">' + tasksHtml + '</div>' +
-        '</div>';
-      });
-      html += '</div>';
-      container.innerHTML = html;
-
-      function updateProgress() {
-        var done = Object.keys(progress).filter(function (k) { return progress[k]; }).length;
-        var pct = totalTasks ? Math.round((done / totalTasks) * 100) : 0;
-        var fill = document.getElementById('plan-fill-' + plan.id);
-        var label = document.getElementById('plan-label-' + plan.id);
-        if (fill) fill.style.width = pct + '%';
-        if (label) label.textContent = done + ' / ' + totalTasks;
-      }
-
-      container.querySelectorAll('.plan-day__head').forEach(function (head) {
-        head.addEventListener('click', function () {
-          head.parentElement.classList.toggle('is-open');
-        });
-      });
-
-      container.querySelectorAll('.plan-task').forEach(function (taskEl) {
-        taskEl.addEventListener('click', function () {
-          var key = taskEl.getAttribute('data-key');
-          progress[key] = !progress[key];
-          try { localStorage.setItem(storageKey, JSON.stringify(progress)); } catch (_) {}
-          taskEl.classList.toggle('is-done', progress[key]);
-          var check = taskEl.querySelector('.plan-task__check');
-          check.innerHTML = progress[key] ? '<i class="fa-solid fa-check" style="font-size:0.6rem"></i>' : '';
-          updateProgress();
-        });
-      });
-
-      updateProgress();
-    }
-
-    /* ============================================================
-       NOTE (inline creator)
-       ============================================================ */
-    function buildInlineNote(tool) {
-      var container = document.createElement('div');
-      container.className = 'note-widget';
-      var inputId = 'note-title-' + Math.random().toString(36).slice(2, 8);
-      container.innerHTML =
-        '<div class="note-widget__head">' +
-          '<div class="note-widget__icon"><i class="fa-solid fa-note-sticky"></i></div>' +
-          '<div>' +
-            '<div class="note-widget__title">New note</div>' +
-            '<div class="note-widget__meta">' + esc(tool.topic || 'general') + '</div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="note-widget__body">' +
-          '<input type="text" class="note-widget__input" id="' + inputId + '" placeholder="Note title…" style="min-height:0">' +
-          '<textarea class="note-widget__input" placeholder="Write your note here…"></textarea>' +
-          '<div class="note-widget__actions">' +
-            '<button type="button" class="btn btn-ghost">Cancel</button>' +
-            '<button type="button" class="btn btn-primary">Save note</button>' +
-          '</div>' +
-        '</div>';
-
-      var titleInput = container.querySelector('input');
-      var textArea = container.querySelector('textarea');
-      var actionBtns = container.querySelectorAll('.note-widget__actions button');
-      var cancelBtn = actionBtns[0];
-      var saveBtn = actionBtns[1];
-
-      if (tool.topic && tool.topic !== 'general knowledge') {
-        titleInput.value = tool.topic.charAt(0).toUpperCase() + tool.topic.slice(1);
-      }
-
-      cancelBtn.addEventListener('click', function () {
-        container.remove();
-      });
-
-      saveBtn.addEventListener('click', async function () {
-        var title = titleInput.value.trim() || 'Untitled note';
-        var content = textArea.value;
-        if (!content.trim()) { alert('Write something before saving.'); return; }
-        saveBtn.disabled = true;
-        saveBtn.textContent = 'Saving…';
-        try {
-          var res = await fetch('/api/tools/notes', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ title: title, content: content, subject: tool.topic || null }),
-          });
-          if (!res.ok) { alert('Could not save note.'); saveBtn.disabled = false; saveBtn.textContent = 'Save note'; return; }
-          container.innerHTML =
-            '<div class="note-widget__head">' +
-              '<div class="note-widget__icon"><i class="fa-solid fa-check"></i></div>' +
-              '<div>' +
-                '<div class="note-widget__title">Note saved</div>' +
-                '<div class="note-widget__meta">' + esc(title) + '</div>' +
-              '</div>' +
-            '</div>' +
-            '<div class="note-widget__body" style="text-align:center">' +
-              '<a href="/lab/notes.html" class="btn btn-ghost">Open Notes</a>' +
-            '</div>';
-        } catch (_) {
-          alert('Network error.');
-          saveBtn.disabled = false;
-          saveBtn.textContent = 'Save note';
-        }
-      });
-
-      return container;
-    }
-
-    /* ============================================================
        THEORY — one question at a time
        ============================================================ */
     async function buildInteractiveTheory(tool) {
@@ -2033,7 +1859,6 @@
           return;
         }
 
-        // Last question — submit
         submitExam(false);
       });
 
@@ -2100,12 +1925,355 @@
           submitted = false;
           nextBtn.disabled = false;
           nextBtn.textContent = 'Try submitting again';
-          // Let the user try again
         }
       }
 
       renderCurrent();
       startTimer();
+    }
+
+    /* ============================================================
+       VISUALIZATION
+       ============================================================ */
+    async function buildInlineVisualization(tool) {
+      var container = document.createElement('div');
+      container.className = 'viz-widget';
+      var canvasId = 'viz-canvas-' + Math.random().toString(36).slice(2, 10);
+      var html =
+        '<div class="viz-widget__head">' +
+          '<div class="viz-widget__icon"><i class="fa-solid fa-diagram-project"></i></div>' +
+          '<div>' +
+            '<div class="viz-widget__title">' + esc(tool.title || 'Diagram') + '</div>' +
+            '<div class="viz-widget__meta">' + esc(tool.kind || 'flowchart') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="viz-widget__canvas" id="' + canvasId + '">' +
+          '<div class="widget-loading">Rendering…</div>' +
+        '</div>' +
+        (tool.explanation ? '<div class="viz-widget__explanation">' + esc(tool.explanation) + '</div>' : '');
+      container.innerHTML = html;
+
+      try {
+        var mermaid = await ensureMermaid();
+        var renderId = 'viz-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+        var result = await mermaid.render(renderId, tool.mermaid);
+        var canvas = document.getElementById(canvasId);
+        if (canvas) canvas.innerHTML = result.svg;
+      } catch (err) {
+        var canvas2 = document.getElementById(canvasId);
+        if (canvas2) {
+          canvas2.innerHTML = '<div class="widget-error">Could not render diagram.<br>' + esc(err.message || '') + '</div>';
+        }
+      }
+      return container;
+    }
+
+    /* ============================================================
+       STUDY PLAN
+       ============================================================ */
+    async function buildInlineStudyPlan(tool) {
+      var planId = tool.planId || extractIdFromUrl(tool);
+      if (!planId) return buildToolCard(tool);
+      var container = document.createElement('div');
+      container.className = 'plan-widget';
+      container.innerHTML = '<div class="widget-loading">Loading study plan…</div>';
+      try {
+        var res = await fetch('/api/tools/studyplans/' + planId, { credentials: 'include' });
+        if (!res.ok) { container.innerHTML = '<div class="widget-error">Could not load plan.</div>'; return container; }
+        var data = await res.json();
+        if (!data.plan || !data.plan.plan || !data.plan.plan.days) {
+          container.innerHTML = '<div class="widget-error">Plan has no days.</div>';
+          return container;
+        }
+        renderStudyPlanWidget(container, data.plan);
+      } catch (_) {
+        container.innerHTML = '<div class="widget-error">Network error.</div>';
+      }
+      return container;
+    }
+
+    function renderStudyPlanWidget(container, plan) {
+      var days = plan.plan.days || [];
+      var totalTasks = days.reduce(function (sum, d) { return sum + (d.tasks || []).length; }, 0);
+      var storageKey = 'inline-plan-progress-' + plan.id;
+      var progress = {};
+      try { progress = JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch (_) {}
+
+      var html =
+        '<div class="plan-widget__head">' +
+          '<div class="plan-widget__icon"><i class="fa-solid fa-calendar-days"></i></div>' +
+          '<div>' +
+            '<div class="plan-widget__title">' + esc(plan.title || 'Study Plan') + '</div>' +
+            '<div class="plan-widget__meta">' + plan.duration_days + ' days · ' + esc(plan.topic || 'general') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="plan-widget__progress">' +
+          '<div class="plan-widget__progress-bar"><div class="plan-widget__progress-fill" id="plan-fill-' + plan.id + '" style="width:0%"></div></div>' +
+          '<span class="plan-widget__progress-label" id="plan-label-' + plan.id + '">0 / ' + totalTasks + '</span>' +
+        '</div>' +
+        '<div class="plan-widget__days">';
+
+      days.forEach(function (d, dayIdx) {
+        var tasksHtml = (d.tasks || []).map(function (task, taskIdx) {
+          var key = dayIdx + ':' + taskIdx;
+          var done = !!progress[key];
+          return '<div class="plan-task' + (done ? ' is-done' : '') + '" data-key="' + key + '">' +
+            '<div class="plan-task__check">' + (done ? '<i class="fa-solid fa-check" style="font-size:0.6rem"></i>' : '') + '</div>' +
+            '<div class="plan-task__text">' + esc(task) + '</div>' +
+          '</div>';
+        }).join('');
+        html += '<div class="plan-day' + (dayIdx === 0 ? ' is-open' : '') + '">' +
+          '<div class="plan-day__head">' +
+            '<div class="plan-day__num">' + (d.day || (dayIdx + 1)) + '</div>' +
+            '<div class="plan-day__body">' +
+              '<div class="plan-day__title">' + esc(d.title || ('Day ' + (dayIdx + 1))) + '</div>' +
+              '<div class="plan-day__sub">' + (d.duration_minutes || 45) + ' min · ' + (d.tasks || []).length + ' tasks</div>' +
+            '</div>' +
+            '<i class="fa-solid fa-chevron-down plan-day__arrow"></i>' +
+          '</div>' +
+          '<div class="plan-day__tasks">' + tasksHtml + '</div>' +
+        '</div>';
+      });
+      html += '</div>';
+      container.innerHTML = html;
+
+      function updateProgress() {
+        var done = Object.keys(progress).filter(function (k) { return progress[k]; }).length;
+        var pct = totalTasks ? Math.round((done / totalTasks) * 100) : 0;
+        var fill = document.getElementById('plan-fill-' + plan.id);
+        var label = document.getElementById('plan-label-' + plan.id);
+        if (fill) fill.style.width = pct + '%';
+        if (label) label.textContent = done + ' / ' + totalTasks;
+      }
+
+      container.querySelectorAll('.plan-day__head').forEach(function (head) {
+        head.addEventListener('click', function () {
+          head.parentElement.classList.toggle('is-open');
+        });
+      });
+
+      container.querySelectorAll('.plan-task').forEach(function (taskEl) {
+        taskEl.addEventListener('click', function () {
+          var key = taskEl.getAttribute('data-key');
+          progress[key] = !progress[key];
+          try { localStorage.setItem(storageKey, JSON.stringify(progress)); } catch (_) {}
+          taskEl.classList.toggle('is-done', progress[key]);
+          var check = taskEl.querySelector('.plan-task__check');
+          check.innerHTML = progress[key] ? '<i class="fa-solid fa-check" style="font-size:0.6rem"></i>' : '';
+          updateProgress();
+        });
+      });
+
+      updateProgress();
+    }
+
+    /* ============================================================
+       NOTE (inline creator)
+       ============================================================ */
+    function buildInlineNote(tool) {
+      var container = document.createElement('div');
+      container.className = 'note-widget';
+      var inputId = 'note-title-' + Math.random().toString(36).slice(2, 8);
+      container.innerHTML =
+        '<div class="note-widget__head">' +
+          '<div class="note-widget__icon"><i class="fa-solid fa-note-sticky"></i></div>' +
+          '<div>' +
+            '<div class="note-widget__title">New note</div>' +
+            '<div class="note-widget__meta">' + esc(tool.topic || 'general') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="note-widget__body">' +
+          '<input type="text" class="note-widget__input" id="' + inputId + '" placeholder="Note title…" style="min-height:0">' +
+          '<textarea class="note-widget__input" placeholder="Write your note here…"></textarea>' +
+          '<div class="note-widget__actions">' +
+            '<button type="button" class="btn btn-ghost">Cancel</button>' +
+            '<button type="button" class="btn btn-primary">Save note</button>' +
+          '</div>' +
+        '</div>';
+
+      var titleInput = container.querySelector('input');
+      var textArea = container.querySelector('textarea');
+      var actionBtns = container.querySelectorAll('.note-widget__actions button');
+      var cancelBtn = actionBtns[0];
+      var saveBtn = actionBtns[1];
+
+      if (tool.topic && tool.topic !== 'general knowledge') {
+        titleInput.value = tool.topic.charAt(0).toUpperCase() + tool.topic.slice(1);
+      }
+
+      cancelBtn.addEventListener('click', function () {
+        container.remove();
+      });
+
+      saveBtn.addEventListener('click', async function () {
+        var title = titleInput.value.trim() || 'Untitled note';
+        var content = textArea.value;
+        if (!content.trim()) { alert('Write something before saving.'); return; }
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving…';
+        try {
+          var res = await fetch('/api/tools/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ title: title, content: content, subject: tool.topic || null }),
+          });
+          if (!res.ok) { alert('Could not save note.'); saveBtn.disabled = false; saveBtn.textContent = 'Save note'; return; }
+          container.innerHTML =
+            '<div class="note-widget__head">' +
+              '<div class="note-widget__icon"><i class="fa-solid fa-check"></i></div>' +
+              '<div>' +
+                '<div class="note-widget__title">Note saved</div>' +
+                '<div class="note-widget__meta">' + esc(title) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="note-widget__body" style="text-align:center">' +
+              '<a href="/lab/notes.html" class="btn btn-ghost">Open Notes</a>' +
+            '</div>';
+        } catch (_) {
+          alert('Network error.');
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save note';
+        }
+      });
+
+      return container;
+    }
+
+    /* ============================================================
+       MISTAKES — inline widget
+       ============================================================ */
+    async function buildInlineMistakes(tool) {
+      var container = document.createElement('div');
+      container.className = 'mistakes-widget';
+      container.innerHTML = '<div class="widget-loading">Loading your mistakes…</div>';
+
+      try {
+        var res = await fetch('/api/tools/mistakes', { credentials: 'include' });
+        if (!res.ok) {
+          container.innerHTML = '<div class="widget-error">Could not load mistakes.</div>';
+          return container;
+        }
+        var data = await res.json();
+        var groups = data.groups || [];
+
+        var totalQ = groups.reduce(function (sum, g) { return sum + g.questions.length; }, 0);
+
+        var html =
+          '<div class="mistakes-widget__head">' +
+            '<div class="mistakes-widget__icon"><i class="fa-solid fa-clipboard-list"></i></div>' +
+            '<div>' +
+              '<div class="mistakes-widget__title">Mistake Bank</div>' +
+              '<div class="mistakes-widget__meta">' +
+                (groups.length || 0) + ' topic' + (groups.length === 1 ? '' : 's') +
+                ' · ' + totalQ + ' question' + (totalQ === 1 ? '' : 's') +
+              '</div>' +
+            '</div>' +
+          '</div>';
+
+        if (!groups.length) {
+          container.innerHTML = html +
+            '<div class="mistakes-empty">' +
+              '<i class="fa-solid fa-circle-check"></i>' +
+              '<h3 class="mistakes-empty__title">No mistakes on record</h3>' +
+              '<p class="mistakes-empty__desc">Great work! Take a quiz and any wrong answers will appear here.</p>' +
+            '</div>';
+          return container;
+        }
+
+        html += '<div class="mistakes-widget__body">';
+
+        groups.forEach(function (group, gi) {
+          var qs = group.questions || [];
+          html +=
+            '<div class="mistakes-topic' + (gi === 0 ? ' is-open' : '') + '">' +
+              '<div class="mistakes-topic__head">' +
+                '<div class="mistakes-topic__count">' + qs.length + '</div>' +
+                '<div class="mistakes-topic__body">' +
+                  '<div class="mistakes-topic__name">' + esc(group.topic || 'Uncategorized') + '</div>' +
+                  '<div class="mistakes-topic__sub">' +
+                    (group.subject ? esc(group.subject) + ' · ' : '') +
+                    qs.length + ' missed question' + (qs.length === 1 ? '' : 's') +
+                  '</div>' +
+                '</div>' +
+                '<i class="fa-solid fa-chevron-down mistakes-topic__arrow" aria-hidden="true"></i>' +
+              '</div>' +
+              '<div class="mistakes-topic__questions">';
+
+          qs.slice(0, 5).forEach(function (q) {
+            var opts = Array.isArray(q.options) ? q.options : [];
+            var correctLabel = q.correct;
+            var correctText = '';
+            if (Array.isArray(opts)) {
+              var correctOpt = opts.find(function (o) { return o.label === correctLabel; });
+              if (correctOpt) correctText = correctOpt.text;
+            }
+
+            var selectedLabel = q.selected;
+            var selectedText = '';
+            if (Array.isArray(opts) && selectedLabel) {
+              var selOpt = opts.find(function (o) { return o.label === selectedLabel; });
+              if (selOpt) selectedText = selOpt.text;
+            }
+
+            html +=
+              '<div class="mistakes-q">' +
+                '<p class="mistakes-q__text">' + esc(q.question) + '</p>' +
+                '<div class="mistakes-q__row">' +
+                  '<span class="mistakes-q__label">You chose</span>' +
+                  '<span class="mistakes-q__wrong">' +
+                    (selectedLabel ? selectedLabel + ' — ' + esc(selectedText) : '(nothing)') +
+                  '</span>' +
+                '</div>' +
+                '<div class="mistakes-q__row">' +
+                  '<span class="mistakes-q__label">Correct</span>' +
+                  '<span class="mistakes-q__right">' +
+                    correctLabel + ' — ' + esc(correctText) +
+                  '</span>' +
+                '</div>' +
+                (q.explanation
+                  ? '<div class="mistakes-q__explain">' + esc(q.explanation) + '</div>'
+                  : '') +
+              '</div>';
+          });
+
+          if (qs.length > 5) {
+            html += '<p style="text-align:center;color:var(--slate);font-size:0.78rem;margin:8px 0 0">… and ' +
+                    (qs.length - 5) + ' more</p>';
+          }
+
+          html +=
+              '<button type="button" class="mistakes-practice-btn" data-topic="' + esc(group.topic || '') + '">' +
+                '<i class="fa-solid fa-dumbbell" aria-hidden="true"></i>' +
+                'Practice this topic' +
+              '</button>' +
+              '</div>' +
+            '</div>';
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+
+        container.querySelectorAll('.mistakes-topic__head').forEach(function (head) {
+          head.addEventListener('click', function () {
+            head.parentElement.classList.toggle('is-open');
+          });
+        });
+
+        container.querySelectorAll('.mistakes-practice-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var topic = btn.getAttribute('data-topic');
+            if (!topic) return;
+            input.value = 'Give me practice questions on "' + topic + '" — I keep getting these wrong.';
+            autoGrow();
+            form.requestSubmit();
+          });
+        });
+
+      } catch (_) {
+        container.innerHTML = '<div class="widget-error">Network error.</div>';
+      }
+      return container;
     }
 
     /* ============================================================
@@ -2157,6 +2325,7 @@
       var theoryTools = [];
       var sketchTools = [];
       var examTools = [];
+      var mistakesTools = [];
       if (tools && tools.length) {
         tools.forEach(function (t) {
           if (t.type === 'image') imageTools.push(t);
@@ -2169,6 +2338,7 @@
           else if (t.type === 'theory') theoryTools.push(t);
           else if (t.type === 'sketch') sketchTools.push(t);
           else if (t.type === 'exam') examTools.push(t);
+          else if (t.type === 'mistakes') mistakesTools.push(t);
           else cardTools.push(t);
         });
       }
@@ -2225,6 +2395,15 @@
         body.appendChild(exWrap);
         examTools.forEach(function (t) {
           buildInteractiveExam(t).then(function (w) { exWrap.appendChild(w); scrollToBottom(); });
+        });
+      }
+
+      if (mistakesTools.length) {
+        var msWrap = document.createElement('div');
+        msWrap.className = 'msg-tools';
+        body.appendChild(msWrap);
+        mistakesTools.forEach(function (t) {
+          buildInlineMistakes(t).then(function (w) { msWrap.appendChild(w); scrollToBottom(); });
         });
       }
 

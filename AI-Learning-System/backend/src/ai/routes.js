@@ -138,7 +138,7 @@ async function runToolDetection({ user, userText }) {
           count: result.quiz.questions.length,
           url: '/lab/quiz.html?id=' + result.quiz.id,
         });
-        injectedContext.push('A quiz on "' + topic + '" with ' + result.quiz.questions.length + ' questions has been created. It appears as a clickable card below. Mention it in one short sentence and let the student click to start.');
+        injectedContext.push('A quiz on "' + topic + '" with ' + result.quiz.questions.length + ' questions has been created. It appears as an interactive widget below. Mention it in one short sentence and let the student start.');
       } else {
         logger.warn('[ai/chat] quiz tool failed: ' + result.code);
       }
@@ -157,7 +157,7 @@ async function runToolDetection({ user, userText }) {
           count: result.deck.cards.length,
           url: '/lab/flashcards.html?id=' + result.deck.id,
         });
-        injectedContext.push('A flashcard deck on "' + topic + '" with ' + result.deck.cards.length + ' cards has been created. It appears as a clickable card below. Mention it briefly so the student knows to click it.');
+        injectedContext.push('A flashcard deck on "' + topic + '" with ' + result.deck.cards.length + ' cards has been created. It appears as an interactive widget below. Mention it briefly so the student knows to flip through it.');
       }
     } catch (err) { logger.warn('[ai/chat] flashcards tool threw: ' + err.message); }
   }
@@ -291,8 +291,12 @@ async function runToolDetection({ user, userText }) {
     } catch (err) { logger.warn('[ai/chat] exam tool threw: ' + err.message); }
   }
   else if (detectMistakesIntent(t)) {
-    tools.push({ type: 'mistakes', title: 'My Mistakes', url: '/lab/mistakes.html' });
-    injectedContext.push('The student\'s Mistake Bank can be opened from the card below. Mention briefly that it shows their weak topics.');
+    tools.push({ type: 'mistakes', title: 'Mistake Bank' });
+    injectedContext.push(
+      'The student\'s Mistake Bank is now displayed as an interactive widget below. ' +
+      'It groups their wrong answers by topic with the questions and correct answers. ' +
+      'Mention this briefly — one short sentence, no long explanation.'
+    );
   }
   else if (detectSketchIntent(t)) {
     const cleanQuery = String(userText)

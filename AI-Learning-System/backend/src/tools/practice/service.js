@@ -3,6 +3,8 @@ const logger = require('../../core/logger');
 const { chat } = require('../../ai/gateway');
 const { buildPracticePrompt } = require('./prompt');
 
+const MAX_DESCRIPTION_LENGTH = 500;
+
 function parseJSON(raw) {
   let text = String(raw).trim();
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -26,7 +28,14 @@ function validate(data) {
   return null;
 }
 
-async function generate({ userId, topic, count = 5, difficulty = 'medium', subject = null }) {
+function cleanDescription(d) {
+  if (d == null) return null;
+  const s = String(d).trim();
+  if (!s) return null;
+  return s.slice(0, MAX_DESCRIPTION_LENGTH);
+}
+
+async function generate({ userId, topic, count = 5, difficulty = 'medium', subject = null, description = null }) {
   if (!topic || typeof topic !== 'string' || topic.trim().length < 2) {
     return { ok: false, code: 'INVALID_TOPIC' };
   }
@@ -68,6 +77,7 @@ async function generate({ userId, topic, count = 5, difficulty = 'medium', subje
     topic: topic.trim(),
     subject: subject || null,
     difficulty: safeDiff,
+    description: cleanDescription(description),
   });
 
   await db.practice.addQuestions(set.id, parsed.questions.slice(0, safeCount));

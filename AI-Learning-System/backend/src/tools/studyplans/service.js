@@ -3,6 +3,8 @@ const logger = require('../../core/logger');
 const { chat } = require('../../ai/gateway');
 const { buildStudyPlanPrompt } = require('./prompt');
 
+const MAX_DESCRIPTION_LENGTH = 500;
+
 function parseJSON(raw) {
   let text = String(raw).trim();
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -26,7 +28,14 @@ function validate(data, days) {
   return null;
 }
 
-async function generate({ userId, topic, days = 7, subject, examDate }) {
+function cleanDescription(d) {
+  if (d == null) return null;
+  const s = String(d).trim();
+  if (!s) return null;
+  return s.slice(0, MAX_DESCRIPTION_LENGTH);
+}
+
+async function generate({ userId, topic, days = 7, subject, examDate, description = null }) {
   if (!topic || typeof topic !== 'string' || topic.trim().length < 2) {
     return { ok: false, code: 'INVALID_TOPIC' };
   }
@@ -68,6 +77,7 @@ async function generate({ userId, topic, days = 7, subject, examDate }) {
     durationDays: safeDays,
     startDate: today,
     plan: { days: parsed.days.slice(0, safeDays) },
+    description: cleanDescription(description),
   });
 
   return { ok: true, plan };

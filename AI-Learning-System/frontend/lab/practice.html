@@ -6,7 +6,6 @@
 <title>Practice — Studying Lab</title>
 <link rel="stylesheet" href="../assets/shell.css">
 <style>
-  /* Wider content area — see shell.css for the shared override */
   .page-inner, .viz-inner, .fc-inner, .pr-inner, .sp-inner, .qh-inner, .exam-inner { max-width: 1440px; }
   .pr-inner { max-width: 1440px; }
 
@@ -15,10 +14,40 @@
   .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .setup-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
 
-  .generating {
-    text-align: center;
-    padding: 60px 20px;
+  .desc-input {
+    width: 100%;
+    resize: vertical;
+    min-height: 62px;
+    padding: 10px 12px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    color: var(--ink);
   }
+  .desc-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
+  }
+
+  .desc-banner {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 12px 16px;
+    background: var(--gold-50);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 10px 10px 0;
+    font-size: 0.86rem;
+    color: #6A4F13;
+    line-height: 1.5;
+    margin-bottom: 18px;
+    font-style: italic;
+  }
+  .desc-banner i { color: var(--gold); margin-top: 3px; flex-shrink: 0; }
+
+  .generating { text-align: center; padding: 60px 20px; }
   .generating__spinner {
     width: 40px; height: 40px;
     border: 3px solid var(--blush-deep);
@@ -28,49 +57,14 @@
     animation: spin 0.9s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .generating__text {
-    font-family: var(--font-head);
-    color: var(--navy);
-    font-size: 1.1rem;
-    margin: 0;
-  }
+  .generating__text { font-family: var(--font-head); color: var(--navy); font-size: 1.1rem; margin: 0; }
 
-  .q-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-  }
-  .q-progress {
-    font-family: var(--font-ui);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    color: var(--slate);
-    text-transform: uppercase;
-  }
-  .q-progress-bar {
-    height: 4px;
-    background: var(--blush-deep);
-    border-radius: 2px;
-    overflow: hidden;
-    margin-bottom: 28px;
-  }
-  .q-progress-bar__fill {
-    height: 100%;
-    background: var(--red);
-    transition: width 240ms var(--ease);
-  }
+  .q-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  .q-progress { font-family: var(--font-ui); font-size: 0.75rem; letter-spacing: 0.06em; color: var(--slate); text-transform: uppercase; }
+  .q-progress-bar { height: 4px; background: var(--blush-deep); border-radius: 2px; overflow: hidden; margin-bottom: 28px; }
+  .q-progress-bar__fill { height: 100%; background: var(--red); transition: width 240ms var(--ease); }
 
-  .q-text {
-    font-family: var(--font-head);
-    font-size: 1.2rem;
-    color: var(--navy);
-    line-height: 1.5;
-    margin: 0 0 20px;
-    white-space: pre-wrap;
-  }
+  .q-text { font-family: var(--font-head); font-size: 1.2rem; color: var(--navy); line-height: 1.5; margin: 0 0 20px; white-space: pre-wrap; }
 
   .hint-box {
     background: #FBF3E1;
@@ -84,15 +78,7 @@
     display: none;
   }
   .hint-box.is-visible { display: block; }
-  .hint-box__label {
-    font-family: var(--font-ui);
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    display: block;
-    margin-bottom: 4px;
-    opacity: 0.8;
-  }
+  .hint-box__label { font-family: var(--font-ui); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 4px; opacity: 0.8; }
 
   .answer-box {
     background: #EAF7EE;
@@ -104,61 +90,17 @@
     line-height: 1.6;
   }
   .answer-box.is-visible { display: block; }
-  .answer-box__label {
-    font-family: var(--font-ui);
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #2F8F4A;
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
-  .answer-box__text {
-    font-size: 0.95rem;
-    color: var(--ink);
-    white-space: pre-wrap;
-  }
+  .answer-box__label { font-family: var(--font-ui); font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: #2F8F4A; display: block; margin-bottom: 6px; font-weight: 600; }
+  .answer-box__text { font-size: 0.95rem; color: var(--ink); white-space: pre-wrap; }
 
-  .q-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: space-between;
-    margin-top: 8px;
-    flex-wrap: wrap;
-  }
+  .q-actions { display: flex; gap: 10px; justify-content: space-between; margin-top: 8px; flex-wrap: wrap; }
   .q-actions .btn { flex: 1; justify-content: center; }
 
-  .done-card {
-    padding: 48px 28px;
-    text-align: center;
-  }
-  .done-icon {
-    width: 56px; height: 56px;
-    border-radius: 16px;
-    background: #EAF7EE;
-    color: #2F8F4A;
-    display: grid; place-items: center;
-    font-size: 1.6rem;
-    margin: 0 auto 20px;
-  }
-  .done-title {
-    font-family: var(--font-head);
-    font-size: 1.4rem;
-    color: var(--navy);
-    margin: 0 0 8px;
-  }
-  .done-desc {
-    color: var(--slate);
-    font-size: 0.95rem;
-    margin: 0 0 24px;
-  }
-  .done-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+  .done-card { padding: 48px 28px; text-align: center; }
+  .done-icon { width: 56px; height: 56px; border-radius: 16px; background: #EAF7EE; color: #2F8F4A; display: grid; place-items: center; font-size: 1.6rem; margin: 0 auto 20px; }
+  .done-title { font-family: var(--font-head); font-size: 1.4rem; color: var(--navy); margin: 0 0 8px; }
+  .done-desc { color: var(--slate); font-size: 0.95rem; margin: 0 0 24px; }
+  .done-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
   @media (max-width: 860px) {
     .setup-row { grid-template-columns: 1fr; }
@@ -176,9 +118,7 @@
           <header class="page-header">
             <div>
               <h1 class="page-header__title">Practice</h1>
-              <p class="page-header__sub">
-                Open-ended questions with model answers. Think, then reveal.
-              </p>
+              <p class="page-header__sub">Open-ended questions with model answers. Think, then reveal.</p>
             </div>
           </header>
 
@@ -212,6 +152,11 @@
                   <option value="hard">Hard</option>
                 </select>
               </div>
+              <div class="setup-field">
+                <label class="label" for="description">Note to self (optional)</label>
+                <textarea class="desc-input" id="description" rows="2"
+                          placeholder="How are you feeling about this topic? What do you want to remember?"></textarea>
+              </div>
               <div class="setup-actions">
                 <button class="btn btn-primary" id="start-btn" type="button">
                   <i class="fa-solid fa-bolt" aria-hidden="true"></i>
@@ -229,6 +174,7 @@
           </div>
 
           <div id="stage-question" style="display:none">
+            <div id="q-desc-banner" style="display:none"></div>
             <div class="q-header">
               <span class="q-progress" id="q-progress">Question 1 of 5</span>
             </div>
@@ -305,6 +251,12 @@
     var set = null;
     var index = 0;
 
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     async function guard() {
       var res = await fetch('/api/auth/me', { credentials: 'include' });
       if (res.status === 401) { window.location.href = '../index.html'; return false; }
@@ -315,9 +267,10 @@
       var topic = document.getElementById('topic').value.trim();
       if (!topic) { alert('Please enter a topic.'); return; }
 
-      var subject = document.getElementById('subject').value.trim() || null;
-      var count = parseInt(document.getElementById('count').value, 10);
-      var difficulty = document.getElementById('difficulty').value;
+      var subject     = document.getElementById('subject').value.trim() || null;
+      var count       = parseInt(document.getElementById('count').value, 10);
+      var difficulty  = document.getElementById('difficulty').value;
+      var description = document.getElementById('description').value.trim() || null;
 
       showStage('generating');
 
@@ -326,7 +279,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ topic, subject, count, difficulty }),
+          body: JSON.stringify({ topic, subject, count, difficulty, description }),
         });
         var data = await res.json().catch(function () { return {}; });
         if (!res.ok) {
@@ -344,8 +297,25 @@
       }
     }
 
+    function renderDescBanner() {
+      var el = document.getElementById('q-desc-banner');
+      if (!set || !set.description) {
+        el.style.display = 'none';
+        el.innerHTML = '';
+        return;
+      }
+      el.style.display = '';
+      el.innerHTML =
+        '<div class="desc-banner">' +
+          '<i class="fa-solid fa-note-sticky" aria-hidden="true"></i>' +
+          '<div>' + esc(set.description) + '</div>' +
+        '</div>';
+    }
+
     function renderQuestion() {
       var q = set.questions[index];
+      renderDescBanner();
+
       document.getElementById('q-progress').textContent =
         'Question ' + (index + 1) + ' of ' + set.questions.length;
       document.getElementById('q-progress-fill').style.width =

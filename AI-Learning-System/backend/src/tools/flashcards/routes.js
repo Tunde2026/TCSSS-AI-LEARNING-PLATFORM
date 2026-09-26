@@ -7,9 +7,9 @@ const { requireLogin } = require('../../auth');
 // POST /api/tools/flashcards/generate
 router.post('/generate', requireLogin, async (req, res, next) => {
   try {
-    const { topic, count, subject } = req.body || {};
+    const { topic, count, subject, description } = req.body || {};
     const result = await service.generate({
-      userId: req.user.id, topic, count, subject,
+      userId: req.user.id, topic, count, subject, description,
     });
     if (!result.ok) {
       const map = {
@@ -40,6 +40,18 @@ router.get('/:id', requireLogin, async (req, res, next) => {
       return res.status(404).json({ error: 'Deck not found' });
     }
     res.json({ deck });
+  } catch (err) { next(err); }
+});
+
+// PATCH /api/tools/flashcards/:id/description
+router.patch('/:id/description', requireLogin, async (req, res, next) => {
+  try {
+    const description = (req.body && req.body.description != null)
+      ? String(req.body.description).slice(0, 500)
+      : null;
+    const updated = await db.flashcards.setDescription(req.params.id, req.user.id, description);
+    if (!updated) return res.status(404).json({ error: 'Deck not found' });
+    res.json({ deck: updated });
   } catch (err) { next(err); }
 });
 

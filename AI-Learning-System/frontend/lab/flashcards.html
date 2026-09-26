@@ -6,7 +6,6 @@
 <title>Flashcards — Studying Lab</title>
 <link rel="stylesheet" href="../assets/shell.css">
 <style>
-  /* Wider content area — see shell.css for the shared override */
   .page-inner, .viz-inner, .fc-inner, .pr-inner, .sp-inner, .qh-inner, .exam-inner { max-width: 1440px; }
   .fc-inner { max-width: 1440px; }
 
@@ -15,10 +14,27 @@
   .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .setup-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
 
+  .desc-input {
+    width: 100%;
+    resize: vertical;
+    min-height: 62px;
+    padding: 10px 12px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    color: var(--ink);
+  }
+  .desc-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
+  }
+
   /* Deck list */
   .deck-list { display: flex; flex-direction: column; gap: 10px; }
   .deck-row {
-    display: flex; align-items: center; gap: 16px;
+    display: flex; align-items: flex-start; gap: 16px;
     padding: 16px 20px; background: var(--white);
     border: 1px solid var(--border); border-radius: var(--radius);
     transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
@@ -33,6 +49,7 @@
     width: 44px; height: 44px; border-radius: 12px;
     background: #FDECEC; color: var(--red);
     display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;
+    margin-top: 2px;
   }
   .deck-body { flex: 1; min-width: 0; }
   .deck-title {
@@ -44,8 +61,17 @@
     font-size: 0.82rem; color: var(--slate); margin: 0;
     display: flex; gap: 10px; flex-wrap: wrap;
   }
-  .deck-due {
-    color: var(--red); font-weight: 600;
+  .deck-due { color: var(--red); font-weight: 600; }
+  .deck-desc {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: var(--gold-50);
+    border-left: 3px solid var(--gold);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.8rem;
+    color: #6A4F13;
+    line-height: 1.5;
+    font-style: italic;
   }
   .deck-del {
     width: 34px; height: 34px; border-radius: 8px;
@@ -56,23 +82,10 @@
   }
   .deck-del:hover { background: #FCECEC; color: var(--deep-red); }
 
-  /* Study screen */
-  .study-header {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
-  }
-  .study-progress {
-    font-family: var(--font-ui); font-size: 0.75rem;
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate);
-  }
-  .study-bar {
-    height: 4px; background: var(--blush-deep);
-    border-radius: 2px; overflow: hidden; margin-bottom: 28px;
-  }
-  .study-bar__fill {
-    height: 100%; background: var(--red);
-    transition: width 240ms var(--ease);
-  }
+  .study-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .study-progress { font-family: var(--font-ui); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); }
+  .study-bar { height: 4px; background: var(--blush-deep); border-radius: 2px; overflow: hidden; margin-bottom: 28px; }
+  .study-bar__fill { height: 100%; background: var(--red); transition: width 240ms var(--ease); }
 
   .flashcard {
     width: 100%;
@@ -90,32 +103,11 @@
     transition: border-color var(--transition);
   }
   .flashcard:hover { border-color: var(--gold); }
-  .flashcard__label {
-    font-family: var(--font-ui); font-size: 0.65rem;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--slate); margin-bottom: 18px;
-  }
-  .flashcard__text {
-    font-family: var(--font-head);
-    font-size: 1.35rem;
-    color: var(--navy);
-    line-height: 1.4;
-    margin: 0;
-    max-width: 560px;
-  }
-  .flashcard__hint {
-    margin-top: 20px;
-    font-size: 0.75rem;
-    color: var(--slate);
-    opacity: 0.7;
-  }
+  .flashcard__label { font-family: var(--font-ui); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate); margin-bottom: 18px; }
+  .flashcard__text { font-family: var(--font-head); font-size: 1.35rem; color: var(--navy); line-height: 1.4; margin: 0; max-width: 560px; }
+  .flashcard__hint { margin-top: 20px; font-size: 0.75rem; color: var(--slate); opacity: 0.7; }
 
-  .rate-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-top: 20px;
-  }
+  .rate-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px; }
   .rate-btn {
     padding: 14px 10px; border-radius: 12px;
     border: 1.5px solid var(--border);
@@ -126,10 +118,7 @@
     transition: border-color var(--transition), background var(--transition);
   }
   .rate-btn:hover { border-color: var(--navy); }
-  .rate-btn small {
-    font-family: var(--font-ui); font-size: 0.62rem;
-    color: var(--slate); font-weight: 400; letter-spacing: 0.04em;
-  }
+  .rate-btn small { font-family: var(--font-ui); font-size: 0.62rem; color: var(--slate); font-weight: 400; letter-spacing: 0.04em; }
   .rate-btn--again { color: var(--deep-red); }
   .rate-btn--hard  { color: #B77700; }
   .rate-btn--good  { color: var(--navy); }
@@ -180,6 +169,11 @@
                       <option value="20">20</option>
                     </select>
                   </div>
+                </div>
+                <div class="setup-field">
+                  <label class="label" for="description">Note to self (optional)</label>
+                  <textarea class="desc-input" id="description" rows="2"
+                            placeholder="How are you feeling about this deck? What do you want to remember?"></textarea>
                 </div>
                 <div class="setup-actions">
                   <button class="btn btn-primary" id="gen-btn" type="button">
@@ -276,7 +270,7 @@
     }
 
     var decks       = [];
-    var queue       = [];     // due cards
+    var queue       = [];
     var currentIdx  = 0;
     var flipped     = false;
     var reviewed    = 0;
@@ -308,7 +302,6 @@
       return true;
     }
 
-    // -------- Decks --------
     async function loadDecks() {
       var res = await fetch('/api/tools/flashcards', { credentials: 'include' });
       if (!res.ok) return;
@@ -341,6 +334,9 @@
               '<div class="deck-meta">' + dueLine +
                 (d.subject ? ' · ' + esc(d.subject) : '') +
               '</div>' +
+              (d.description
+                ? '<div class="deck-desc">' + esc(d.description) + '</div>'
+                : '') +
             '</div>' +
             '<button class="deck-del" data-id="' + d.id + '" title="Delete" type="button">' +
               '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
@@ -374,12 +370,12 @@
       });
     }
 
-    // -------- Generate --------
     async function generate() {
       var topic = document.getElementById('topic').value.trim();
       if (!topic) { toast('Please enter a topic.', true); return; }
-      var subject = document.getElementById('subject').value.trim() || null;
-      var count = parseInt(document.getElementById('count').value, 10);
+      var subject     = document.getElementById('subject').value.trim() || null;
+      var count       = parseInt(document.getElementById('count').value, 10);
+      var description = document.getElementById('description').value.trim() || null;
 
       showStage('generating');
 
@@ -388,7 +384,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ topic: topic, count: count, subject: subject }),
+          body: JSON.stringify({ topic: topic, count: count, subject: subject, description: description }),
         });
         var data = await res.json().catch(function () { return {}; });
         if (!res.ok) {
@@ -396,7 +392,6 @@
           showStage('list');
           return;
         }
-        // refresh list
         await loadDecks();
         showStage('list');
         toast('Deck created.');
@@ -406,7 +401,6 @@
       }
     }
 
-    // -------- Study --------
     async function startStudy(deck) {
       currentDeck = deck;
       var res = await fetch('/api/tools/flashcards/' + deck.id + '/due', {
@@ -456,7 +450,6 @@
     async function rate(q) {
       if (!flipped) return;
       var card = queue[currentIdx];
-      // fire and forget (don't block UI)
       fetch('/api/tools/flashcards/card/' + card.id + '/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -469,7 +462,6 @@
       renderCard();
     }
 
-    // -------- Wire up --------
     document.getElementById('gen-btn').addEventListener('click', generate);
     document.getElementById('topic').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); generate(); }
@@ -501,7 +493,6 @@
       if (e.key === '4') rate(3);
     });
 
-    // -------- Boot --------
     (async function init() {
       if (!(await guard())) return;
       await loadDecks();

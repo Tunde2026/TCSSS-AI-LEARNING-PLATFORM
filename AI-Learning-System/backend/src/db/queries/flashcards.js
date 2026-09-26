@@ -1,11 +1,11 @@
 const { pool } = require('../pool');
 
-async function createDeck({ userId, title, topic, subject }) {
+async function createDeck({ userId, title, topic, subject, description = null }) {
   const { rows } = await pool.query(
-    `INSERT INTO flashcard_decks (user_id, title, topic, subject)
-     VALUES ($1, $2, $3, $4)
-     RETURNING id, user_id, title, topic, subject, created_at, updated_at`,
-    [userId, title, topic, subject || null]
+    `INSERT INTO flashcard_decks (user_id, title, topic, subject, description)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, user_id, title, topic, subject, description, created_at, updated_at`,
+    [userId, title, topic, subject || null, description]
   );
   return rows[0];
 }
@@ -27,7 +27,7 @@ async function addCards(deckId, cards) {
 
 async function findDeck(id) {
   const { rows } = await pool.query(
-    `SELECT id, user_id, title, topic, subject, created_at, updated_at
+    `SELECT id, user_id, title, topic, subject, description, created_at, updated_at
        FROM flashcard_decks WHERE id = $1`,
     [id]
   );
@@ -47,7 +47,8 @@ async function findDeck(id) {
 
 async function listDecks(userId) {
   const { rows } = await pool.query(
-    `SELECT d.id, d.title, d.topic, d.subject, d.created_at, d.updated_at,
+    `SELECT d.id, d.title, d.topic, d.subject, d.description,
+            d.created_at, d.updated_at,
             COUNT(c.id)::int AS card_count,
             COUNT(CASE WHEN c.due_at <= now() THEN 1 END)::int AS due_count
        FROM flashcard_decks d
@@ -60,6 +61,16 @@ async function listDecks(userId) {
   return rows;
 }
 
+async function setDescription(id, userId, description) {
+  const { rows } = await pool.query(
+    `UPDATE flashcard_decks SET description = $1, updated_at = now()
+      WHERE id = $2 AND user_id = $3
+      RETURNING id, title, topic, subject, description, created_at, updated_at`,
+    [description || null, id, userId]
+  );
+  return rows[0] || null;
+}
+
 async function removeDeck(id, userId) {
   const { rowCount } = await pool.query(
     `DELETE FROM flashcard_decks WHERE id = $1 AND user_id = $2`,
@@ -68,7 +79,6 @@ async function removeDeck(id, userId) {
   return rowCount > 0;
 }
 
-// Fetch due cards for a deck, oldest due first.
 async function dueCards(deckId, limit = 50) {
   const { rows } = await pool.query(
     `SELECT id, position, front, back, interval_days, ease, due_at,
@@ -82,8 +92,6 @@ async function dueCards(deckId, limit = 50) {
   return rows;
 }
 
-// SM-2-inspired review update.
-// quality: 0=Again, 1=Hard, 2=Good, 3=Easy
 async function reviewCard({ cardId, userId, quality }) {
   const { rows } = await pool.query(
     `SELECT interval_days, ease, review_count, correct_count
@@ -110,11 +118,6 @@ async function reviewCard({ cardId, userId, quality }) {
     ease = Math.min(3.0, ease + 0.15);
     correct += 1;
   }
-
-  // Interval of 0 means "show again in this session" — due in 1 minute.
-  const dueExpr = interval === 0
-    ? `now() + interval '1 minute'`
-    : `now() + ($1 || ' days')::interval`;
 
   const updateSql = interval === 0
     ? `UPDATE flashcards
@@ -149,6 +152,6 @@ async function reviewCard({ cardId, userId, quality }) {
 }
 
 module.exports = {
-  createDeck, addCards, findDeck, listDecks, removeDeck,
+  createDeck, addCards, findDeck, listDecks, setDescription, removeDeck,
   dueCards, reviewCard,
 };

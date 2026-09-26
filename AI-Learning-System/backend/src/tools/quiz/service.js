@@ -1,8 +1,22 @@
+// ============================================================
+// tools/quiz/service.js
+// ------------------------------------------------------------
+// Business logic for Quiz. Called by routes.
+// AI generates candidate questions; the app validates, stores,
+// and scores them. The application is authoritative.
+// ============================================================
+
 const db      = require('../../db');
 const logger  = require('../../core/logger');
 const { chat } = require('../../ai/gateway');
 const { buildQuizPrompt } = require('./prompt');
 
+const MAX_QUESTIONS = 20;
+const MAX_DESCRIPTION_LENGTH = 500;
+
+/* ------------------------------------------------------------
+   JSON parsing — strips markdown fences if the AI adds them
+   ------------------------------------------------------------ */
 function parseQuizJSON(raw) {
   let text = String(raw).trim();
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -17,31 +31,58 @@ function parseQuizJSON(raw) {
   return JSON.parse(text);
 }
 
+/* ------------------------------------------------------------
+   Validation — every question must be well-formed
+   ------------------------------------------------------------ */
 function validateQuiz(data) {
   if (!data || typeof data !== 'object') return 'Response is not an object';
   if (!Array.isArray(data.questions) || data.questions.length === 0) return 'Response has no questions';
   for (let i = 0; i < data.questions.length; i++) {
     const q = data.questions[i];
-    if (!q.question || typeof q.question !== 'string') return `Question ${i+1} missing text`;
-    if (!Array.isArray(q.options) || q.options.length !== 4) return `Question ${i+1} must have 4 options`;
+    if (!q.question || typeof q.question !== 'string') return `Question ${i + 1} missing text`;
+    if (!Array.isArray(q.options) || q.options.length !== 4) return `Question ${i + 1} must have 4 options`;
     for (const opt of q.options) {
-      if (!opt.label || !opt.text) return `Question ${i+1} has a malformed option`;
+      if (!opt.label || !opt.text) return `Question ${i + 1} has a malformed option`;
     }
-    if (!['A','B','C','D'].includes(q.correct)) return `Question ${i+1} has invalid correct answer`;
+    if (!['A', 'B', 'C', 'D'].includes(q.correct)) return `Question ${i + 1} has invalid correct answer`;
   }
   return null;
 }
 
-async function generate({ userId, topic, count = 5, difficulty = 'medium',
-                           subject = null, isExam = false, timeLimitSeconds = null }) {
+/* ------------------------------------------------------------
+   Normalize description — trim, cap length, empty → null
+   ------------------------------------------------------------ */
+function cleanDescription(d) {
+  if (d == null) return null;
+  const s = String(d).trim();
+  if (!s) return null;
+  return s.slice(0, MAX_DESCRIPTION_LENGTH);
+}
+
+/* ------------------------------------------------------------
+   Generate — ask AI, validate, save
+   ------------------------------------------------------------ */
+async function generate({
+  userId,
+  topic,
+  count = 5,
+  difficulty = 'medium',
+  subject = null,
+  isExam = false,
+  timeLimitSeconds = null,
+  description = null,
+}) {
   if (!topic || typeof topic !== 'string' || topic.trim().length < 2) {
     return { ok: false, code: 'INVALID_TOPIC' };
   }
-  const safeCount = Math.max(1, Math.min(20, Number(count) || 5));
-  const safeDifficulty = ['easy','medium','hard'].includes(difficulty) ? difficulty : 'medium';
+
+  const safeCount = Math.max(1, Math.min(MAX_QUESTIONS, Number(count) || 5));
+  const safeDifficulty = ['easy', 'medium', 'hard'].includes(difficulty) ? difficulty : 'medium';
+  const cleanTopic = topic.trim();
+  const cleanDesc  = cleanDescription(description);
 
   const systemPrompt = buildQuizPrompt({
-    topic: topic.trim(),
+    topic: cleanTopic,
     count: safeCount,
     difficulty: safeDifficulty,
     subject,
@@ -52,7 +93,7 @@ async function generate({ userId, topic, count = 5, difficulty = 'medium',
     aiResult = await chat({
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Generate the quiz now. Return only the JSON.` },
+        { role: 'user', content: 'Generate the quiz now. Return only the JSON.' },
       ],
       temperature: 0.5,
       maxTokens: 2048,
@@ -67,30 +108,38 @@ async function generate({ userId, topic, count = 5, difficulty = 'medium',
   catch (_) { return { ok: false, code: 'INVALID_AI_OUTPUT' }; }
 
   const validationError = validateQuiz(parsed);
-  if (validationError) return { ok: false, code: 'INVALID_AI_OUTPUT', detail: validationError };
+  if (validationError) {
+    return { ok: false, code: 'INVALID_AI_OUTPUT', detail: validationError };
+  }
 
   const quiz = await db.quizzes.create({
     userId,
-    title: parsed.title || `Quiz on ${topic}`,
+    title: parsed.title || `Quiz on ${cleanTopic}`,
     subject: subject || null,
-    topic: topic.trim(),
+    topic: cleanTopic,
     difficulty: safeDifficulty,
     isExam: !!isExam,
     timeLimitSeconds: isExam ? (Number(timeLimitSeconds) || 600) : null,
+    description: cleanDesc,
   });
 
-  const questions = parsed.questions.slice(0, safeCount).map(q => ({
-    question: q.question,
-    options:  q.options,
-    correct:  q.correct,
-    explanation: q.explanation || null,
-  }));
+  const questions = parsed.questions.slice(0, safeCount).map(function (q) {
+    return {
+      question: q.question,
+      options: q.options,
+      correct: q.correct,
+      explanation: q.explanation || null,
+    };
+  });
 
   await db.quizzes.addQuestions(quiz.id, questions);
   const full = await db.quizzes.findById(quiz.id);
   return { ok: true, quiz: full };
 }
 
+/* ------------------------------------------------------------
+   Grade — deterministic scoring, no LLM involvement
+   ------------------------------------------------------------ */
 async function gradeAttempt({ quizId, userId, answers, timeTakenSeconds = null }) {
   const quiz = await db.quizzes.findById(quizId);
   if (!quiz) return { ok: false, code: 'NOT_FOUND' };
@@ -101,7 +150,7 @@ async function gradeAttempt({ quizId, userId, answers, timeTakenSeconds = null }
   const graded = [];
 
   for (const q of quiz.questions) {
-    const submitted = answers.find(a => a.questionId === q.id);
+    const submitted = answers.find(function (a) { return a.questionId === q.id; });
     const selected  = submitted ? submitted.selected : null;
     const correct   = q.correct_option;
     const isCorrect = selected === correct;

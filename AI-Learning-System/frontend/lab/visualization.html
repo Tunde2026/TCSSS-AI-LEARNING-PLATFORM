@@ -6,13 +6,29 @@
 <title>Visualization — Studying Lab</title>
 <link rel="stylesheet" href="../assets/shell.css">
 <style>
-  /* Wider content area — see shell.css for the shared override */
   .page-inner, .viz-inner, .fc-inner, .pr-inner, .sp-inner, .qh-inner, .exam-inner { max-width: 1440px; }
   .viz-inner { max-width: 1440px; }
   .setup-card { padding: 28px; }
   .setup-field { margin-bottom: 18px; }
   .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .setup-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+
+  .desc-input {
+    width: 100%;
+    resize: vertical;
+    min-height: 62px;
+    padding: 10px 12px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    outline: none;
+    color: var(--ink);
+  }
+  .desc-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
+  }
 
   .generating { text-align: center; padding: 60px 20px; }
   .generating__spinner {
@@ -24,37 +40,11 @@
     animation: spin 0.9s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .generating__text {
-    font-family: var(--font-head); color: var(--navy);
-    font-size: 1.1rem; margin: 0;
-  }
+  .generating__text { font-family: var(--font-head); color: var(--navy); font-size: 1.1rem; margin: 0; }
 
-  .viz-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .viz-title {
-    font-family: var(--font-head);
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--navy);
-    margin: 0;
-  }
-  .viz-kind {
-    font-family: var(--font-ui);
-    font-size: 0.66rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    background: var(--gold);
-    color: var(--navy);
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-weight: 600;
-  }
+  .viz-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .viz-title { font-family: var(--font-head); font-size: 1.3rem; font-weight: 600; color: var(--navy); margin: 0; }
+  .viz-kind { font-family: var(--font-ui); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; background: var(--gold); color: var(--navy); padding: 4px 10px; border-radius: 999px; font-weight: 600; }
 
   .viz-canvas {
     background: var(--white);
@@ -79,12 +69,7 @@
     margin-bottom: 20px;
   }
 
-  .viz-actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
+  .viz-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
 
   .viz-error {
     background: #FDECEC;
@@ -96,53 +81,27 @@
     line-height: 1.5;
   }
 
-  .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
-    width: 100%;
-  }
-  .photo-cell {
-    position: relative;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    background: var(--blush);
-  }
-  .photo-cell img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    display: block;
-    transition: transform 300ms var(--ease-out);
-  }
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; width: 100%; }
+  .photo-cell { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: var(--blush); }
+  .photo-cell img { width: 100%; height: 160px; object-fit: cover; display: block; transition: transform 300ms var(--ease-out); }
   .photo-cell:hover img { transform: scale(1.05); }
   .photo-cell__credit {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
+    position: absolute; bottom: 0; left: 0; right: 0;
     background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
     color: var(--white);
-    font-family: var(--font-ui);
-    font-size: 0.6rem;
-    padding: 20px 8px 5px;
-    letter-spacing: 0.04em;
+    font-family: var(--font-ui); font-size: 0.6rem;
+    padding: 20px 8px 5px; letter-spacing: 0.04em;
     pointer-events: none;
   }
   .photo-cell__download {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 34px;
-    height: 34px;
+    position: absolute; top: 8px; right: 8px;
+    width: 34px; height: 34px;
     border-radius: 9px;
     background: rgba(17,16,74,0.75);
     color: var(--white);
-    border: none;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    font-size: 0.85rem;
-    opacity: 0;
+    border: none; cursor: pointer;
+    display: grid; place-items: center;
+    font-size: 0.85rem; opacity: 0;
     transition: opacity var(--transition), background var(--transition), transform 120ms var(--ease);
     z-index: 3;
     backdrop-filter: blur(6px);
@@ -171,9 +130,7 @@
           <header class="page-header">
             <div>
               <h1 class="page-header__title">Visualization</h1>
-              <p class="page-header__sub">
-                Turn any topic into a diagram, a real photo, or an AI-generated illustration.
-              </p>
+              <p class="page-header__sub">Turn any topic into a diagram, a real photo, or an AI-generated illustration.</p>
             </div>
           </header>
 
@@ -197,6 +154,14 @@
                   <option value="__generate__">🎨 AI-generated image</option>
                   <option value="__search__">📷 Real photos from the web</option>
                 </select>
+              </div>
+              <div class="setup-field">
+                <label class="label" for="description">Note for the AI (optional)</label>
+                <textarea class="desc-input" id="description" rows="2"
+                          placeholder="e.g. Keep it simple and focus on the stages only — I'm confused about the order"></textarea>
+                <p style="font-size:0.76rem;color:var(--slate);margin:6px 0 0">
+                  This guides the diagram. It is not saved.
+                </p>
               </div>
               <div class="setup-actions">
                 <button class="btn btn-primary" id="gen-btn" type="button">
@@ -355,6 +320,7 @@
       var topic = document.getElementById('topic').value.trim();
       if (!topic) { toast('Please enter a topic.', true); return; }
       var kind = document.getElementById('kind').value || null;
+      var description = document.getElementById('description').value.trim() || null;
 
       showStage('generating');
       document.querySelector('.generating__text').textContent = 'Working on it…';
@@ -415,7 +381,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ topic: topic, kind: kind }),
+          body: JSON.stringify({ topic: topic, kind: kind, description: description }),
         });
         var data = await res.json().catch(function () { return {}; });
         if (!res.ok) {
@@ -522,7 +488,6 @@
     function downloadCurrent() {
       if (!current) { toast('Nothing to download.', true); return; }
 
-      // Mermaid SVG
       var svg = document.querySelector('#viz-canvas svg');
       if (svg) {
         var data = new XMLSerializer().serializeToString(svg);
@@ -532,13 +497,11 @@
         return;
       }
 
-      // Single generated image
       if (current.kind === 'generated-image' && current.imageUrl) {
         downloadImageFromUrl(current.imageUrl, current.title || 'image');
         return;
       }
 
-      // Search results — download all
       if (current.kind === 'search-results' && current.images && current.images.length) {
         toast('Downloading ' + current.images.length + ' photos…');
         current.images.forEach(function (img, i) {

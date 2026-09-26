@@ -6,9 +6,9 @@ const { requireLogin } = require('../../auth');
 
 router.post('/generate', requireLogin, async (req, res, next) => {
   try {
-    const { topic, count, difficulty, subject } = req.body || {};
+    const { topic, count, difficulty, subject, description } = req.body || {};
     const result = await service.generate({
-      userId: req.user.id, topic, count, difficulty, subject,
+      userId: req.user.id, topic, count, difficulty, subject, description,
     });
     if (!result.ok) {
       const map = {
@@ -37,6 +37,17 @@ router.get('/:id', requireLogin, async (req, res, next) => {
       return res.status(404).json({ error: 'Practice set not found' });
     }
     res.json({ set });
+  } catch (err) { next(err); }
+});
+
+router.patch('/:id/description', requireLogin, async (req, res, next) => {
+  try {
+    const description = (req.body && req.body.description != null)
+      ? String(req.body.description).slice(0, 500)
+      : null;
+    const updated = await db.practice.setDescription(req.params.id, req.user.id, description);
+    if (!updated) return res.status(404).json({ error: 'Practice set not found' });
+    res.json({ set: updated });
   } catch (err) { next(err); }
 });
 

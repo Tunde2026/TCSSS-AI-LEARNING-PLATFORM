@@ -1,14 +1,14 @@
 const { pool } = require('../pool');
 
 async function create({ userId, title, subject, topic, difficulty = 'medium',
-                        isExam = false, timeLimitSeconds = null }) {
+                        isExam = false, timeLimitSeconds = null, description = null }) {
   const { rows } = await pool.query(
     `INSERT INTO quizzes
-       (user_id, title, subject, topic, difficulty, is_exam, time_limit_seconds)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+       (user_id, title, subject, topic, difficulty, is_exam, time_limit_seconds, description)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING id, user_id, title, subject, topic, difficulty,
-               is_exam, time_limit_seconds, created_at, updated_at`,
-    [userId, title, subject, topic, difficulty, isExam, timeLimitSeconds]
+               is_exam, time_limit_seconds, description, created_at, updated_at`,
+    [userId, title, subject, topic, difficulty, isExam, timeLimitSeconds, description]
   );
   return rows[0];
 }
@@ -32,7 +32,7 @@ async function addQuestions(quizId, questions) {
 async function findById(id) {
   const { rows } = await pool.query(
     `SELECT id, user_id, title, subject, topic, difficulty,
-            is_exam, time_limit_seconds, created_at, updated_at
+            is_exam, time_limit_seconds, description, created_at, updated_at
        FROM quizzes WHERE id = $1`,
     [id]
   );
@@ -50,12 +50,23 @@ async function findById(id) {
 async function listByUser(userId) {
   const { rows } = await pool.query(
     `SELECT id, title, subject, topic, difficulty, is_exam,
-            time_limit_seconds, created_at, updated_at
+            time_limit_seconds, description, created_at, updated_at
        FROM quizzes WHERE user_id = $1
       ORDER BY created_at DESC`,
     [userId]
   );
   return rows;
+}
+
+async function setDescription(id, userId, description) {
+  const { rows } = await pool.query(
+    `UPDATE quizzes SET description = $1, updated_at = now()
+      WHERE id = $2 AND user_id = $3
+      RETURNING id, title, subject, topic, difficulty, is_exam,
+                time_limit_seconds, description, created_at, updated_at`,
+    [description || null, id, userId]
+  );
+  return rows[0] || null;
 }
 
 async function remove(id, userId) {
@@ -94,6 +105,6 @@ async function listAttempts(quizId, userId) {
 }
 
 module.exports = {
-  create, addQuestions, findById, listByUser, remove,
+  create, addQuestions, findById, listByUser, setDescription, remove,
   saveAttempt, listAttempts,
 };

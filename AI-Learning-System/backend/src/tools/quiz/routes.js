@@ -6,11 +6,12 @@ const { requireLogin } = require('../../auth');
 
 router.post('/generate', requireLogin, async (req, res, next) => {
   try {
-    const { topic, count, difficulty, subject, isExam, timeLimitSeconds } = req.body || {};
+    const { topic, count, difficulty, subject, isExam, timeLimitSeconds, description } = req.body || {};
     const result = await service.generate({
       userId: req.user.id, topic, count, difficulty, subject,
       isExam: !!isExam,
       timeLimitSeconds: timeLimitSeconds || null,
+      description: description || null,
     });
     if (!result.ok) {
       const map = {
@@ -39,6 +40,17 @@ router.get('/:id', requireLogin, async (req, res, next) => {
       return res.status(404).json({ error: 'Quiz not found' });
     }
     res.json({ quiz });
+  } catch (err) { next(err); }
+});
+
+router.patch('/:id/description', requireLogin, async (req, res, next) => {
+  try {
+    const description = (req.body && req.body.description != null)
+      ? String(req.body.description).slice(0, 500)
+      : null;
+    const updated = await db.quizzes.setDescription(req.params.id, req.user.id, description);
+    if (!updated) return res.status(404).json({ error: 'Quiz not found' });
+    res.json({ quiz: updated });
   } catch (err) { next(err); }
 });
 
@@ -84,7 +96,7 @@ router.get('/history/mine', requireLogin, async (req, res, next) => {
           qa.score, qa.total, qa.is_exam, qa.time_taken_seconds,
           qa.completed_at,
           q.id AS quiz_id,
-          q.title, q.topic, q.subject, q.difficulty
+          q.title, q.topic, q.subject, q.difficulty, q.description
         FROM quiz_attempts qa
         JOIN quizzes q ON q.id = qa.quiz_id
        WHERE qa.user_id = $1

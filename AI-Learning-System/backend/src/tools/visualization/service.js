@@ -2,6 +2,8 @@ const logger = require('../../core/logger');
 const { chat } = require('../../ai/gateway');
 const { buildVisualizationPrompt } = require('./prompt');
 
+const MAX_DESCRIPTION_LENGTH = 500;
+
 function parseJSON(raw) {
   let text = String(raw).trim();
   const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -22,15 +24,33 @@ function validate(data) {
   return null;
 }
 
-async function generate({ topic, kind }) {
+function cleanDescription(d) {
+  if (d == null) return null;
+  const s = String(d).trim();
+  if (!s) return null;
+  return s.slice(0, MAX_DESCRIPTION_LENGTH);
+}
+
+async function generate({ topic, kind, description = null }) {
   if (!topic || typeof topic !== 'string' || topic.trim().length < 2) {
     return { ok: false, code: 'INVALID_TOPIC' };
   }
 
-  const systemPrompt = buildVisualizationPrompt({
+  const cleanNote = cleanDescription(description);
+
+  let systemPrompt = buildVisualizationPrompt({
     topic: topic.trim(),
     kind: kind || null,
   });
+
+  // If the student added a note, use it to steer the diagram
+  if (cleanNote) {
+    systemPrompt +=
+      '\n\n# STUDENT NOTE\n\n' +
+      'The student added this note to guide the diagram. Use it to decide what to ' +
+      'emphasise, simplify, or leave out:\n\n"' + cleanNote + '"\n\n' +
+      'Do not add the note text into the diagram itself — just let it influence your choices.';
+  }
 
   let aiResult;
   try {
@@ -67,6 +87,7 @@ async function generate({ topic, kind }) {
       kind: parsed.kind || 'flowchart',
       mermaid: parsed.mermaid,
       explanation: parsed.explanation || '',
+      description: cleanNote,
     },
   };
 }

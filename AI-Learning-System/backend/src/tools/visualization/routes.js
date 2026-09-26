@@ -5,8 +5,8 @@ const { requireLogin } = require('../../auth');
 
 router.post('/generate', requireLogin, async (req, res, next) => {
   try {
-    const { topic, kind } = req.body || {};
-    const result = await service.generate({ topic, kind });
+    const { topic, kind, description } = req.body || {};
+    const result = await service.generate({ topic, kind, description });
     if (!result.ok) {
       const map = {
         INVALID_TOPIC:     [400, 'Please provide a topic.'],
