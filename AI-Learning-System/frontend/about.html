@@ -8,7 +8,6 @@
 <link rel="canonical" href="https://tcsss-ai-learning-platform.onrender.com/about.html">
 <link rel="icon" type="image/png" href="/uploads/branding/logo.png">
 
-<!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="AI Learning Platform — TCSSS">
 <meta property="og:description" content="A free AI-powered learning environment for TCSSS students.">
@@ -16,7 +15,6 @@
 <meta property="og:image" content="https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png">
 <meta property="og:site_name" content="TCSSS AI Learning Platform">
 
-<!-- Twitter / X -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="AI Learning Platform — TCSSS">
 <meta name="twitter:description" content="Free AI-powered study tools for TCSSS students.">
@@ -26,286 +24,598 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
 
 <style>
-  :root {
-    --navy: #11104A;
-    --soft-navy: #201F6B;
-    --red: #E6111E;
-    --deep-red: #B80F1A;
-    --gold: #C9952E;
-    --blush: #FBEFEF;
-    --blush-deep: #F6E0E0;
-    --white: #FFFFFF;
-    --ink: #1E1D3D;
-    --slate: #5B5A6B;
-    --border: rgba(17,16,74,0.12);
-    --border-soft: rgba(17,16,74,0.08);
-    --font-head: 'Lora', Georgia, serif;
-    --font-body: 'Work Sans', system-ui, sans-serif;
-    --font-ui: 'JetBrains Mono', monospace;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: var(--font-body);
-    background: var(--blush);
-    color: var(--ink);
-    line-height: 1.65;
-    -webkit-font-smoothing: antialiased;
-  }
-  a { color: var(--red); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  img { max-width: 100%; display: block; }
+  /* ============================================================
+     ABOUT PAGE — full-width, animated, sidebar-mounted
+     ============================================================ */
 
-  /* ---------- Header ---------- */
-  .about-header {
-    background: linear-gradient(135deg, var(--navy), var(--soft-navy));
-    color: #FFFFFF;
-    padding: 16px 24px;
-  }
-  .about-header__inner {
-    max-width: 1000px;
+  /* Kill the narrow page-inner that caused blank space on the right */
+  main.page .page-scroll { padding: 24px 28px 56px; }
+  main.page .page-inner {
+    max-width: 1320px !important;
+    width: 100% !important;
     margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
+    padding: 0;
   }
-  .about-header__brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #FFFFFF;
-    text-decoration: none;
+  @media (max-width: 900px) {
+    main.page .page-scroll { padding: 16px 16px 40px; }
   }
-  .about-header__brand:hover { text-decoration: none; }
-  .about-header__logo {
-    width: 40px; height: 40px;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.15);
-    display: grid; place-items: center;
-    font-family: var(--font-head);
-    font-weight: 700;
-    font-size: 0.95rem;
-    letter-spacing: 0.02em;
-    overflow: hidden;
-    flex-shrink: 0;
-  }
-  .about-header__logo img { width: 100%; height: 100%; object-fit: contain; }
-  .about-header__title {
-    font-family: var(--font-head);
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.2;
-  }
-  .about-header__title small {
-    display: block;
-    font-family: var(--font-ui);
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.7;
-    font-weight: 500;
-    margin-top: 2px;
-  }
-  .about-header__nav a {
-    color: rgba(255,255,255,0.85);
-    font-size: 0.88rem;
-    margin-left: 18px;
-  }
-  .about-header__nav a:hover { color: #FFFFFF; text-decoration: none; }
 
-  /* ---------- Hero ---------- */
-  .hero {
-    background: linear-gradient(155deg, var(--navy), var(--soft-navy));
-    color: #FFFFFF;
-    padding: 64px 24px 72px;
-    text-align: center;
+  /* ---------- Reveal on scroll ---------- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 720ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 720ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--i, 0) * 65ms);
+    will-change: opacity, transform;
   }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    padding: 64px 40px 68px;
+    margin-bottom: 36px;
+    text-align: center;
+    color: #fff;
+    background: linear-gradient(135deg, #11104A 0%, #201F6B 25%, #2A2978 50%, #3D1F5C 75%, #11104A 100%);
+    background-size: 320% 320%;
+    animation: heroPan 18s ease infinite;
+    box-shadow: 0 24px 60px rgba(17,16,74,0.32);
+  }
+  @keyframes heroPan {
+    0%,100% { background-position: 0% 50%; }
+    50%     { background-position: 100% 50%; }
+  }
+
+  /* Grain texture overlay */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 15%, rgba(255,255,255,0.05) 0, transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(201,149,46,0.10) 0, transparent 45%);
+    pointer-events: none;
+  }
+
+  .hero__orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(72px);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .hero__orb--1 {
+    width: 320px; height: 320px;
+    background: #C9952E;
+    top: -90px; left: -80px;
+    opacity: 0.42;
+    animation: orb1 18s ease-in-out infinite;
+  }
+  .hero__orb--2 {
+    width: 260px; height: 260px;
+    background: #E6111E;
+    bottom: -80px; right: -60px;
+    opacity: 0.28;
+    animation: orb2 22s ease-in-out infinite;
+  }
+  .hero__orb--3 {
+    width: 220px; height: 220px;
+    background: #6E6BE5;
+    top: 30%; right: 22%;
+    opacity: 0.24;
+    animation: orb3 26s ease-in-out infinite;
+  }
+  @keyframes orb1 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(40px,-30px) scale(1.15); }
+  }
+  @keyframes orb2 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(-36px,24px) scale(1.18); }
+  }
+  @keyframes orb3 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(20px,30px) scale(1.1); }
+  }
+
+  /* Tiny floating particle dots */
+  .hero__particle {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.55);
+    pointer-events: none;
+    animation: particle 12s ease-in-out infinite;
+  }
+  @keyframes particle {
+    0%,100% { transform: translateY(0); opacity: 0.3; }
+    50%     { transform: translateY(-22px); opacity: 0.9; }
+  }
+
+  .hero > * { position: relative; z-index: 2; }
+
   .hero__logo {
-    width: 88px; height: 88px;
+    width: 92px; height: 92px;
     border-radius: 24px;
-    background: rgba(255,255,255,0.1);
-    border: 1.5px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.10);
+    border: 1.5px solid rgba(255,255,255,0.22);
     display: grid; place-items: center;
     margin: 0 auto 24px;
     font-family: var(--font-head);
     font-weight: 700;
-    font-size: 1.6rem;
-    letter-spacing: 0.02em;
+    font-size: 1.65rem;
+    letter-spacing: 0.03em;
     overflow: hidden;
-    box-shadow: 0 14px 34px rgba(0,0,0,0.24);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+    animation: logoPop 1000ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
-  .hero__logo img { width: 100%; height: 100%; object-fit: contain; }
+  .hero__logo img { width: 100%; height: 100%; object-fit: contain; padding: 10px; }
+  @keyframes logoPop {
+    0%   { opacity: 0; transform: scale(0.55) rotate(-10deg); }
+    60%  { opacity: 1; transform: scale(1.08) rotate(3deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0); }
+  }
+
+  .hero__eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.88);
+    margin-bottom: 20px;
+    animation: fadeUp 800ms 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .hero__eyebrow i { color: var(--gold); }
+
   .hero__title {
     font-family: var(--font-head);
-    font-size: 2.4rem;
+    font-size: clamp(2.1rem, 5vw, 3.2rem);
     font-weight: 600;
-    margin: 0 0 8px;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
+    margin: 0 0 14px;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    animation: fadeUp 900ms 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
+  .hero__title em {
+    font-style: normal;
+    background: linear-gradient(120deg, #C9952E 0%, #FFD97D 50%, #C9952E 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: #C9952E;
+  }
+
   .hero__sub {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.78);
-    max-width: 560px;
-    margin: 0 auto 26px;
-    letter-spacing: 0.02em;
-  }
-  .hero__answer {
     font-size: 1.08rem;
-    line-height: 1.7;
-    max-width: 720px;
-    margin: 0 auto 32px;
-    color: #FFFFFF;
-    text-align: left;
+    color: rgba(255,255,255,0.82);
+    max-width: 620px;
+    margin: 0 auto 28px;
+    line-height: 1.65;
+    animation: fadeUp 900ms 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .hero__cta-row {
+    display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+    animation: fadeUp 900ms 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   .hero__cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 13px 26px;
-    background: var(--gold);
-    color: var(--navy);
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 15px 30px;
     border-radius: 999px;
     font-family: var(--font-body);
-    font-size: 0.94rem;
-    font-weight: 600;
-    box-shadow: 0 6px 18px rgba(201,149,46,0.35);
+    font-size: 0.98rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 240ms, background 240ms;
+  }
+  .hero__cta--primary {
+    background: linear-gradient(135deg, #E6111E, #B80F1A);
+    color: #fff;
+    box-shadow: 0 10px 26px rgba(230,17,30,0.42);
+  }
+  .hero__cta--primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 34px rgba(230,17,30,0.55);
     text-decoration: none;
   }
-  .hero__cta:hover { background: #D6A845; text-decoration: none; }
+  .hero__cta--primary i { transition: transform 200ms ease; }
+  .hero__cta--primary:hover i { transform: translateX(4px); }
+
+  .hero__cta--ghost {
+    background: rgba(255,255,255,0.10);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.22);
+  }
+  .hero__cta--ghost:hover {
+    background: rgba(255,255,255,0.18);
+    transform: translateY(-3px);
+    text-decoration: none;
+  }
+  .hero__cta:active { transform: translateY(0); }
+
   .hero__meta {
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-    flex-wrap: wrap;
-    margin-top: 32px;
+    display: flex; justify-content: center;
+    gap: 22px; flex-wrap: wrap;
+    margin-top: 30px;
     font-family: var(--font-ui);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
+    font-size: 0.66rem;
+    letter-spacing: 0.10em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.6);
+    animation: fadeUp 900ms 640ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
   .hero__meta span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .hero__meta i { color: var(--gold); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- Stats strip ---------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 56px;
+  }
+  @media (max-width: 860px) { .stats { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+
+  .stat {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 18px;
+    text-align: center;
+    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 260ms, box-shadow 320ms;
+  }
+  .stat:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: 0 14px 32px rgba(17,16,74,0.10);
+  }
+  .stat__num {
+    font-family: var(--font-head);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .stat__num small {
+    font-size: 0.9rem;
+    color: var(--gold);
+    margin-left: 3px;
+    font-weight: 600;
+  }
+  .stat__label {
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--slate);
+    font-weight: 600;
   }
 
   /* ---------- Sections ---------- */
-  .section { max-width: 1000px; margin: 0 auto; padding: 64px 24px; }
+  .section { margin-bottom: 64px; }
+  .section__head { margin-bottom: 28px; max-width: 720px; }
+  .section__eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--font-ui);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
   .section__title {
     font-family: var(--font-head);
-    font-size: 1.75rem;
+    font-size: clamp(1.55rem, 3vw, 2.05rem);
     font-weight: 600;
     color: var(--navy);
-    margin: 0 0 8px;
-    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
   }
   .section__sub {
     color: var(--slate);
-    font-size: 0.96rem;
-    margin: 0 0 36px;
-    max-width: 620px;
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.65;
   }
 
-  /* Features */
+  /* ---------- Learning cycle ---------- */
+  .cycle {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    position: relative;
+    padding: 8px 0;
+  }
+  @media (max-width: 900px) {
+    .cycle { grid-template-columns: 1fr; gap: 14px; padding: 0; }
+  }
+
+  .cycle__step {
+    position: relative;
+    padding: 20px 16px;
+    text-align: center;
+  }
+  .cycle__dot {
+    width: 56px; height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 16px;
+    background: linear-gradient(155deg, var(--navy), var(--soft-navy));
+    color: var(--white);
+    display: grid; place-items: center;
+    font-size: 1.15rem;
+    box-shadow: 0 8px 22px rgba(17,16,74,0.22);
+    position: relative;
+    z-index: 2;
+    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 320ms;
+  }
+  .cycle__step:hover .cycle__dot {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 14px 30px rgba(17,16,74,0.32);
+  }
+  .cycle__step:nth-child(2) .cycle__dot { background: linear-gradient(155deg, #C9952E, #9E7524); }
+  .cycle__step:nth-child(3) .cycle__dot { background: linear-gradient(155deg, #E6111E, #B80F1A); }
+  .cycle__step:nth-child(4) .cycle__dot { background: linear-gradient(155deg, #2F8F4A, #1F6B35); }
+  .cycle__step:nth-child(5) .cycle__dot { background: linear-gradient(155deg, #6E6BE5, #4A47A3); }
+
+  /* Connector line */
+  @media (min-width: 901px) {
+    .cycle__step::after {
+      content: '';
+      position: absolute;
+      top: 46px; right: -50%;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, rgba(17,16,74,0.15), rgba(17,16,74,0.05));
+      z-index: 1;
+    }
+    .cycle__step:last-child::after { display: none; }
+  }
+
+  .cycle__name {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .cycle__desc {
+    font-size: 0.82rem;
+    color: var(--slate);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* ---------- Features ---------- */
   .features {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 16px;
   }
   .feature {
     background: var(--white);
     border: 1.5px solid var(--border);
-    border-radius: 16px;
-    padding: 22px;
-    transition: border-color 200ms, transform 200ms;
+    border-radius: 18px;
+    padding: 26px 22px;
+    position: relative;
+    overflow: hidden;
+    transition:
+      border-color 280ms ease,
+      transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 360ms ease;
   }
-  .feature:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .feature::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(201,149,46,0.12), transparent 65%);
+    opacity: 0;
+    transition: opacity 360ms ease;
+    pointer-events: none;
+  }
+  .feature:hover {
+    border-color: var(--gold);
+    transform: translateY(-5px);
+    box-shadow: 0 18px 40px rgba(17,16,74,0.12);
+  }
+  .feature:hover::before { opacity: 1; }
+
   .feature__icon {
-    width: 44px; height: 44px;
-    border-radius: 12px;
+    width: 50px; height: 50px;
+    border-radius: 14px;
     background: var(--blush);
     color: var(--red);
     display: grid; place-items: center;
-    font-size: 1.05rem;
-    margin-bottom: 14px;
+    font-size: 1.15rem;
+    margin-bottom: 16px;
+    transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1),
+                background 360ms, color 360ms;
+    position: relative;
+    z-index: 1;
+  }
+  .feature:hover .feature__icon {
+    transform: scale(1.08) rotate(-5deg);
+    background: linear-gradient(135deg, var(--red), var(--deep-red));
+    color: #fff;
   }
   .feature__title {
     font-family: var(--font-head);
-    font-size: 1.05rem;
+    font-size: 1.08rem;
     font-weight: 600;
     color: var(--navy);
-    margin: 0 0 6px;
+    margin: 0 0 8px;
+    position: relative;
+    z-index: 1;
   }
   .feature__desc {
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     color: var(--slate);
     margin: 0;
-    line-height: 1.55;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
   }
 
-  /* Team */
+  /* ---------- Team ---------- */
   .team {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 18px;
   }
-  .member {
+  @media (max-width: 520px) {
+    .team { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  }
+
+  .team-card {
     background: var(--white);
     border: 1.5px solid var(--border);
-    border-radius: 14px;
-    padding: 20px 18px;
+    border-radius: 20px;
+    padding: 16px 16px 18px;
     text-align: center;
-    transition: border-color 200ms, transform 200ms;
+    position: relative;
+    overflow: hidden;
+    transition:
+      border-color 300ms,
+      transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 400ms;
   }
-  .member:hover { border-color: var(--gold); transform: translateY(-2px); }
-  .member__avatar {
-    width: 64px; height: 64px;
-    border-radius: 50%;
+  .team-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--red));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .team-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 44px rgba(17,16,74,0.16);
+  }
+  .team-card:hover::after { transform: scaleX(1); }
+
+  .team-card__photo {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
     background: linear-gradient(155deg, var(--navy), var(--soft-navy));
-    color: #FFFFFF;
     display: grid; place-items: center;
+    margin-bottom: 14px;
+    box-shadow: 0 6px 16px rgba(17,16,74,0.18);
+    transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 400ms;
+  }
+  .team-card:hover .team-card__photo {
+    box-shadow: 0 12px 28px rgba(17,16,74,0.30);
+  }
+  .team-card__photo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 550ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .team-card:hover .team-card__photo img {
+    transform: scale(1.09);
+  }
+  .team-card__initials {
     font-family: var(--font-head);
     font-weight: 700;
-    font-size: 1.3rem;
+    font-size: 2rem;
+    color: rgba(255,255,255,0.9);
     letter-spacing: 0.04em;
-    margin: 0 auto 14px;
-    overflow: hidden;
-    box-shadow: 0 6px 18px rgba(17,16,74,0.18);
+    text-shadow: 0 2px 10px rgba(0,0,0,0.24);
+    position: relative;
+    z-index: 1;
   }
-  .member__avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .member__name {
+  .team-card__photo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.16), transparent 58%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .team-card__name {
     font-family: var(--font-head);
-    font-size: 0.98rem;
+    font-size: 0.96rem;
     font-weight: 600;
     color: var(--navy);
-    margin: 0 0 4px;
+    margin: 0 0 5px;
+    line-height: 1.3;
+    word-wrap: break-word;
   }
-  .member__role {
+  .team-card__role {
     font-family: var(--font-ui);
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
+    font-size: 0.6rem;
+    letter-spacing: 0.09em;
     text-transform: uppercase;
     color: var(--slate);
     margin: 0;
   }
+  .team-card--lead .team-card__photo {
+    background: linear-gradient(155deg, #C9952E, #9E7524);
+  }
+  .team-card--lead .team-card__role {
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .team-card--lead::before {
+    content: '★';
+    position: absolute;
+    top: 10px; right: 12px;
+    color: var(--gold);
+    font-size: 0.9rem;
+    z-index: 2;
+  }
 
-  /* FAQ */
-  .faq { max-width: 780px; margin: 0 auto; }
+  /* ---------- FAQ ---------- */
+  .faq { max-width: 100%; }
   .faq details {
     background: var(--white);
     border: 1.5px solid var(--border);
-    border-radius: 12px;
+    border-radius: 16px;
     margin-bottom: 10px;
     overflow: hidden;
-    transition: border-color 200ms;
+    transition: border-color 260ms, box-shadow 260ms;
   }
-  .faq details[open] { border-color: var(--gold); }
+  .faq details:hover { border-color: rgba(17,16,74,0.24); }
+  .faq details[open] {
+    border-color: var(--gold);
+    box-shadow: 0 8px 24px rgba(201,149,46,0.10);
+  }
   .faq summary {
-    padding: 16px 20px;
+    padding: 18px 22px;
     cursor: pointer;
     font-family: var(--font-head);
     font-size: 1rem;
@@ -316,7 +626,10 @@
     align-items: center;
     justify-content: space-between;
     gap: 14px;
+    user-select: none;
+    transition: background 200ms;
   }
+  .faq summary:hover { background: var(--blush); }
   .faq summary::-webkit-details-marker { display: none; }
   .faq summary::after {
     content: '\f078';
@@ -324,591 +637,654 @@
     font-weight: 900;
     font-size: 0.72rem;
     color: var(--slate);
-    transition: transform 200ms;
+    transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), color 260ms;
     flex-shrink: 0;
   }
-  .faq details[open] summary::after { transform: rotate(180deg); }
-  .faq details p {
-    padding: 0 20px 18px;
-    margin: 0;
-    font-size: 0.92rem;
+  .faq details[open] summary::after {
+    transform: rotate(180deg);
+    color: var(--gold);
+  }
+  .faq .faq__body {
+    padding: 0 22px 20px;
+    font-size: 0.93rem;
     color: var(--ink);
+    line-height: 1.7;
+    animation: faqOpen 340ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .faq .faq__body p { margin: 0 0 8px; }
+  .faq .faq__body p:last-child { margin-bottom: 0; }
+  .faq .faq__body a { color: var(--red); font-weight: 600; }
+  @keyframes faqOpen {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- Final CTA band ---------- */
+  .cta-band {
+    position: relative;
+    overflow: hidden;
+    border-radius: 26px;
+    padding: 52px 40px;
+    text-align: center;
+    background: linear-gradient(135deg, #11104A 0%, #201F6B 50%, #3D1F5C 100%);
+    color: #fff;
+    box-shadow: 0 22px 54px rgba(17,16,74,0.30);
+    margin-bottom: 32px;
+  }
+  .cta-band__orb {
+    position: absolute;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    filter: blur(70px);
+    pointer-events: none;
+  }
+  .cta-band__orb--1 {
+    background: #C9952E;
+    opacity: 0.35;
+    top: -100px; left: -60px;
+  }
+  .cta-band__orb--2 {
+    background: #E6111E;
+    opacity: 0.24;
+    bottom: -110px; right: -60px;
+  }
+  .cta-band > * { position: relative; z-index: 1; }
+  .cta-band__title {
+    font-family: var(--font-head);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+    margin: 0 0 12px;
+    letter-spacing: -0.02em;
+  }
+  .cta-band__sub {
+    color: rgba(255,255,255,0.82);
+    font-size: 1rem;
+    max-width: 520px;
+    margin: 0 auto 26px;
     line-height: 1.65;
   }
 
-  /* Footer */
+  /* ---------- Footer ---------- */
   .about-footer {
-    background: var(--navy);
-    color: rgba(255,255,255,0.7);
-    padding: 40px 24px;
-    margin-top: 40px;
-    font-size: 0.82rem;
-  }
-  .about-footer__inner {
-    max-width: 1000px;
-    margin: 0 auto;
+    padding: 26px 0 4px;
+    border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
+    gap: 16px;
     flex-wrap: wrap;
+    font-size: 0.84rem;
+    color: var(--slate);
   }
-  .about-footer a { color: rgba(255,255,255,0.9); }
-  .about-footer a:hover { color: #FFFFFF; }
+  .about-footer a {
+    color: var(--navy);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .about-footer a:hover { color: var(--red); text-decoration: underline; }
 
+  /* ---------- Mobile tweaks ---------- */
   @media (max-width: 640px) {
-    .hero { padding: 48px 18px 56px; }
-    .hero__title { font-size: 1.85rem; }
-    .hero__answer { font-size: 1rem; }
-    .section { padding: 48px 18px; }
-    .section__title { font-size: 1.4rem; }
-    .about-header__nav a { margin-left: 12px; font-size: 0.82rem; }
+    .hero { padding: 44px 22px 48px; border-radius: 22px; }
+    .hero__logo { width: 76px; height: 76px; }
+    .hero__meta { gap: 14px; font-size: 0.6rem; }
+    .section { margin-bottom: 48px; }
+    .stats { margin-bottom: 40px; }
+    .stat { padding: 18px 14px; }
+    .stat__num { font-size: 1.65rem; }
+    .feature { padding: 20px 18px; }
+    .cta-band { padding: 36px 22px; border-radius: 22px; }
   }
 </style>
 </head>
 <body>
 
-<header class="about-header">
-  <div class="about-header__inner">
-    <a class="about-header__brand" href="index.html">
-      <div class="about-header__logo" id="headerLogo">TC</div>
-      <div class="about-header__title">
-        AI Learning Platform
-        <small>Tomia Community Senior Secondary School</small>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <!-- ================= HERO ================= -->
+          <section class="hero">
+            <div class="hero__orb hero__orb--1" aria-hidden="true"></div>
+            <div class="hero__orb hero__orb--2" aria-hidden="true"></div>
+            <div class="hero__orb hero__orb--3" aria-hidden="true"></div>
+
+            <div class="hero__particle" style="top:18%;left:12%;animation-delay:0s" aria-hidden="true"></div>
+            <div class="hero__particle" style="top:32%;right:18%;animation-delay:2s" aria-hidden="true"></div>
+            <div class="hero__particle" style="bottom:22%;left:28%;animation-delay:4s" aria-hidden="true"></div>
+            <div class="hero__particle" style="top:60%;right:8%;animation-delay:6s" aria-hidden="true"></div>
+            <div class="hero__particle" style="bottom:35%;right:42%;animation-delay:8s" aria-hidden="true"></div>
+
+            <div class="hero__logo" id="heroLogo">TCSSS</div>
+
+            <div class="hero__eyebrow">
+              <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+              About the platform
+            </div>
+
+            <h1 class="hero__title">
+              A smarter way to <em>learn</em>, built for TCSSS
+            </h1>
+            <p class="hero__sub">
+              Free, all-in-one study tools for every student of Tomia Community
+              Senior Secondary School — AI tutoring, quizzes, flashcards, exam
+              practice, and more.
+            </p>
+
+            <div class="hero__cta-row">
+              <a class="hero__cta hero__cta--primary" href="index.html">
+                <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+                Start learning free
+              </a>
+              <a class="hero__cta hero__cta--ghost" href="#features">
+                <i class="fa-solid fa-compass" aria-hidden="true"></i>
+                Explore features
+              </a>
+            </div>
+
+            <div class="hero__meta">
+              <span><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> For TCSSS students</span>
+              <span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Private &amp; safe</span>
+              <span><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> Any device</span>
+            </div>
+          </section>
+
+          <!-- ================= STATS ================= -->
+          <section class="stats">
+            <div class="stat reveal" style="--i:0">
+              <div class="stat__num" data-count="9">0</div>
+              <div class="stat__label">Study tools</div>
+            </div>
+            <div class="stat reveal" style="--i:1">
+              <div class="stat__num" data-count="20"><span>0</span><small>+</small></div>
+              <div class="stat__label">School subjects</div>
+            </div>
+            <div class="stat reveal" style="--i:2">
+              <div class="stat__num" data-count="100"><span>0</span><small>%</small></div>
+              <div class="stat__label">Free forever</div>
+            </div>
+            <div class="stat reveal" style="--i:3">
+              <div class="stat__num" data-count="24"><span>0</span><small>/7</small></div>
+              <div class="stat__label">AI tutor ready</div>
+            </div>
+          </section>
+
+          <!-- ================= LEARNING CYCLE ================= -->
+          <section class="section">
+            <div class="section__head reveal">
+              <div class="section__eyebrow">
+                <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                The learning cycle
+              </div>
+              <h2 class="section__title">Learn → Visualize → Practice → Analyze → Adapt</h2>
+              <p class="section__sub">
+                Every tool on the platform fits into one simple loop that mirrors
+                how real learning actually happens.
+              </p>
+            </div>
+
+            <div class="cycle">
+              <div class="cycle__step reveal" style="--i:0">
+                <div class="cycle__dot"><i class="fa-solid fa-book-open"></i></div>
+                <h3 class="cycle__name">Learn</h3>
+                <p class="cycle__desc">Chat with the AI tutor and read from the built-in library.</p>
+              </div>
+              <div class="cycle__step reveal" style="--i:1">
+                <div class="cycle__dot"><i class="fa-solid fa-diagram-project"></i></div>
+                <h3 class="cycle__name">Visualize</h3>
+                <p class="cycle__desc">Turn ideas into diagrams, flows, and formula sketches.</p>
+              </div>
+              <div class="cycle__step reveal" style="--i:2">
+                <div class="cycle__dot"><i class="fa-solid fa-dumbbell"></i></div>
+                <h3 class="cycle__name">Practice</h3>
+                <p class="cycle__desc">Quizzes, flashcards, theory, and exam mode under real timing.</p>
+              </div>
+              <div class="cycle__step reveal" style="--i:3">
+                <div class="cycle__dot"><i class="fa-solid fa-chart-line"></i></div>
+                <h3 class="cycle__name">Analyze</h3>
+                <p class="cycle__desc">See scores, mistakes, and topic breakdowns in Quiz History.</p>
+              </div>
+              <div class="cycle__step reveal" style="--i:4">
+                <div class="cycle__dot"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <h3 class="cycle__name">Adapt</h3>
+                <p class="cycle__desc">Spark and recommendations push you toward what to study next.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ================= FEATURES ================= -->
+          <section class="section" id="features">
+            <div class="section__head reveal">
+              <div class="section__eyebrow">
+                <i class="fa-solid fa-toolbox" aria-hidden="true"></i>
+                What you get
+              </div>
+              <h2 class="section__title">Everything you need in one place</h2>
+              <p class="section__sub">
+                Nine core tools, one environment. Each one works inside Chat too —
+                just describe what you want and it appears.
+              </p>
+            </div>
+
+            <div class="features">
+
+              <div class="feature reveal" style="--i:0">
+                <div class="feature__icon"><i class="fa-solid fa-comment-dots"></i></div>
+                <h3 class="feature__title">AI Chat tutor</h3>
+                <p class="feature__desc">Ask anything in plain English. Get clear explanations, worked steps, and real examples.</p>
+              </div>
+
+              <div class="feature reveal" style="--i:1">
+                <div class="feature__icon"><i class="fa-solid fa-circle-question"></i></div>
+                <h3 class="feature__title">Quizzes</h3>
+                <p class="feature__desc">Auto-generated multiple-choice questions with instant scoring and per-answer explanations.</p>
+              </div>
+
+              <div class="feature reveal" style="--i:2">
+                <div class="feature__icon"><i class="fa-solid fa-clone"></i></div>
+                <h3 class="feature__title">Flashcards</h3>
+                <p class="feature__desc">Spaced repetition means the cards you struggle with come back sooner, at the right time.</p>
+              </div>
+
+              <div class="feature reveal" style="--i:3">
+                <div class="feature__icon"><i class="fa-solid fa-spell-check"></i></div>
+                <h3 class="feature__title">Theory practice</h3>
+                <p class="feature__desc">Fill-in-the-gap questions that test recall the way WAEC and NECO ask them.</p>
+              </div>
+
+              <div class="feature reveal" style="--i:4">
+                <div class="feature__icon"><i class="fa-solid fa-stopwatch"></i></div>
+                <h3 class="feature__title">Exam Mode</h3>
+                <p class="feature__desc">Timed exams under real conditions — no hints, no second chances, submitted automatically at time-up.</p>
+              </div>
+
+              <div class="feature reveal" style="--i:5">
+                <div class="feature__icon"><i class="fa-solid fa-diagram-project"></i></div>
+                <h3 class="feature__title">Visualizations</h3>
+                <p class="feature__desc">Turn any topic into a flow chart, mind map, or concept diagram you can actually remember.</p>
+              </div>
+
+              <div class="feature reveal" style="--i:6">
+                <div class="feature__icon"><i class="fa-solid fa-pen-ruler"></i></div>
+                <h3 class="feature__title">Sketch &amp; Formulas</h3>
+                <p class="feature__desc">Write chemistry and physics correctly — H₂SO₄, not H2SO4. Save them to Notes.</p>
+              </div>
+
+              <div class="feature reveal" style="--i:7">
+                <div class="feature__icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <h3 class="feature__title">Spark assessment</h3>
+                <p class="feature__desc">An adaptive check-in of your reasoning and interests. A guide, not a decision.</p>
+              </div>
+
+              <div class="feature reveal" style="--i:8">
+                <div class="feature__icon"><i class="fa-solid fa-clipboard-list"></i></div>
+                <h3 class="feature__title">Mistake bank</h3>
+                <p class="feature__desc">Every wrong answer is quietly collected so you can revise exactly what you missed.</p>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- ================= TEAM ================= -->
+          <section class="section" id="team">
+            <div class="section__head reveal">
+              <div class="section__eyebrow">
+                <i class="fa-solid fa-users" aria-hidden="true"></i>
+                The team
+              </div>
+              <h2 class="section__title">Students building for students</h2>
+              <p class="section__sub">
+                A team from Tomia Community Senior Secondary School, working to
+                give every learner the tools to study independently.
+              </p>
+            </div>
+
+            <div class="team">
+
+              <div class="team-card team-card--lead reveal" style="--i:0">
+                <div class="team-card__photo" data-slug="emmanuel-ajibade">
+                  <span class="team-card__initials">EA</span>
+                </div>
+                <h3 class="team-card__name">Emmanuel Ajibade</h3>
+                <p class="team-card__role">Project Lead</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:1">
+                <div class="team-card__photo" data-slug="akinola-daniel">
+                  <span class="team-card__initials">AD</span>
+                </div>
+                <h3 class="team-card__name">Akinola Daniel</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:2">
+                <div class="team-card__photo" data-slug="matthias-olatunde">
+                  <span class="team-card__initials">MO</span>
+                </div>
+                <h3 class="team-card__name">Matthias Olatunde</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:3">
+                <div class="team-card__photo" data-slug="ikobayo-victor">
+                  <span class="team-card__initials">IV</span>
+                </div>
+                <h3 class="team-card__name">Ikobayo Victor</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:4">
+                <div class="team-card__photo" data-slug="adebowale-elijah">
+                  <span class="team-card__initials">AE</span>
+                </div>
+                <h3 class="team-card__name">Adebowale Elijah</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:5">
+                <div class="team-card__photo" data-slug="emmanuel-excel">
+                  <span class="team-card__initials">EE</span>
+                </div>
+                <h3 class="team-card__name">Emmanuel Excel</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:6">
+                <div class="team-card__photo" data-slug="oyedele-david">
+                  <span class="team-card__initials">OD</span>
+                </div>
+                <h3 class="team-card__name">Oyedele David</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:7">
+                <div class="team-card__photo" data-slug="kehinde-joshua">
+                  <span class="team-card__initials">JO</span>
+                </div>
+                <h3 class="team-card__name">Kehinde Joshua Oladipupo</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:8">
+                <div class="team-card__photo" data-slug="abdulkabir-isiaka">
+                  <span class="team-card__initials">AI</span>
+                </div>
+                <h3 class="team-card__name">Abdulkabir Isiaka</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:9">
+                <div class="team-card__photo" data-slug="timilehin-olatunji">
+                  <span class="team-card__initials">TO</span>
+                </div>
+                <h3 class="team-card__name">Timilehin Olatunji</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+              <div class="team-card reveal" style="--i:10">
+                <div class="team-card__photo" data-slug="al-arashi-al-amin">
+                  <span class="team-card__initials">AA</span>
+                </div>
+                <h3 class="team-card__name">Al Arashi Al Amin Olanrewaju</h3>
+                <p class="team-card__role">Team</p>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- ================= FAQ ================= -->
+          <section class="section" id="faq">
+            <div class="section__head reveal">
+              <div class="section__eyebrow">
+                <i class="fa-solid fa-circle-question" aria-hidden="true"></i>
+                Questions &amp; answers
+              </div>
+              <h2 class="section__title">Frequently asked</h2>
+              <p class="section__sub">
+                Everything students and parents ask before they start using the platform.
+              </p>
+            </div>
+
+            <div class="faq reveal">
+
+              <details>
+                <summary>What is the AI Learning Platform?</summary>
+                <div class="faq__body"><p>A free educational tool for students of Tomia Community Senior Secondary School (TCSSS). It combines AI chat, quizzes, flashcards, practice questions, diagrams, exam mode, and study plans in one place.</p></div>
+              </details>
+
+              <details>
+                <summary>Who can use the platform?</summary>
+                <div class="faq__body"><p>All students of TCSSS. Every student receives a personal account from the school. Accounts are private — each student sees only their own conversations, progress, and mistakes.</p></div>
+              </details>
+
+              <details>
+                <summary>Is the platform free to use?</summary>
+                <div class="faq__body"><p>Yes. Completely free. No ads, no subscriptions, no hidden charges. It is built and maintained by the school's team as a free learning resource.</p></div>
+              </details>
+
+              <details>
+                <summary>Do I need to install an app?</summary>
+                <div class="faq__body"><p>No. The platform runs entirely in your web browser. Open it from any phone, tablet, or computer by visiting the URL and logging in with your school account.</p></div>
+              </details>
+
+              <details>
+                <summary>Does the platform work on my phone?</summary>
+                <div class="faq__body"><p>Yes. The platform is designed mobile-first. Every page, quiz, flashcard, and chat works on small screens. You can also add the site to your home screen for quick access.</p></div>
+              </details>
+
+              <details>
+                <summary>What is Spark?</summary>
+                <div class="faq__body"><p>An adaptive assessment that helps students discover their academic strengths. It asks questions that change based on your answers, then shows which subject areas — Science, Arts, or Commerce — currently align best with your profile. Spark is a guide, not a decision.</p></div>
+              </details>
+
+              <details>
+                <summary>What is the Studying Lab?</summary>
+                <div class="faq__body"><p>The deeper learning workspace inside the platform. It contains Notes, Flashcards, Quiz, Quiz History, Practice, Visualization, Study Plans, Exam Mode, and the Mistake Bank. Every tool is also usable from Chat.</p></div>
+              </details>
+
+              <details>
+                <summary>Are my conversations private?</summary>
+                <div class="faq__body"><p>Yes. Your conversations are private to your account. Other students cannot see them. Only the school's administrator can view conversations for safety and support — every access is recorded in an audit log.</p></div>
+              </details>
+
+              <details>
+                <summary>How do I report a problem or ask for help?</summary>
+                <div class="faq__body"><p>Open the Contact Us page from the sidebar. You can report a bug, request a feature, ask a question, or report a serious issue. Bullying reports are escalated immediately, and the page lists phone numbers for urgent matters.</p></div>
+              </details>
+
+              <details>
+                <summary>Where can I find the school's official website?</summary>
+                <div class="faq__body"><p>The official website is maintained by the school community at <a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">gideon-olukanni.github.io/TCSSS</a>. This AI Learning Platform is a separate project, built by students for students.</p></div>
+              </details>
+
+            </div>
+          </section>
+
+          <!-- ================= FINAL CTA ================= -->
+          <section class="cta-band reveal">
+            <div class="cta-band__orb cta-band__orb--1" aria-hidden="true"></div>
+            <div class="cta-band__orb cta-band__orb--2" aria-hidden="true"></div>
+
+            <h2 class="cta-band__title">Ready to start learning?</h2>
+            <p class="cta-band__sub">
+              Sign in with your school account and everything on this page is yours —
+              for free, on any device.
+            </p>
+            <a class="hero__cta hero__cta--primary" href="index.html">
+              <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+              Open the platform
+            </a>
+          </section>
+
+          <!-- ================= FOOTER ================= -->
+          <footer class="about-footer">
+            <div>
+              &copy; <span id="year"></span> AI Learning Platform — Tomia Community Senior Secondary School
+            </div>
+            <div>
+              <a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">
+                Official school website
+              </a>
+            </div>
+          </footer>
+
+        </div>
       </div>
-    </a>
-    <nav class="about-header__nav" aria-label="Page navigation">
-      <a href="index.html">Log in</a>
-      <a href="#team">Team</a>
-      <a href="#faq">FAQ</a>
-    </nav>
+    </main>
   </div>
-</header>
 
-<section class="hero">
-  <div class="hero__logo" id="heroLogo">TCSSS</div>
-  <h1 class="hero__title">The AI Learning Platform</h1>
-  <p class="hero__sub">A free, all-in-one study environment for students of Tomia Community Senior Secondary School.</p>
-
-  <p class="hero__answer">
-    <strong>The AI Learning Platform</strong> is a free educational tool for
-    students of Tomia Community Senior Secondary School (TCSSS). It combines
-    AI chat, quizzes, flashcards, practice questions, diagrams, and study
-    plans in one place so students can learn, practice, and prepare for
-    WAEC and NECO exams from any device. The platform follows the learning
-    cycle Learn → Visualize → Practice → Analyze → Adapt.
-  </p>
-
-  <a class="hero__cta" href="index.html">
-    <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
-    Open the platform
-  </a>
-
-  <div class="hero__meta">
-    <span><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> For TCSSS students</span>
-    <span><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Private &amp; safe</span>
-    <span><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> Works on any device</span>
-  </div>
-</section>
-
-<section class="section" id="features">
-  <h2 class="section__title">What you can do on the platform</h2>
-  <p class="section__sub">Every tool is built for the way Nigerian secondary school students actually study.</p>
-
-  <div class="features">
-    <div class="feature">
-      <div class="feature__icon"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i></div>
-      <h3 class="feature__title">Chat with an AI tutor</h3>
-      <p class="feature__desc">Ask any question in plain English. The tutor explains concepts, solves problems, and shows step-by-step reasoning.</p>
-    </div>
-    <div class="feature">
-      <div class="feature__icon"><i class="fa-solid fa-circle-question" aria-hidden="true"></i></div>
-      <h3 class="feature__title">Quizzes</h3>
-      <p class="feature__desc">Take auto-generated multiple-choice quizzes on any topic. Get instant scoring with explanations for every answer.</p>
-    </div>
-    <div class="feature">
-      <div class="feature__icon"><i class="fa-solid fa-clone" aria-hidden="true"></i></div>
-      <h3 class="feature__title">Flashcards</h3>
-      <p class="feature__desc">Review key terms and definitions using spaced repetition, so the cards you struggle with come back sooner.</p>
-    </div>
-    <div class="feature">
-      <div class="feature__icon"><i class="fa-solid fa-spell-check" aria-hidden="true"></i></div>
-      <h3 class="feature__title">Fill-in-the-gap theory</h3>
-      <p class="feature__desc">Practice recall with theory questions that test exactly what exams ask.</p>
-    </div>
-    <div class="feature">
-      <div class="feature__icon"><i class="fa-solid fa-stopwatch" aria-hidden="true"></i></div>
-      <h3 class="feature__title">Exam Mode</h3>
-      <p class="feature__desc">Take timed exams under real conditions — no hints, no second chances, just like WAEC.</p>
-    </div>
-    <div class="feature">
-      <div class="feature__icon"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i></div>
-      <h3 class="feature__title">Visualizations</h3>
-      <p class="feature__desc">Turn any topic into a flowchart, mind map, or diagram you can actually see and remember.</p>
-    </div>
-    <div class="feature">
-      <div class="feature__icon"><i class="fa-solid fa-pen-ruler" aria-hidden="true"></i></div>
-      <h3 class="feature__title">Sketch / Formula Studio</h3>
-      <p class="feature__desc">Write chemistry formulas, physics equations, and math notation correctly. H₂SO₄ not H2SO4.</p>
-    </div>
-    <div class="feature">
-      <div class="feature__icon"><i class="fa-solid fa-compass" aria-hidden="true"></i></div>
-      <h3 class="feature__title">Spark</h3>
-      <p class="feature__desc">Discover your academic strengths through an adaptive assessment that measures reasoning, interests, and problem solving.</p>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="team">
-  <h2 class="section__title">Who built this platform</h2>
-  <p class="section__sub">A team of five from Tomia Community Senior Secondary School, working to give every student the tools to learn independently.</p>
-
-  <div class="team">
-    <div class="member">
-      <div class="member__avatar" id="av-ea">EA</div>
-      <div class="member__name">Emmanuel Ajibade</div>
-      <div class="member__role">Project Lead</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-akinola">AD</div>
-      <div class="member__name">Akinola Daniel</div>
-      <div class="member__role">Team</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-matthias">MO</div>
-      <div class="member__name">Matthias Olatunde</div>
-      <div class="member__role">Team</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-victor">IV</div>
-      <div class="member__name">Ikobayo Victor</div>
-      <div class="member__role">Team</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-elijah">AE</div>
-      <div class="member__name">Adebowale Elijah</div>
-      <div class="member__role">Team</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-excel">EE</div>
-      <div class="member__name">Emmanuel Excel</div>
-      <div class="member__role">Team</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-david">OD</div>
-      <div class="member__name">Oyedele David</div>
-      <div class="member__role">Team</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-joshua">JO</div>
-      <div class="member__name">Kehinde Joshua Oladipupo</div>
-      <div class="member__role">Team</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-kabir">AI</div>
-      <div class="member__name">Abdulkabir Isiaka</div>
-      <div class="member__role">Team</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-timi">TO</div>
-      <div class="member__name">Timilehin Olatunji</div>
-      <div class="member__role">Team</div>
-    </div>
-    <div class="member">
-      <div class="member__avatar" id="av-alamin">AA</div>
-      <div class="member__name">Al Arashi Al Amin Olanrewaju</div>
-      <div class="member__role">Team</div>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="faq">
-  <h2 class="section__title">Frequently asked questions</h2>
-  <p class="section__sub">Everything students and parents ask before they start using the platform.</p>
-
-  <div class="faq">
-
-    <details>
-      <summary>What is the AI Learning Platform?</summary>
-      <p>The AI Learning Platform is a free educational tool for students of Tomia Community Senior Secondary School (TCSSS). It combines AI chat, quizzes, flashcards, practice questions, diagrams, exam mode, and study plans into a single learning environment that works on any phone or computer.</p>
-    </details>
-
-    <details>
-      <summary>Who can use the platform?</summary>
-      <p>The platform is available to all students of Tomia Community Senior Secondary School. Every student receives a personal account from the school. Accounts are private — each student sees only their own conversations, quizzes, flashcards, progress, and mistakes.</p>
-    </details>
-
-    <details>
-      <summary>Is the platform free to use?</summary>
-      <p>Yes. The platform is completely free for TCSSS students. There are no ads, no subscriptions, and no hidden charges. It is built and maintained by the school's team as a free learning resource for students.</p>
-    </details>
-
-    <details>
-      <summary>Do I need to install an app?</summary>
-      <p>No. The platform runs entirely in your web browser. You can open it from any device — phone, tablet, or computer — by visiting the site's URL and logging in with your school account. Nothing needs to be downloaded or installed.</p>
-    </details>
-
-    <details>
-      <summary>Does the platform work on my phone?</summary>
-      <p>Yes. The platform is designed mobile-first, meaning it works best on phones. Every page, quiz, flashcard, and chat works on small screens. You can also add the site to your home screen for quick access.</p>
-    </details>
-
-    <details>
-      <summary>What is Spark?</summary>
-      <p>Spark is an adaptive assessment that helps students discover their academic strengths. It asks reasoning, interest, and problem-solving questions that change based on your answers, then shows you which subject areas — Science, Arts, or Commerce — currently align best with your profile. Spark is a guide, not a decision.</p>
-    </details>
-
-    <details>
-      <summary>What is the Studying Lab?</summary>
-      <p>The Studying Lab is the deeper learning workspace inside the platform. It contains nine tools: Notes, Flashcards, Quiz, Quiz History, Practice, Visualization, Study Plans, Exam Mode, and the Mistake Bank. Every one of these tools can also be used directly from Chat.</p>
-    </details>
-
-    <details>
-      <summary>How does the AI tutor work?</summary>
-      <p>The AI tutor answers questions, explains concepts, solves problems, and creates learning material on demand. It follows the same teaching style as a patient older student — simple language, clear steps, real examples. It is powered by a chain of AI models that provides reliable 24/7 access.</p>
-    </details>
-
-    <details>
-      <summary>Are my conversations private?</summary>
-      <p>Yes. Your conversations are private to your account. Other students cannot see them. Only the school's administrator can view conversations for safety and support purposes, and every access is recorded in an audit log. Admins cannot send messages as you or change your content.</p>
-    </details>
-
-    <details>
-      <summary>How do I report a problem or ask for help?</summary>
-      <p>Open the Contact Us page from the sidebar of the platform. You can report a bug, request a feature, ask a question, or report a serious issue. Bullying reports are escalated immediately. For urgent matters, the page lists the phone numbers of team members you can call directly.</p>
-    </details>
-
-    <details>
-      <summary>Which AI model powers the answers?</summary>
-      <p>The platform uses a chain of top AI providers — Groq, Cerebras, Google, NVIDIA, OpenRouter, and self-hosted Ollama — with automatic fallback so answers keep coming even if one provider is down. The platform picks the best available model for each request.</p>
-    </details>
-
-    <details>
-      <summary>Can I use the platform offline?</summary>
-      <p>The platform needs an internet connection to talk to the AI. However, you can download books and PDFs from the Library to read offline. Quizzes you have already generated can be taken offline for a while if your browser has cached the page.</p>
-    </details>
-
-    <details>
-      <summary>Who built the platform?</summary>
-      <p>The platform was built by a team of students and contributors from Tomia Community Senior Secondary School, led by Emmanuel Ajibade. The project is open source and lives on GitHub. See the Team section above for everyone who contributed.</p>
-    </details>
-
-    <details>
-      <summary>How often is the platform updated?</summary>
-      <p>The team actively develops the platform. New tools, fixes, and improvements are deployed regularly through the school's GitHub repository. Features are added based on student feedback and requests collected through the Contact Us page.</p>
-    </details>
-
-    <details>
-      <summary>Where can I find the school's official website?</summary>
-      <p>The official website of Tomia Community Senior Secondary School is maintained by the school community at <a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">gideon-olukanni.github.io/TCSSS</a>. This AI Learning Platform is a separate project, built by students, for students.</p>
-    </details>
-
-  </div>
-</section>
-
-<footer class="about-footer">
-  <div class="about-footer__inner">
-    <div>
-      &copy; <span id="year"></span> AI Learning Platform &mdash; Tomia Community Senior Secondary School
-    </div>
-    <div>
-      <a href="index.html">Log in</a>
-      &nbsp;&middot;&nbsp;
-      <a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">Official school website</a>
-    </div>
-  </div>
-</footer>
-
-<!-- ============================================================
-     JSON-LD structured data for Google and AI engines
-     ============================================================ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": "https://tcsss-ai-learning-platform.onrender.com/#website",
-      "url": "https://tcsss-ai-learning-platform.onrender.com/",
-      "name": "TCSSS AI Learning Platform",
-      "description": "Free AI-powered study tools for students of Tomia Community Senior Secondary School.",
-      "inLanguage": "en-NG",
-      "publisher": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "EducationalOrganization",
-      "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization",
-      "name": "Tomia Community Senior Secondary School",
-      "alternateName": "TCSSS",
-      "url": "https://gideon-olukanni.github.io/TCSSS/",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png"
+  <!-- ============================================================
+       JSON-LD for search engines
+       ============================================================ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://tcsss-ai-learning-platform.onrender.com/#website",
+        "url": "https://tcsss-ai-learning-platform.onrender.com/",
+        "name": "TCSSS AI Learning Platform",
+        "description": "Free AI-powered study tools for students of Tomia Community Senior Secondary School.",
+        "inLanguage": "en-NG",
+        "publisher": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
       },
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Adebayo Close, off Lagos–Abeokuta Express Road",
-        "addressLocality": "Alagbado",
-        "addressRegion": "Lagos State",
-        "addressCountry": "NG"
-      },
-      "areaServed": {
-        "@type": "Place",
-        "name": "Alagbado, Alimosho, Lagos State, Nigeria"
-      }
-    },
-    {
-      "@type": "SoftwareApplication",
-      "@id": "https://tcsss-ai-learning-platform.onrender.com/#app",
-      "name": "AI Learning Platform",
-      "url": "https://tcsss-ai-learning-platform.onrender.com/",
-      "applicationCategory": "EducationalApplication",
-      "operatingSystem": "Web browser (any device)",
-      "description": "A free AI-powered learning environment for TCSSS students. Combines AI tutoring, quizzes, flashcards, practice, exam mode, diagrams, and study plans in one place.",
-      "inLanguage": "en-NG",
-      "isAccessibleForFree": true,
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "NGN"
-      },
-      "publisher": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" },
-      "audience": {
-        "@type": "EducationalAudience",
-        "educationalRole": "student",
-        "audienceType": "Secondary school students"
-      },
-      "featureList": [
-        "AI chat tutor",
-        "Interactive quizzes",
-        "Spaced-repetition flashcards",
-        "Fill-in-the-gap theory practice",
-        "Timed exam mode",
-        "Concept visualization",
-        "Formula and sketch studio",
-        "Adaptive Spark assessment",
-        "Multi-day study plans",
-        "Personal note-taking"
-      ]
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://tcsss-ai-learning-platform.onrender.com/about.html#faq",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What is the AI Learning Platform?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "The AI Learning Platform is a free educational tool for students of Tomia Community Senior Secondary School (TCSSS). It combines AI chat, quizzes, flashcards, practice questions, diagrams, exam mode, and study plans into a single learning environment that works on any phone or computer."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Who can use the platform?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "The platform is available to all students of Tomia Community Senior Secondary School. Every student receives a personal account from the school. Accounts are private — each student sees only their own conversations, quizzes, flashcards, progress, and mistakes."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Is the platform free to use?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. The platform is completely free for TCSSS students. There are no ads, no subscriptions, and no hidden charges. It is built and maintained by the school's team as a free learning resource for students."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Do I need to install an app?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "No. The platform runs entirely in your web browser. You can open it from any device — phone, tablet, or computer — by visiting the site's URL and logging in with your school account."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does the platform work on my phone?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. The platform is designed mobile-first, meaning it works best on phones. Every page, quiz, flashcard, and chat works on small screens. You can also add the site to your home screen for quick access."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What is Spark?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Spark is an adaptive assessment that helps students discover their academic strengths. It asks reasoning, interest, and problem-solving questions that change based on your answers, then shows you which subject areas — Science, Arts, or Commerce — currently align best with your profile."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What is the Studying Lab?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "The Studying Lab is the deeper learning workspace inside the platform. It contains nine tools: Notes, Flashcards, Quiz, Quiz History, Practice, Visualization, Study Plans, Exam Mode, and the Mistake Bank."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How does the AI tutor work?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "The AI tutor answers questions, explains concepts, solves problems, and creates learning material on demand. It is powered by a chain of AI models that provides reliable 24/7 access."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Are my conversations private?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes. Your conversations are private to your account. Other students cannot see them. Only the school's administrator can view conversations for safety and support purposes, and every access is recorded in an audit log."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "How do I report a problem or ask for help?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Open the Contact Us page from the sidebar of the platform. You can report a bug, request a feature, ask a question, or report a serious issue. For urgent matters, the page lists the phone numbers of team members you can call directly."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Who built the platform?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "The platform was built by a team of students and contributors from Tomia Community Senior Secondary School, led by Emmanuel Ajibade. The project is open source and lives on GitHub."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Where can I find the school's official website?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "The official website of Tomia Community Senior Secondary School is maintained by the school community at gideon-olukanni.github.io/TCSSS. This AI Learning Platform is a separate project built by students for students."
-          }
+      {
+        "@type": "EducationalOrganization",
+        "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization",
+        "name": "Tomia Community Senior Secondary School",
+        "alternateName": "TCSSS",
+        "url": "https://gideon-olukanni.github.io/TCSSS/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png"
         }
-      ]
-    },
-    {
-      "@type": "Person",
-      "name": "Emmanuel Ajibade",
-      "jobTitle": "Project Lead",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Akinola Daniel",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Matthias Olatunde",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Ikobayo Victor",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Adebowale Elijah",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Emmanuel Excel",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Oyedele David",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Kehinde Joshua Oladipupo",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Abdulkabir Isiaka",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Timilehin Olatunji",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
-    },
-    {
-      "@type": "Person",
-      "name": "Al Arashi Al Amin Olanrewaju",
-      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://tcsss-ai-learning-platform.onrender.com/#app",
+        "name": "AI Learning Platform",
+        "url": "https://tcsss-ai-learning-platform.onrender.com/",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web browser (any device)",
+        "inLanguage": "en-NG",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "NGN" }
+      }
+    ]
+  }
+  </script>
+
+  <script src="assets/shell.js"></script>
+  <script>
+  (function () {
+    'use strict';
+
+    /* Footer year */
+    var yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    /* Scroll-reveal */
+    var revealEls = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -60px 0px', threshold: 0.06 });
+      revealEls.forEach(function (el) { io.observe(el); });
+    } else {
+      revealEls.forEach(function (el) { el.classList.add('is-visible'); });
     }
-  ]
-}
-</script>
 
-<script>
-  // Footer year
-  document.getElementById('year').textContent = new Date().getFullYear();
+    /* Stat counter animation */
+    var statsDone = false;
+    function animateStats() {
+      if (statsDone) return;
+      statsDone = true;
+      document.querySelectorAll('.stat__num[data-count]').forEach(function (el) {
+        var target = parseInt(el.getAttribute('data-count'), 10);
+        var small  = el.querySelector('small');
+        var span   = el.querySelector('span');
+        if (!span) {
+          // No span — just a plain number
+          el.textContent = '0';
+          var start = null;
+          function step(ts) {
+            if (!start) start = ts;
+            var p = Math.min((ts - start) / 1100, 1);
+            var eased = 1 - Math.pow(1 - p, 3);
+            el.textContent = Math.round(eased * target);
+            if (p < 1) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+          return;
+        }
+        var start2 = null;
+        function step2(ts) {
+          if (!start2) start2 = ts;
+          var p = Math.min((ts - start2) / 1100, 1);
+          var eased = 1 - Math.pow(1 - p, 3);
+          span.textContent = Math.round(eased * target);
+          if (p < 1) requestAnimationFrame(step2);
+        }
+        span.textContent = '0';
+        requestAnimationFrame(step2);
+      });
+    }
+    var statsEl = document.querySelector('.stats');
+    if (statsEl && 'IntersectionObserver' in window) {
+      var so = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { animateStats(); so.disconnect(); }
+        });
+      }, { threshold: 0.3 });
+      so.observe(statsEl);
+    } else { animateStats(); }
 
-  // Load the real logo into header + hero
-  (function () {
-    var src = '/uploads/branding/logo.png';
-    ['headerLogo', 'heroLogo'].forEach(function (id) {
-      var el = document.getElementById(id);
+    /* Site logo in hero */
+    (function () {
+      var el = document.getElementById('heroLogo');
       if (!el) return;
-      var img = new Image();
-      img.onload = function () {
+      var src = '/uploads/branding/logo.png';
+      var probe = new Image();
+      probe.onload = function () {
         el.innerHTML = '';
-        var i = document.createElement('img');
-        i.src = src;
-        i.alt = 'TCSSS logo';
-        el.appendChild(i);
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = 'TCSSS logo';
+        el.appendChild(img);
       };
-      img.onerror = function () { /* keep the initials */ };
-      img.src = src;
-    });
-  })();
+      probe.src = src;
+    })();
 
-  // Also swap in team photos if the file exists.
-  // Convention: /uploads/branding/team/ea.jpg, akinola.jpg, etc.
-  (function () {
-    var mapping = {
-      'av-ea':      'emmanuel-ajibade',
-      'av-akinola': 'akinola-daniel',
-      'av-matthias':'matthias-olatunde',
-      'av-victor':  'ikobayo-victor',
-      'av-elijah':  'adebowale-elijah',
-      'av-excel':   'emmanuel-excel',
-      'av-david':   'oyedele-david',
-      'av-joshua':  'kehinde-joshua',
-      'av-kabir':   'abdulkabir-isiaka',
-      'av-timi':    'timilehin-olatunji',
-      'av-alamin':  'al-arashi-al-amin'
-    };
-    Object.keys(mapping).forEach(function (id) {
-      var el = document.getElementById(id);
-      if (!el) return;
-      var src = '/uploads/branding/team/' + mapping[id] + '.jpg';
-      var img = new Image();
-      img.onload = function () {
-        el.innerHTML = '';
-        var i = document.createElement('img');
-        i.src = src;
-        i.alt = 'Team member';
-        el.appendChild(i);
-      };
-      img.onerror = function () { /* keep the initials */ };
-      img.src = src;
-    });
-  })();
-</script>
+    /* Team photos — /uploads/branding/team/<slug>.jpg */
+    (function () {
+      document.querySelectorAll('.team-card__photo[data-slug]').forEach(function (card) {
+        var slug = card.getAttribute('data-slug');
+        if (!slug) return;
+        var src = '/uploads/branding/team/' + slug + '.jpg';
+        var probe = new Image();
+        probe.onload = function () {
+          var initials = card.querySelector('.team-card__initials');
+          if (initials) initials.remove();
+          var img = document.createElement('img');
+          img.src = src;
+          img.alt = '';
+          img.loading = 'lazy';
+          card.appendChild(img);
+        };
+        probe.src = src;
+      });
+    })();
 
+  })();
+  </script>
 </body>
 </html>

@@ -18,6 +18,16 @@ router.get('/active', requireLogin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Record a view the moment the popup/banner is shown on screen.
+router.post('/:id/view', requireLogin, async (req, res, next) => {
+  try {
+    const mode = req.body && req.body.display_mode;
+    const result = await service.recordView(req.params.id, req.user.id, mode);
+    if (!result.ok) return res.status(404).json({ error: 'Not found' });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 router.post('/:id/dismiss', requireLogin, async (req, res, next) => {
   try {
     const result = await service.dismiss(req.params.id, req.user.id);

@@ -127,7 +127,52 @@ async function dismiss(announcementId, userId) {
   return { ok: true };
 }
 
+/* ---------- View tracking ---------- */
+async function recordView(announcementId, userId, displayMode) {
+  const ann = await db.announcements.findById(announcementId);
+  if (!ann) return { ok: false, code: 'NOT_FOUND' };
+  await db.announcements.recordView(announcementId, userId, displayMode);
+  return { ok: true };
+}
+
+async function listViewers(announcementId) {
+  const ann = await db.announcements.findById(announcementId);
+  if (!ann) return { ok: false, code: 'NOT_FOUND' };
+  const viewers = await db.announcements.listViewers(announcementId);
+
+  const stats = {
+    unique_viewers: viewers.length,
+    dismissed:      viewers.filter(function (v) { return v.dismissed_at; }).length,
+    not_dismissed:  viewers.filter(function (v) { return !v.dismissed_at; }).length,
+    total_views:    viewers.reduce(function (sum, v) { return sum + (v.view_count || 0); }, 0),
+    first_view_at:  viewers.length ? viewers[viewers.length - 1].first_viewed_at : null,
+    last_view_at:   viewers.length ? viewers[0].last_viewed_at : null,
+  };
+
+  return {
+    ok: true,
+    announcement: {
+      id: ann.id,
+      title: ann.title,
+      category: ann.category,
+      display_mode: ann.display_mode,
+      priority: ann.priority,
+      created_at: ann.created_at,
+    },
+    stats,
+    viewers,
+  };
+}
+
+async function clearViews(announcementId) {
+  const ann = await db.announcements.findById(announcementId);
+  if (!ann) return { ok: false, code: 'NOT_FOUND' };
+  const removed = await db.announcements.clearViews(announcementId);
+  return { ok: true, removed };
+}
+
 module.exports = {
   listAll, getById, create, update, remove,
   listActiveForUser, dismiss,
+  recordView, listViewers, clearViews,
 };

@@ -6,6 +6,8 @@ const { pool } = require('../pool');
 async function listAll() {
   const r = await pool.query(
     `SELECT a.*, u.name AS author_name,
+            (SELECT COUNT(*)::int FROM announcement_views v
+              WHERE v.announcement_id = a.id) AS view_count,
             (SELECT COUNT(*)::int FROM announcement_dismissals d
               WHERE d.announcement_id = a.id) AS dismissed_count
        FROM announcements a
@@ -109,7 +111,54 @@ async function recordDismissal(announcementId, userId) {
   );
 }
 
+/* ---------- View tracking ---------- */
+async function recordView(announcementId, userId, displayMode) {
+  await pool.query(
+    `INSERT INTO announcement_views
+       (announcement_id, user_id, first_viewed_at, last_viewed_at, view_count, display_mode)
+     VALUES ($1, $2, now(), now(), 1, $3)
+     ON CONFLICT (announcement_id, user_id)
+     DO UPDATE SET last_viewed_at = now(),
+                   view_count     = announcement_views.view_count + 1,
+                   display_mode   = COALESCE(EXCLUDED.display_mode, announcement_views.display_mode)`,
+    [announcementId, userId, displayMode || null]
+  );
+}
+
+async function listViewers(announcementId) {
+  const r = await pool.query(
+    `SELECT v.id,
+            v.first_viewed_at,
+            v.last_viewed_at,
+            v.view_count,
+            v.display_mode,
+            d.dismissed_at,
+            u.id    AS user_id,
+            u.name  AS user_name,
+            u.email AS user_email,
+            u.role  AS user_role
+       FROM announcement_views v
+       JOIN users u ON u.id = v.user_id
+       LEFT JOIN announcement_dismissals d
+              ON d.announcement_id = v.announcement_id
+             AND d.user_id = v.user_id
+      WHERE v.announcement_id = $1
+      ORDER BY v.last_viewed_at DESC`,
+    [announcementId]
+  );
+  return r.rows;
+}
+
+async function clearViews(announcementId) {
+  const r = await pool.query(
+    `DELETE FROM announcement_views WHERE announcement_id = $1`,
+    [announcementId]
+  );
+  return r.rowCount;
+}
+
 module.exports = {
   listAll, findById, create, update, softDelete,
   listActiveForUser, recordDismissal,
+  recordView, listViewers, clearViews,
 };

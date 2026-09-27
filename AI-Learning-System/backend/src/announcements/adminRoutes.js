@@ -55,4 +55,30 @@ router.delete('/:id', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+/* ---------- Viewers ---------- */
+router.get('/:id/views', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await service.listViewers(req.params.id);
+    if (!result.ok) return res.status(404).json({ error: 'Not found' });
+    await audit.log({
+      req, action: 'announcement.view_viewers', targetType: 'announcement',
+      targetId: req.params.id, targetLabel: result.announcement.title,
+      details: { viewers: result.stats.unique_viewers },
+    });
+    res.json(result);
+  } catch (err) { next(err); }
+});
+
+router.delete('/:id/views', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await service.clearViews(req.params.id);
+    if (!result.ok) return res.status(404).json({ error: 'Not found' });
+    await audit.log({
+      req, action: 'announcement.clear_views', targetType: 'announcement',
+      targetId: req.params.id, details: { removed: result.removed },
+    });
+    res.json({ ok: true, removed: result.removed });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
