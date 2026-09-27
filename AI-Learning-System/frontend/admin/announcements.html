@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Announcements — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<style>
+  .ann-layout { display: grid; grid-template-columns: 1fr 420px; gap: 16px; }
+  @media (max-width: 1100px) { .ann-layout { grid-template-columns: 1fr; } }
+
+  .ann-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; padding: 20px; }
+  .ann-card + .ann-card { margin-top: 14px; }
+
+  .ann-list { display: flex; flex-direction: column; gap: 10px; }
+  .ann-item { display: flex; gap: 12px; padding: 14px; background: var(--white); border: 1.5px solid var(--border); border-radius: 14px; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
+  .ann-item:hover { border-color: var(--gold); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+  .ann-item.is-active { border-color: var(--red); box-shadow: 0 0 0 3px rgba(230,17,30,0.12); }
+  .ann-item__stripe { width: 4px; border-radius: 4px; background: var(--gold); flex-shrink: 0; }
+  .ann-item__stripe--urgent { background: var(--red); }
+  .ann-item__stripe--important { background: var(--gold); }
+  .ann-item__stripe--normal { background: var(--navy); }
+  .ann-item__body { flex: 1; min-width: 0; }
+  .ann-item__title { font-family: var(--font-head); font-weight: 600; font-size: 1rem; color: var(--navy); margin: 0 0 4px; }
+  .ann-item__meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--slate); }
+  .ann-pill { padding: 3px 9px; border-radius: 999px; font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.06em; font-weight: 700; text-transform: uppercase; }
+  .ann-pill--modal { background: #FDECEC; color: var(--deep-red); }
+  .ann-pill--inline { background: #EEF3FB; color: var(--navy); }
+  .ann-pill--announcement { background: #ECEBF5; color: var(--navy); }
+  .ann-pill--news { background: #FBF3E1; color: #6A4F13; }
+  .ann-pill--update { background: #EAF7EE; color: #2F8F4A; }
+  .ann-pill--urgent { background: var(--red); color: #fff; }
+  .ann-pill--important { background: var(--gold); color: #fff; }
+  .ann-pill--inactive { background: var(--blush); color: var(--slate); }
+  .ann-item__preview { font-size: 0.85rem; color: var(--slate); margin-top: 6px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .ann-field { margin-bottom: 12px; }
+  .ann-field label { display: block; font-family: var(--font-ui); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); font-weight: 700; margin-bottom: 6px; }
+  .ann-field input[type="text"], .ann-field input[type="number"], .ann-field input[type="url"],
+  .ann-field input[type="datetime-local"], .ann-field select, .ann-field textarea {
+    width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: var(--font-body); font-size: 0.9rem; color: var(--ink); outline: none; background: var(--white);
+  }
+  .ann-field textarea { min-height: 100px; resize: vertical; }
+  .ann-field input:focus, .ann-field select:focus, .ann-field textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
+  .ann-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ann-check { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--ink); }
+  .ann-check input { width: auto; }
+
+  .ann-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+  .ann-empty { padding: 40px 20px; text-align: center; color: var(--slate); font-size: 0.9rem; }
+  .ann-empty i { font-size: 2rem; opacity: 0.3; display: block; margin-bottom: 12px; }
+
+  .ann-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 12px 22px; border-radius: 999px; font-size: 0.9rem; box-shadow: 0 12px 32px rgba(17,16,74,0.35); z-index: 500; }
+  .ann-toast--error { background: var(--deep-red); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner" style="max-width: 1400px">
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Announcements & News</h1>
+              <p class="page-header__sub">Post announcements, news, or updates. Choose modal popup or inline banner. Set the countdown before the Done button becomes active, cooldown after dismissal, and an optional CTA button.</p>
+            </div>
+            <button class="btn btn-primary" id="new-btn" type="button">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i> New announcement
+            </button>
+          </header>
+
+          <div class="ann-layout">
+            <section>
+              <div id="list-wrap" class="ann-list">
+                <div class="ann-empty"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div>
+              </div>
+            </section>
+
+            <aside>
+              <div class="ann-card" id="form-card" style="display:none">
+                <h2 class="section__title" id="form-title" style="margin-bottom:14px">New announcement</h2>
+
+                <div class="ann-field">
+                  <label for="f-title">Title</label>
+                  <input type="text" id="f-title" placeholder="e.g. New Study Circle feature is live" maxlength="200">
+                </div>
+
+                <div class="ann-field">
+                  <label for="f-body">Body (Markdown supported)</label>
+                  <textarea id="f-body" placeholder="Explain the change or announcement…"></textarea>
+                </div>
+
+                <div class="ann-row">
+                  <div class="ann-field">
+                    <label for="f-category">Category</label>
+                    <select id="f-category">
+                      <option value="announcement">Announcement</option>
+                      <option value="news">News</option>
+                      <option value="update">Update</option>
+                    </select>
+                  </div>
+                  <div class="ann-field">
+                    <label for="f-priority">Priority</label>
+                    <select id="f-priority">
+                      <option value="normal">Normal</option>
+                      <option value="important">Important</option>
+                      <option value="urgent">Urgent</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="ann-field">
+                  <label for="f-display">Display mode</label>
+                  <select id="f-display">
+                    <option value="inline">Inline banner</option>
+                    <option value="modal">Modal popup</option>
+                  </select>
+                </div>
+
+                <div class="ann-row">
+                  <div class="ann-field">
+                    <label for="f-modal-delay">Modal delay (sec) — Done unlocks after</label>
+                    <input type="number" id="f-modal-delay" min="0" max="600" value="30">
+                  </div>
+                  <div class="ann-field">
+                    <label for="f-inline-delay">Inline delay (sec) — close unlocks after</label>
+                    <input type="number" id="f-inline-delay" min="0" max="600" value="15">
+                  </div>
+                </div>
+
+                <div class="ann-field">
+                  <label for="f-cooldown">Cooldown hours — hours before it can show again after dismissal (0 = never show again)</label>
+                  <input type="number" id="f-cooldown" min="0" max="8760" value="24">
+                </div>
+
+                <h3 class="section__title" style="margin:20px 0 10px;font-size:0.95rem">Optional CTA button</h3>
+
+                <div class="ann-row">
+                  <div class="ann-field">
+                    <label for="f-action-label">Button label</label>
+                    <input type="text" id="f-action-label" placeholder="e.g. Try it now" maxlength="60">
+                  </div>
+                  <div class="ann-field">
+                    <label for="f-action-url">Button URL</label>
+                    <input type="text" id="f-action-url" placeholder="/circles.html or https://…">
+                  </div>
+                </div>
+                <div class="ann-row">
+                  <div class="ann-field">
+                    <label for="f-action-style">Button style</label>
+                    <select id="f-action-style">
+                      <option value="primary">Primary</option>
+                      <option value="secondary">Secondary</option>
+                    </select>
+                  </div>
+                  <div class="ann-field" style="display:flex;align-items:flex-end">
+                    <label class="ann-check"><input type="checkbox" id="f-action-newtab" checked> Open in new tab</label>
+                  </div>
+                </div>
+
+                <h3 class="section__title" style="margin:20px 0 10px;font-size:0.95rem">Schedule & targeting</h3>
+
+                <div class="ann-row">
+                  <div class="ann-field">
+                    <label for="f-starts">Starts at (optional)</label>
+                    <input type="datetime-local" id="f-starts">
+                  </div>
+                  <div class="ann-field">
+                    <label for="f-expires">Expires at (optional)</label>
+                    <input type="datetime-local" id="f-expires">
+                  </div>
+                </div>
+
+                <div class="ann-row">
+                  <div class="ann-field">
+                    <label for="f-role">Show to</label>
+                    <select id="f-role">
+                      <option value="all">Everyone</option>
+                      <option value="student">Students only</option>
+                      <option value="admin">Admins only</option>
+                    </select>
+                  </div>
+                  <div class="ann-field" style="display:flex;align-items:flex-end">
+                    <label class="ann-check"><input type="checkbox" id="f-active" checked> Active</label>
+                  </div>
+                </div>
+
+                <div class="ann-actions">
+                  <button class="btn btn-primary" id="save-btn" type="button">Save</button>
+                  <button class="btn btn-ghost" id="cancel-btn" type="button">Cancel</button>
+                  <button class="btn btn-danger" id="delete-btn" type="button" style="display:none;margin-left:auto">Delete</button>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var currentId = null;
+  var list = [];
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function toast(msg, isErr) {
+    var t = document.createElement('div');
+    t.className = 'ann-toast' + (isErr ? ' ann-toast--error' : '');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2400);
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleString(undefined, { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }); }
+    catch (_) { return ''; }
+  }
+  function toLocalInput(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    var off = d.getTimezoneOffset();
+    return new Date(d.getTime() - off * 60000).toISOString().slice(0, 16);
+  }
+
+  async function guard() {
+    var res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (res.status === 401) { window.location.href = '../index.html'; return false; }
+    var d = await res.json();
+    if (!d.user || d.user.role !== 'admin') { window.location.href = '../chat.html'; return false; }
+    return true;
+  }
+
+  async function load() {
+    var res = await fetch('/api/admin/announcements', { credentials: 'include' });
+    if (!res.ok) { document.getElementById('list-wrap').innerHTML = '<div class="ann-empty"><i class="fa-solid fa-triangle-exclamation"></i> Could not load.</div>'; return; }
+    var d = await res.json();
+    list = d.announcements || [];
+    render();
+  }
+
+  function render() {
+    var wrap = document.getElementById('list-wrap');
+    if (!list.length) {
+      wrap.innerHTML = '<div class="ann-empty"><i class="fa-solid fa-bullhorn"></i> No announcements yet.<br>Click <b>New announcement</b> to create one.</div>';
+      return;
+    }
+    wrap.innerHTML = list.map(function (a) {
+      var active = a.id === currentId ? ' is-active' : '';
+      var inactive = !a.is_active ? ' <span class="ann-pill ann-pill--inactive">Inactive</span>' : '';
+      return '<div class="ann-item' + active + '" data-id="' + a.id + '">' +
+        '<div class="ann-item__stripe ann-item__stripe--' + esc(a.priority) + '"></div>' +
+        '<div class="ann-item__body">' +
+          '<div class="ann-item__title">' + esc(a.title) + '</div>' +
+          '<div class="ann-item__meta">' +
+            '<span class="ann-pill ann-pill--' + esc(a.category) + '">' + esc(a.category) + '</span>' +
+            '<span class="ann-pill ann-pill--' + esc(a.display_mode) + '">' + esc(a.display_mode) + '</span>' +
+            (a.priority !== 'normal' ? '<span class="ann-pill ann-pill--' + esc(a.priority) + '">' + esc(a.priority) + '</span>' : '') +
+            inactive +
+            '<span>' + fmtDate(a.created_at) + '</span>' +
+            '<span>' + (a.dismissed_count || 0) + ' dismissed</span>' +
+            (a.expires_at ? '<span>expires ' + fmtDate(a.expires_at) + '</span>' : '') +
+          '</div>' +
+          '<div class="ann-item__preview">' + esc((a.body || '').slice(0, 180)) + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    wrap.querySelectorAll('.ann-item').forEach(function (el) {
+      el.addEventListener('click', function () { openEdit(el.getAttribute('data-id')); });
+    });
+  }
+
+  function resetForm() {
+    currentId = null;
+    document.getElementById('form-title').textContent = 'New announcement';
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-body').value = '';
+    document.getElementById('f-category').value = 'announcement';
+    document.getElementById('f-priority').value = 'normal';
+    document.getElementById('f-display').value = 'inline';
+    document.getElementById('f-modal-delay').value = 30;
+    document.getElementById('f-inline-delay').value = 15;
+    document.getElementById('f-cooldown').value = 24;
+    document.getElementById('f-action-label').value = '';
+    document.getElementById('f-action-url').value = '';
+    document.getElementById('f-action-style').value = 'primary';
+    document.getElementById('f-action-newtab').checked = true;
+    document.getElementById('f-starts').value = '';
+    document.getElementById('f-expires').value = '';
+    document.getElementById('f-role').value = 'all';
+    document.getElementById('f-active').checked = true;
+    document.getElementById('delete-btn').style.display = 'none';
+    document.getElementById('form-card').style.display = '';
+  }
+
+  function openEdit(id) {
+    var a = list.find(function (x) { return x.id === id; });
+    if (!a) return;
+    currentId = id;
+    document.getElementById('form-title').textContent = 'Edit announcement';
+    document.getElementById('f-title').value = a.title || '';
+    document.getElementById('f-body').value = a.body || '';
+    document.getElementById('f-category').value = a.category || 'announcement';
+    document.getElementById('f-priority').value = a.priority || 'normal';
+    document.getElementById('f-display').value = a.display_mode || 'inline';
+    document.getElementById('f-modal-delay').value = a.modal_delay_seconds != null ? a.modal_delay_seconds : 30;
+    document.getElementById('f-inline-delay').value = a.inline_delay_seconds != null ? a.inline_delay_seconds : 15;
+    document.getElementById('f-cooldown').value = a.cooldown_hours != null ? a.cooldown_hours : 24;
+    document.getElementById('f-action-label').value = a.action_label || '';
+    document.getElementById('f-action-url').value = a.action_url || '';
+    document.getElementById('f-action-style').value = a.action_style || 'primary';
+    document.getElementById('f-action-newtab').checked = a.action_new_tab !== false;
+    document.getElementById('f-starts').value = a.starts_at ? toLocalInput(a.starts_at) : '';
+    document.getElementById('f-expires').value = a.expires_at ? toLocalInput(a.expires_at) : '';
+    document.getElementById('f-role').value = a.target_role || 'all';
+    document.getElementById('f-active').checked = a.is_active !== false;
+    document.getElementById('delete-btn').style.display = '';
+    document.getElementById('form-card').style.display = '';
+    render();
+  }
+
+  function collect() {
+    var starts = document.getElementById('f-starts').value;
+    var expires = document.getElementById('f-expires').value;
+    return {
+      title: document.getElementById('f-title').value.trim(),
+      body: document.getElementById('f-body').value.trim(),
+      category: document.getElementById('f-category').value,
+      priority: document.getElementById('f-priority').value,
+      display_mode: document.getElementById('f-display').value,
+      modal_delay_seconds: parseInt(document.getElementById('f-modal-delay').value, 10) || 0,
+      inline_delay_seconds: parseInt(document.getElementById('f-inline-delay').value, 10) || 0,
+      cooldown_hours: parseInt(document.getElementById('f-cooldown').value, 10) || 0,
+      action_label: document.getElementById('f-action-label').value.trim() || null,
+      action_url: document.getElementById('f-action-url').value.trim() || null,
+      action_style: document.getElementById('f-action-style').value,
+      action_new_tab: document.getElementById('f-action-newtab').checked,
+      starts_at: starts ? new Date(starts).toISOString() : null,
+      expires_at: expires ? new Date(expires).toISOString() : null,
+      target_role: document.getElementById('f-role').value,
+      is_active: document.getElementById('f-active').checked,
+    };
+  }
+
+  async function save() {
+    var data = collect();
+    if (!data.title || !data.body) { toast('Title and body are required.', true); return; }
+    var btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    try {
+      var url = currentId ? '/api/admin/announcements/' + currentId : '/api/admin/announcements';
+      var method = currentId ? 'PATCH' : 'POST';
+      var res = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+      var d = await res.json().catch(function () { return {}; });
+      if (!res.ok) { toast(d.error || 'Could not save.', true); return; }
+      toast(currentId ? 'Updated.' : 'Created.');
+      currentId = d.announcement ? d.announcement.id : currentId;
+      await load();
+      if (currentId) openEdit(currentId);
+    } finally { btn.disabled = false; }
+  }
+
+  async function del() {
+    if (!currentId) return;
+    if (!confirm('Delete this announcement? It will stop showing to all users.')) return;
+    var res = await fetch('/api/admin/announcements/' + currentId, { method: 'DELETE', credentials: 'include' });
+    if (!res.ok) { toast('Could not delete.', true); return; }
+    toast('Deleted.');
+    currentId = null;
+    document.getElementById('form-card').style.display = 'none';
+    await load();
+  }
+
+  document.getElementById('new-btn').addEventListener('click', resetForm);
+  document.getElementById('cancel-btn').addEventListener('click', function () {
+    document.getElementById('form-card').style.display = 'none';
+    currentId = null;
+    render();
+  });
+  document.getElementById('save-btn').addEventListener('click', save);
+  document.getElementById('delete-btn').addEventListener('click', del);
+
+  (async function init() {
+    if (!(await guard())) return;
+    await load();
+  })();
+})();
+</script>
+</body>
+</html>

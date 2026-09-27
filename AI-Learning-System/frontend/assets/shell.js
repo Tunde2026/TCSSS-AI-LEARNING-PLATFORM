@@ -177,6 +177,7 @@
     { href: 'analytics.html', icon: 'fa-chart-line',  label: 'Analytics' },
     { href: 'audit.html',     icon: 'fa-clipboard-list', label: 'Audit'  },
     { href: 'backup.html',    icon: 'fa-database',    label: 'Backup'    },
+    { href: 'announcements.html', icon: 'fa-bullhorn', label: 'Announcements' },
     { href: 'settings.html',  icon: 'fa-gears',       label: 'Settings'  }
   ];
     var LAB_SECTIONS = [
@@ -409,7 +410,11 @@
             '<span>Contact Us</span>' +
             '<span class="nav-item__badge" id="support-badge" style="display:none"></span>' +
           '</a>' +
-          
+           '<a class="nav-item nav-item--utility" href="' + BASE + 'about.html" title="About the platform">' +
+            '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>' +
+            '<span>About the platform</span>' +
+          '</a>' +
+      
           '<a class="nav-item nav-item--utility" href="' + SCHOOL_URL + '" target="_blank" rel="noopener noreferrer" title="Official School Website">' +
             '<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>' +
             '<span>Official School Website</span>' +
@@ -717,4 +722,22 @@
 
   // Initial empty state
   renderEmpty();
+})();
+
+/* ------------------------------------------------------------------
+   Load the student-facing announcements module on every page.
+   ------------------------------------------------------------------ */
+(function () {
+  if (window.__announcementsLoading) return;
+  window.__announcementsLoading = true;
+  var scripts = document.querySelectorAll('script[src*="shell.js"]');
+  var base = 'assets/';
+  if (scripts.length) {
+    var src = scripts[scripts.length - 1].getAttribute('src') || '';
+    base = src.replace(/shell\.js.*$/, '');
+  }
+  var el = document.createElement('script');
+  el.src = base + 'announcements.js';
+  el.async = true;
+  document.head.appendChild(el);
 })();

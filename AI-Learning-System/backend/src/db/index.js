@@ -25,6 +25,7 @@ const spark            = require('./queries/spark');
 const theory           = require('./queries/theory');
 const sketches         = require('./queries/sketches');
 const support          = require('./queries/support');
+const announcements = require('./queries/announcements');
 
 module.exports = {
   pool, ping,
@@ -32,5 +33,5 @@ module.exports = {
   flashcards, library, documentChunks, settings,
   knowledge, analytics, providerKeys, auditLog,
   notes, practice, studyPlans, chatAttachments, spark, theory,
-  sketches, support,
+  sketches, support, announcements,
 };

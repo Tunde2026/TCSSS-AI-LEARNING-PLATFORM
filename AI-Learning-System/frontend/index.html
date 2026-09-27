@@ -39,26 +39,60 @@
   }
   .auth-card { width: 100%; max-width: 440px; }
   .auth-brand { text-align: center; margin-bottom: 22px; }
+
+  /* ---------- Centered circular profile image ---------- */
   .auth-brand__mark {
-    width: 56px; height: 56px; margin: 0 auto 12px;
-    border-radius: 12px; background: var(--navy);
-    color: rgba(255,255,255,0.5);
-    display: grid; place-items: center;
-    font-family: var(--font-ui); font-size: 0.6rem;
+    width: 88px;
+    height: 88px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), var(--soft-navy));
+    color: rgba(255, 255, 255, 0.55);
+    display: grid;
+    place-items: center;
     overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 4px var(--white),
+      0 0 0 6px var(--gold),
+      0 10px 28px rgba(17, 16, 74, 0.22);
+    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 260ms ease;
+  }
+  .auth-brand__mark:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 0 4px var(--white),
+      0 0 0 6px var(--gold),
+      0 14px 34px rgba(17, 16, 74, 0.3);
   }
   .auth-brand__mark img {
-    width: 100%; height: 100%;
-    object-fit: contain;
-    padding: 6px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
     background: var(--white);
   }
+  .auth-brand__mark.is-fallback {
+    background: linear-gradient(135deg, var(--blush), var(--blush-deep));
+  }
+  .auth-brand__mark.is-fallback img {
+    object-fit: contain;
+    padding: 22px;
+    background: transparent;
+  }
+
   .auth-brand__title {
-    font-family: var(--font-head); font-size: 1.35rem;
-    color: var(--navy); margin: 0;
+    font-family: var(--font-head);
+    font-size: 1.35rem;
+    color: var(--navy);
+    margin: 0;
+    letter-spacing: -0.01em;
   }
   .auth-brand__sub {
-    font-size: 0.85rem; color: var(--slate); margin-top: 4px;
+    font-size: 0.85rem;
+    color: var(--slate);
+    margin-top: 4px;
   }
 
   .auth-tabs {
@@ -89,6 +123,44 @@
 
   .field { margin-bottom: 14px; }
   .field-hint { font-size: 0.75rem; color: var(--slate); margin-top: 4px; }
+
+  /* ---------- Password field with show/hide toggle ---------- */
+  .input-wrap {
+    position: relative;
+    display: block;
+  }
+  .input-wrap .input {
+    padding-right: 46px;
+  }
+  .input-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: var(--slate);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    padding: 0;
+    transition: background var(--transition), color var(--transition);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .input-toggle:hover { background: var(--blush); color: var(--navy); }
+  .input-toggle:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+    color: var(--navy);
+  }
+  .input-toggle:active { transform: translateY(-50%) scale(0.94); }
+  .input-toggle svg { width: 18px; height: 18px; display: block; }
+  .input-toggle .icon-eye-off { display: none; }
+  .input-toggle.is-visible .icon-eye     { display: none; }
+  .input-toggle.is-visible .icon-eye-off { display: block; }
 
   .auth-actions {
     display: flex; align-items: center; justify-content: space-between;
@@ -144,14 +216,23 @@
   .auth-foot a { color: var(--slate); }
 
   .hidden { display: none !important; }
+
+  @media (max-width: 480px) {
+    .auth-brand__mark { width: 76px; height: 76px; }
+    .auth-brand__title { font-size: 1.2rem; }
+  }
 </style>
 </head>
 <body>
   <main class="auth-wrap">
     <div class="auth-card">
       <div class="auth-brand">
-        <div class="auth-brand__mark" id="brand-mark" aria-hidden="true">
-          <img src="/uploads/branding/logo.png" alt="TCSSS LOGO">
+        <!-- Centered circular profile image — fixed for now, admin-managed later -->
+        <div class="auth-brand__mark" id="brand-mark">
+          <img id="brand-img"
+               src="/uploads/branding/logo.png"
+               alt="TCSSS profile"
+               onerror="window.__handleBrandFallback && window.__handleBrandFallback(this);">
         </div>
         <h1 class="auth-brand__title" id="brand-title">AI Learning Platform</h1>
         <div class="auth-brand__sub" id="brand-sub">Sign in to continue</div>
@@ -172,7 +253,22 @@
           </div>
           <div class="field">
             <label class="label" for="login-password">Password</label>
-            <input class="input" type="password" id="login-password" autocomplete="current-password" required>
+            <div class="input-wrap">
+              <input class="input" type="password" id="login-password" autocomplete="current-password" required>
+              <button type="button" class="input-toggle" data-target="login-password"
+                      aria-label="Show password" aria-pressed="false" title="Show password">
+                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <div class="auth-actions">
             <a href="#" class="forgot">Forgot password?</a>
@@ -191,13 +287,43 @@
           </div>
           <div class="field">
             <label class="label" for="signup-password">Password</label>
-            <input class="input" type="password" id="signup-password"
-                   autocomplete="new-password" minlength="8" required>
+            <div class="input-wrap">
+              <input class="input" type="password" id="signup-password"
+                     autocomplete="new-password" minlength="8" required>
+              <button type="button" class="input-toggle" data-target="signup-password"
+                      aria-label="Show password" aria-pressed="false" title="Show password">
+                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
             <div class="field-hint">At least 8 characters.</div>
           </div>
           <div class="field">
             <label class="label" for="signup-confirm">Confirm password</label>
-            <input class="input" type="password" id="signup-confirm" autocomplete="new-password" required>
+            <div class="input-wrap">
+              <input class="input" type="password" id="signup-confirm" autocomplete="new-password" required>
+              <button type="button" class="input-toggle" data-target="signup-confirm"
+                      aria-label="Show password" aria-pressed="false" title="Show password">
+                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <div class="auth-actions" style="justify-content:flex-end">
             <button class="btn btn-primary" type="submit" id="signup-submit">Create account</button>
@@ -222,19 +348,81 @@
   const brandSub   = document.getElementById('brand-sub');
   const brandTitle = document.getElementById('brand-title');
   const brandMark  = document.getElementById('brand-mark');
+  const brandImg   = document.getElementById('brand-img');
   const alertEl    = document.getElementById('alert');
 
-  // ---- Load branding ----
+  // ---- Fixed fallback profile image (inline SVG avatar) ----
+  // Used when /uploads/branding/logo.png is missing or fails to load.
+  // Admin page will replace this later with real profile management.
+  const FALLBACK_AVATAR =
+    "data:image/svg+xml;utf8," +
+    encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#5B5A6B">' +
+        '<path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z"/>' +
+        '<path d="M12 14c-3.34 0-10 1.67-10 5v3h20v-3c0-3.33-6.66-5-10-5z"/>' +
+      '</svg>'
+    );
+
+  window.__handleBrandFallback = function (imgEl) {
+    // Prevent infinite loop if the fallback itself somehow fails.
+    if (imgEl.dataset.fallbackApplied === '1') return;
+    imgEl.dataset.fallbackApplied = '1';
+    imgEl.src = FALLBACK_AVATAR;
+    brandMark.classList.add('is-fallback');
+  };
+
+  // ---- Password show / hide toggles ----
+  function resetAllToggles() {
+    document.querySelectorAll('.input-toggle').forEach(function (btn) {
+      btn.classList.remove('is-visible');
+      btn.setAttribute('aria-pressed', 'false');
+      btn.setAttribute('aria-label', 'Show password');
+      btn.setAttribute('title', 'Show password');
+      var target = document.getElementById(btn.getAttribute('data-target'));
+      if (target) target.type = 'password';
+    });
+  }
+
+  document.querySelectorAll('.input-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var target = document.getElementById(btn.getAttribute('data-target'));
+      if (!target) return;
+
+      var showing = target.type === 'text';
+      target.type = showing ? 'password' : 'text';
+      btn.classList.toggle('is-visible', !showing);
+      btn.setAttribute('aria-pressed', String(!showing));
+      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
+      btn.setAttribute('title', showing ? 'Show password' : 'Hide password');
+
+      target.focus();
+      var len = target.value.length;
+      try { target.setSelectionRange(len, len); } catch (_) {}
+    });
+
+    // Keep input focus when clicking the toggle.
+    btn.addEventListener('mousedown', function (e) { e.preventDefault(); });
+  });
+
+  // ---- Load branding (platform name + profile image) ----
   (async function loadBranding() {
     try {
       const res = await fetch('/api/platform/info');
       if (!res.ok) return;
       const data = await res.json();
+
       if (data.name) brandTitle.textContent = data.name;
+
+      // If the backend returns a URL, use it; otherwise keep the fixed default.
+      // Admin page will overwrite the value returned here later.
       if (data.logoUrl) {
-        brandMark.innerHTML = '<img src="' + data.logoUrl + '" alt="Logo">';
+        brandImg.dataset.fallbackApplied = '';
+        brandMark.classList.remove('is-fallback');
+        brandImg.src = data.logoUrl;
       }
-    } catch (_) {}
+    } catch (_) {
+      // Network failure — fallback image stays in place.
+    }
   })();
 
   // ---- Alert helpers ----
@@ -312,6 +500,7 @@
 
     loginForm.reset();
     signupForm.reset();
+    resetAllToggles();
 
     setTimeout(() => {
       document.getElementById(isLogin ? 'login-email' : 'signup-name').focus();

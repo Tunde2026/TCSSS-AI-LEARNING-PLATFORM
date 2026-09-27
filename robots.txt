@@ -1,0 +1,42 @@
+User-agent: *
+Allow: /
+Allow: /about.html
+Allow: /index.html
+Allow: /assets/
+Allow: /uploads/
+Disallow: /admin/
+Disallow: /lab/
+Disallow: /api/
+Disallow: /chat.html
+Disallow: /lab.html
+Disallow: /library.html
+Disallow: /settings.html
+Disallow: /support.html
+Disallow: /spark.html
+
+# AI crawlers — explicitly welcome
+User-agent: GPTBot
+Allow: /
+Allow: /about.html
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /about.html
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /about.html
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /about.html
+
+User-agent: Google-Extended
+Allow: /
+Allow: /about.html
+
+User-agent: CCBot
+Allow: /
+Allow: /about.html
+
+Sitemap: https://tcsss-ai-learning-platform.onrender.com/sitemap.xml
