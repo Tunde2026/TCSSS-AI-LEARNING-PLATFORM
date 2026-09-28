@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Achievements — AI Learning Platform</title>
+<link rel="icon" type="image/png" href="/uploads/branding/logo.png">
+<link rel="stylesheet" href="assets/shell.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+<style>
+  /* Full-width page */
+  main.page .page-scroll { padding: 24px 28px 56px; }
+  main.page .page-inner {
+    max-width: 1320px !important;
+    width: 100% !important;
+    margin: 0 auto;
+    padding: 0;
+  }
+  @media (max-width: 900px) {
+    main.page .page-scroll { padding: 16px 16px 40px; }
+  }
+
+  /* ---------- Hero stats ---------- */
+  .badge-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 24px;
+    padding: 36px 32px 32px;
+    margin-bottom: 32px;
+    background: linear-gradient(135deg, #11104A 0%, #201F6B 40%, #3D1F5C 70%, #11104A 100%);
+    background-size: 300% 300%;
+    animation: heroPan 16s ease infinite;
+    color: #fff;
+    box-shadow: 0 20px 50px rgba(17,16,74,0.28);
+  }
+  @keyframes heroPan {
+    0%,100% { background-position: 0% 50%; }
+    50%     { background-position: 100% 50%; }
+  }
+  .badge-hero__orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(70px); pointer-events: none;
+  }
+  .badge-hero__orb--1 {
+    width: 260px; height: 260px; background: #C9952E;
+    top: -90px; left: -60px; opacity: 0.36;
+    animation: orb1 18s ease-in-out infinite;
+  }
+  .badge-hero__orb--2 {
+    width: 220px; height: 220px; background: #E6111E;
+    bottom: -80px; right: -40px; opacity: 0.24;
+    animation: orb2 22s ease-in-out infinite;
+  }
+  @keyframes orb1 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(30px,-20px) scale(1.12); }
+  }
+  @keyframes orb2 {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(-30px,20px) scale(1.15); }
+  }
+  .badge-hero > * { position: relative; z-index: 2; }
+
+  .badge-hero__eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.88);
+    margin-bottom: 16px;
+  }
+  .badge-hero__eyebrow i { color: var(--gold); }
+
+  .badge-hero__title {
+    font-family: var(--font-head);
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
+    font-weight: 600; margin: 0 0 10px;
+    letter-spacing: -0.02em; line-height: 1.15;
+  }
+  .badge-hero__title em {
+    font-style: normal;
+    background: linear-gradient(120deg, #C9952E 0%, #FFD97D 50%, #C9952E 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: #C9952E;
+  }
+  .badge-hero__sub {
+    font-size: 0.98rem; color: rgba(255,255,255,0.8);
+    max-width: 560px; margin: 0 0 28px;
+    line-height: 1.6;
+  }
+
+  .badge-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 760px) {
+    .badge-stats { grid-template-columns: repeat(2, 1fr); }
+    .badge-hero { padding: 28px 20px 26px; border-radius: 20px; }
+  }
+  .badge-stat {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 16px;
+    padding: 18px 16px;
+    display: flex; gap: 12px; align-items: center;
+    backdrop-filter: blur(6px);
+  }
+  .badge-stat__icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(201,149,46,0.22); color: #FFD97D;
+    display: grid; place-items: center; font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .badge-stat--fire .badge-stat__icon { background: rgba(230,17,30,0.28); color: #FFE0E2; }
+  .badge-stat--trophy .badge-stat__icon { background: rgba(201,149,46,0.28); color: #FFE8B8; }
+  .badge-stat--calendar .badge-stat__icon { background: rgba(110,107,229,0.28); color: #DAD8FF; }
+  .badge-stat__body { min-width: 0; }
+  .badge-stat__num {
+    font-family: var(--font-head); font-size: 1.6rem; font-weight: 700;
+    line-height: 1; margin-bottom: 4px; letter-spacing: -0.02em;
+  }
+  .badge-stat__num small {
+    font-size: 0.85rem; opacity: 0.7; margin-left: 3px;
+    font-weight: 500; font-family: var(--font-body);
+  }
+  .badge-stat__label {
+    font-family: var(--font-ui); font-size: 0.6rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    opacity: 0.75; font-weight: 600;
+  }
+
+  /* ---------- Sections ---------- */
+  .badge-section { margin-bottom: 40px; }
+  .badge-section__head {
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .badge-section__title {
+    font-family: var(--font-head); font-size: 1.25rem;
+    font-weight: 600; color: var(--navy);
+    margin: 0; letter-spacing: -0.01em;
+  }
+  .badge-section__count {
+    font-family: var(--font-ui); font-size: 0.68rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--slate); font-weight: 700;
+    padding: 3px 10px; border-radius: 999px;
+    background: var(--blush); margin-left: auto;
+  }
+
+  /* ---------- Badge grid ---------- */
+  .badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+  @media (max-width: 540px) {
+    .badge-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+
+  .badge-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 20px 18px 18px;
+    display: flex; flex-direction: column; gap: 12px;
+    position: relative; overflow: hidden;
+    transition:
+      border-color 300ms ease,
+      transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 380ms ease;
+  }
+  .badge-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: 0 16px 36px rgba(17,16,74,0.12);
+  }
+
+  .badge-card--locked {
+    background: #FAF9FC;
+    border-color: var(--border-soft);
+  }
+  .badge-card--locked:hover {
+    border-color: rgba(17,16,74,0.24);
+    box-shadow: 0 12px 28px rgba(17,16,74,0.08);
+  }
+
+  .badge-card__icon {
+    width: 56px; height: 56px; border-radius: 16px;
+    display: grid; place-items: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+    transition: transform 380ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .badge-card:hover .badge-card__icon {
+    transform: scale(1.08) rotate(-5deg);
+  }
+
+  /* Color variants */
+  .badge-card__icon--navy   { background: linear-gradient(155deg, #ECEBF5, #DAD8EA); color: var(--navy); }
+  .badge-card__icon--gold   { background: linear-gradient(155deg, #FBF3E1, #F4E2B8); color: #9E7524; }
+  .badge-card__icon--red    { background: linear-gradient(155deg, #FDECEC, #F8D4D4); color: var(--deep-red); }
+  .badge-card__icon--green  { background: linear-gradient(155deg, #EAF7EE, #C9E8D2); color: #2F8F4A; }
+
+  /* Locked state: greyed out */
+  .badge-card--locked .badge-card__icon {
+    background: linear-gradient(155deg, #ECEBF0, #E0DEEC);
+    color: var(--slate);
+    opacity: 0.75;
+  }
+
+  .badge-card__body { flex: 1; min-width: 0; }
+
+  .badge-card__name {
+    font-family: var(--font-head);
+    font-size: 1rem; font-weight: 600;
+    color: var(--navy); margin: 0 0 6px;
+    line-height: 1.3;
+  }
+  .badge-card--locked .badge-card__name { color: var(--slate); }
+
+  .badge-card__desc {
+    font-size: 0.84rem; color: var(--slate);
+    line-height: 1.55; margin: 0;
+  }
+
+  .badge-card__footer {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    font-weight: 700;
+  }
+  .badge-card__earned { color: #2F8F4A; display: inline-flex; align-items: center; gap: 5px; }
+  .badge-card__earned i { font-size: 0.72rem; }
+  .badge-card__locked {
+    color: var(--slate); display: inline-flex; align-items: center; gap: 5px;
+  }
+  .badge-card__date { color: var(--slate); font-weight: 500; font-size: 0.6rem; }
+
+  /* Locked overlay — diagonal ribbon */
+  .badge-card--locked::after {
+    content: '';
+    position: absolute; top: 0; right: 0;
+    width: 60px; height: 60px;
+    background: linear-gradient(135deg, transparent 50%, rgba(91,90,107,0.06) 50%);
+    pointer-events: none;
+  }
+
+  /* Just-unlocked pulse */
+  @keyframes badgeUnlock {
+    0%   { transform: scale(0.9); opacity: 0; }
+    60%  { transform: scale(1.04); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .badge-card--new { animation: badgeUnlock 600ms cubic-bezier(0.16,1,0.3,1) both; }
+  .badge-card--new::before {
+    content: 'NEW';
+    position: absolute; top: 12px; right: 12px;
+    background: linear-gradient(135deg, var(--red), var(--deep-red));
+    color: #fff;
+    padding: 3px 9px; border-radius: 999px;
+    font-family: var(--font-ui); font-size: 0.54rem;
+    letter-spacing: 0.1em; font-weight: 700;
+    box-shadow: 0 3px 10px rgba(230,17,30,0.32);
+  }
+
+  /* ---------- Empty & loading ---------- */
+  .badge-loading {
+    padding: 60px 20px; text-align: center;
+    color: var(--slate); font-size: 0.9rem;
+  }
+  .badge-loading i { font-size: 1.8rem; color: var(--gold); display: block; margin-bottom: 12px; }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 540px) {
+    .badge-card { padding: 16px 14px 14px; border-radius: 14px; }
+    .badge-card__icon { width: 44px; height: 44px; border-radius: 12px; font-size: 1.1rem; }
+    .badge-card__name { font-size: 0.9rem; }
+    .badge-card__desc { font-size: 0.76rem; }
+    .badge-card__footer { font-size: 0.56rem; padding-top: 8px; }
+    .badge-stat__num { font-size: 1.35rem; }
+    .badge-stat { padding: 14px 12px; }
+    .badge-stat__icon { width: 38px; height: 38px; font-size: 0.95rem; }
+    .badge-section__title { font-size: 1.05rem; }
+  }
+
+  /* Reveal */
+  .reveal {
+    opacity: 0; transform: translateY(16px);
+    transition: opacity 560ms cubic-bezier(0.16,1,0.3,1),
+                transform 560ms cubic-bezier(0.16,1,0.3,1);
+    transition-delay: calc(var(--i, 0) * 45ms);
+  }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <!-- ============== HERO STATS ============== -->
+          <section class="badge-hero">
+            <div class="badge-hero__orb badge-hero__orb--1" aria-hidden="true"></div>
+            <div class="badge-hero__orb badge-hero__orb--2" aria-hidden="true"></div>
+
+            <div class="badge-hero__eyebrow">
+              <i class="fa-solid fa-trophy" aria-hidden="true"></i>
+              Your achievements
+            </div>
+
+            <h1 class="badge-hero__title">
+              Your <em>learning journey</em>, one badge at a time
+            </h1>
+            <p class="badge-hero__sub">
+              Every message, quiz, flashcard, and day you show up earns progress.
+              See what you have unlocked — and what is waiting next.
+            </p>
+
+            <div class="badge-stats">
+              <div class="badge-stat badge-stat--fire">
+                <div class="badge-stat__icon"><i class="fa-solid fa-fire"></i></div>
+                <div class="badge-stat__body">
+                  <div class="badge-stat__num" id="stat-streak">0<small>days</small></div>
+                  <div class="badge-stat__label">Current streak</div>
+                </div>
+              </div>
+              <div class="badge-stat badge-stat--trophy">
+                <div class="badge-stat__icon"><i class="fa-solid fa-medal"></i></div>
+                <div class="badge-stat__body">
+                  <div class="badge-stat__num" id="stat-longest">0<small>days</small></div>
+                  <div class="badge-stat__label">Longest streak</div>
+                </div>
+              </div>
+              <div class="badge-stat badge-stat--calendar">
+                <div class="badge-stat__icon"><i class="fa-solid fa-calendar-check"></i></div>
+                <div class="badge-stat__body">
+                  <div class="badge-stat__num" id="stat-active">0<small>days</small></div>
+                  <div class="badge-stat__label">Active days</div>
+                </div>
+              </div>
+              <div class="badge-stat badge-stat--trophy">
+                <div class="badge-stat__icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="badge-stat__body">
+                  <div class="badge-stat__num" id="stat-badges">0<small>/ 0</small></div>
+                  <div class="badge-stat__label">Badges earned</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============== BADGE SECTIONS ============== -->
+          <div id="badge-sections">
+            <div class="badge-loading">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+              Loading your achievements…
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="assets/shell.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================================
+     Badge page
+     ============================================================ */
+
+  var SECTIONS = [
+    { key: 'first',     title: 'Getting started',  match: ['first_chat','first_quiz','first_flashcard','first_theory','first_exam','first_note'] },
+    { key: 'streaks',   title: 'Streaks',          match: ['streak_3','streak_7','streak_30'] },
+    { key: 'volume',    title: 'Milestones',       match: ['quiz_10','quiz_50','flashcard_100','knowledge_seeker'] },
+    { key: 'achieve',   title: 'Achievements',     match: ['perfect_quiz','early_bird','night_owl'] },
+    { key: 'identity',  title: 'Identity',         match: ['verified'] },
+  ];
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleDateString(undefined, {
+        month: 'short', day: 'numeric', year: 'numeric',
+      });
+    } catch (_) { return ''; }
+  }
+
+  async function guard() {
+    var res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (res.status === 401) { window.location.href = 'index.html'; return false; }
+    return true;
+  }
+
+  function paintStats(streak, earnedCount, totalCount) {
+    var cur = document.getElementById('stat-streak');
+    cur.innerHTML = (streak.current || 0) + '<small>day' + (streak.current === 1 ? '' : 's') + '</small>';
+    document.getElementById('stat-longest').innerHTML = (streak.longest || 0) + '<small>days</small>';
+    document.getElementById('stat-active').innerHTML = (streak.total || 0) + '<small>days</small>';
+    document.getElementById('stat-badges').innerHTML =
+      earnedCount + '<small>/ ' + totalCount + '</small>';
+  }
+
+  function renderBadge(badge, isEarned, isNew, index) {
+    var cls = 'badge-card reveal' +
+      (isEarned ? '' : ' badge-card--locked') +
+      (isNew ? ' badge-card--new' : '');
+    var colorClass = isEarned ? (badge.color || 'navy') : 'navy';
+    var footer = isEarned
+      ? '<span class="badge-card__earned"><i class="fa-solid fa-circle-check"></i> Earned</span>' +
+        '<span class="badge-card__date">' + esc(fmtDate(badge.earned_at)) + '</span>'
+      : '<span class="badge-card__locked"><i class="fa-solid fa-lock"></i> Locked</span>' +
+        '<span class="badge-card__date">Keep going</span>';
+
+    return '<article class="' + cls + '" style="--i:' + index + '">' +
+      '<div class="badge-card__icon badge-card__icon--' + colorClass + '">' +
+        '<i class="fa-solid ' + esc(badge.icon || 'fa-medal') + '"></i>' +
+      '</div>' +
+      '<div class="badge-card__body">' +
+        '<h3 class="badge-card__name">' + esc(badge.name) + '</h3>' +
+        '<p class="badge-card__desc">' + esc(badge.desc) + '</p>' +
+      '</div>' +
+      '<div class="badge-card__footer">' + footer + '</div>' +
+    '</article>';
+  }
+
+  function observeReveals() {
+    var els = document.querySelectorAll('.reveal');
+    if (!('IntersectionObserver' in window)) {
+      els.forEach(function (el) { el.classList.add('is-visible'); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -40px 0px', threshold: 0.05 });
+    els.forEach(function (el) { io.observe(el); });
+  }
+
+  async function load() {
+    try {
+      // Fetch both in parallel: user's badges + full catalog
+      var [userRes, catalogRes] = await Promise.all([
+        fetch('/api/badges/me', { credentials: 'include' }),
+        fetch('/api/badges/catalog', { credentials: 'include' }),
+      ]);
+
+      if (!userRes.ok) throw new Error('Could not load your badges.');
+
+      var userData = await userRes.json();
+      var catalog = [];
+      if (catalogRes.ok) {
+        var c = await catalogRes.json();
+        catalog = c.badges || [];
+      }
+
+      // If catalog is empty for some reason, fall back to what the user has
+      if (!catalog.length) catalog = userData.badges || [];
+
+      var earnedMap = {};
+      (userData.badges || []).forEach(function (b) { earnedMap[b.key] = b; });
+
+      var newlySet = {};
+      (userData.newly_awarded || []).forEach(function (k) { newlySet[k] = true; });
+
+      paintStats(userData.streak || {}, (userData.badges || []).length, catalog.length);
+
+      // Build sections
+      var usedKeys = {};
+      var html = '';
+      SECTIONS.forEach(function (section, sIdx) {
+        var sectionBadges = catalog.filter(function (b) {
+          return section.match.indexOf(b.key) !== -1;
+        });
+        if (!sectionBadges.length) return;
+
+        var earnedCount = sectionBadges.filter(function (b) { return earnedMap[b.key]; }).length;
+
+        html += '<section class="badge-section">' +
+          '<div class="badge-section__head reveal" style="--i:0">' +
+            '<h2 class="badge-section__title">' + esc(section.title) + '</h2>' +
+            '<span class="badge-section__count">' + earnedCount + ' / ' + sectionBadges.length + '</span>' +
+          '</div>' +
+          '<div class="badge-grid">';
+
+        sectionBadges.forEach(function (b, i) {
+          usedKeys[b.key] = true;
+          var earned = earnedMap[b.key] || null;
+          html += renderBadge(
+            earned ? Object.assign({}, b, earned) : b,
+            !!earned,
+            !!newlySet[b.key],
+            i
+          );
+        });
+        html += '</div></section>';
+      });
+
+      // Any catalog items not covered by a section (safety net)
+      var leftovers = catalog.filter(function (b) { return !usedKeys[b.key]; });
+      if (leftovers.length) {
+        var earnedCount = leftovers.filter(function (b) { return earnedMap[b.key]; }).length;
+        html += '<section class="badge-section">' +
+          '<div class="badge-section__head reveal" style="--i:0">' +
+            '<h2 class="badge-section__title">More</h2>' +
+            '<span class="badge-section__count">' + earnedCount + ' / ' + leftovers.length + '</span>' +
+          '</div>' +
+          '<div class="badge-grid">';
+        leftovers.forEach(function (b, i) {
+          var earned = earnedMap[b.key] || null;
+          html += renderBadge(
+            earned ? Object.assign({}, b, earned) : b,
+            !!earned,
+            !!newlySet[b.key],
+            i
+          );
+        });
+        html += '</div></section>';
+      }
+
+      if (!html) {
+        html = '<div class="badge-loading"><i class="fa-solid fa-trophy"></i>' +
+          'No badges available yet. Keep using the platform and come back soon!' +
+          '</div>';
+      }
+
+      document.getElementById('badge-sections').innerHTML = html;
+
+      // Small delay so DOM is painted before observing
+      setTimeout(observeReveals, 60);
+    } catch (err) {
+      document.getElementById('badge-sections').innerHTML =
+        '<div class="badge-loading">' +
+          '<i class="fa-solid fa-triangle-exclamation"></i>' +
+          'Could not load your achievements. Please refresh the page.' +
+        '</div>';
+    }
+  }
+
+  (async function init() {
+    if (!(await guard())) return;
+    await load();
+  })();
+})();
+</script>
+</body>
+</html>

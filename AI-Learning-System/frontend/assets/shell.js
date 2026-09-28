@@ -162,7 +162,8 @@
     { href: 'chat.html',    icon: 'fa-comment-dots', label: 'Chat'         },
     { href: 'spark.html',   icon: 'fa-wand-magic-sparkles', label: 'Spark' },
     { href: 'lab.html',     icon: 'fa-flask',        label: 'Studying Lab' },
-    { href: 'library.html', icon: 'fa-book-open',    label: 'Library'      }
+    { href: 'library.html', icon: 'fa-book-open',    label: 'Library'      },
+    { href: 'badges.html',  icon: 'fa-trophy',       label: 'Achievements' }
   ];
   var SETTINGS_ITEM = { href: 'settings.html', icon: 'fa-gear', label: 'Settings' };
   var SCHOOL_URL = 'https://gideon-olukanni.github.io/TCSSS/';
