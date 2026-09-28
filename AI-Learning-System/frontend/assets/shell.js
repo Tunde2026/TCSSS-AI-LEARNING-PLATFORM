@@ -761,3 +761,60 @@
   el.async = true;
   document.head.appendChild(el);
 })();
+
+/* ---- HARD FIX: ask-ai layout ---- */
+(function () {
+  function forceStyles() {
+    var fab = document.getElementById('ask-ai-fab');
+    var panel = document.getElementById('ask-ai-panel');
+    if (fab) {
+      var s = fab.style;
+      s.position = 'fixed';
+      s.bottom = '24px';
+      s.right = '24px';
+      s.top = 'auto';
+      s.left = 'auto';
+      s.transform = 'none';
+      s.maxWidth = 'calc(100vw - 48px)';
+    }
+    if (panel) {
+      var p = panel.style;
+      p.position = 'fixed';
+      p.top = '0';
+      p.right = '0';
+      p.bottom = '0';
+      p.left = 'auto';
+      p.width = '420px';
+      p.maxWidth = '100vw';
+      p.height = '100vh';
+      p.boxSizing = 'border-box';
+      // Only hide when not open
+      if (!panel.classList.contains('is-open')) {
+        p.transform = 'translateX(101%)';
+        p.visibility = 'hidden';
+        p.pointerEvents = 'none';
+      }
+    }
+  }
+
+  // Run once the DOM is ready and again after shell.js builds the panel
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(forceStyles, 60);
+      setTimeout(forceStyles, 400);
+      setTimeout(forceStyles, 1200);
+    });
+  } else {
+    setTimeout(forceStyles, 60);
+    setTimeout(forceStyles, 400);
+    setTimeout(forceStyles, 1200);
+  }
+
+  // Re-run whenever the panel opens or closes
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('#ask-ai-fab, #ask-ai-close, #ask-ai-new')) {
+      setTimeout(forceStyles, 50);
+    }
+  }, true);
+})();
+/* ---- END HARD FIX ---- */
