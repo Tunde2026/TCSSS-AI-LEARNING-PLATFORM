@@ -735,6 +735,218 @@
     .feature { padding: 20px 18px; }
     .cta-band { padding: 36px 22px; border-radius: 22px; }
   }
+
+  /* ---------- FORCED CONTRAST + COMPACT PADDING ---------- */
+  /* Force white text on the dark hero — beats any shell.css h1 rule */
+  .hero__title,
+  .hero__title em,
+  .hero__sub,
+  .hero__eyebrow,
+  .hero__meta,
+  .hero__meta span,
+  .hero__answer,
+  .hero__answer strong,
+  .hero__cta,
+  .hero__cta--primary,
+  .hero__cta--ghost {
+    color: #ffffff !important;
+  }
+  .hero__title em {
+    -webkit-text-fill-color: #FFD97D !important;
+    background: none !important;
+    color: #FFD97D !important;
+  }
+  .hero__eyebrow i,
+  .hero__meta i {
+    color: #C9952E !important;
+  }
+  .cta-band__title,
+  .cta-band__sub {
+    color: #ffffff !important;
+  }
+
+  /* Tighten page-level padding */
+  main.page .page-scroll {
+    padding: 16px 20px 32px !important;
+  }
+  @media (max-width: 900px) {
+    main.page .page-scroll { padding: 12px 12px 24px !important; }
+  }
+  main.page .page-inner {
+    padding: 0 !important;
+  }
+
+  /* Tighten hero + section spacing */
+  .hero {
+    padding: 44px 28px 48px !important;
+    margin-bottom: 28px !important;
+    border-radius: 22px !important;
+  }
+  .section {
+    margin-bottom: 44px !important;
+  }
+  .stats {
+    margin-bottom: 40px !important;
+  }
+  .section__head {
+    margin-bottom: 20px !important;
+  }
+  .cta-band {
+    padding: 40px 28px !important;
+    margin-bottom: 24px !important;
+  }
+  @media (max-width: 640px) {
+    .hero { padding: 32px 20px 36px !important; border-radius: 18px !important; }
+    .section { margin-bottom: 36px !important; }
+    .stats { margin-bottom: 32px !important; }
+  }
+  /* ---------- END FORCED ---------- */
+
+  /* ========== FORCED CONTRAST + LAYOUT (authoritative) ========== */
+
+  /* --- Page shell: tight, wide --- */
+  main.page .page-scroll {
+    padding: 12px 20px 40px !important;
+  }
+  main.page .page-inner {
+    max-width: 1400px !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+  }
+  @media (max-width: 900px) {
+    main.page .page-scroll { padding: 10px 12px 28px !important; }
+  }
+
+  /* --- Kill any inherited dark text inside dark sections --- */
+  .hero, .hero *,
+  .cta-band, .cta-band * {
+    color: #ffffff !important;
+  }
+  .hero__title em {
+    color: #FFD97D !important;
+    -webkit-text-fill-color: #FFD97D !important;
+    background: none !important;
+  }
+  .hero__eyebrow, .hero__eyebrow i,
+  .hero__meta, .hero__meta span, .hero__meta i {
+    color: #ffffff !important;
+  }
+  .hero__eyebrow i,
+  .hero__meta i {
+    color: #FFD97D !important;
+  }
+  .hero__sub { color: rgba(255,255,255,0.9) !important; }
+  .cta-band__sub { color: rgba(255,255,255,0.88) !important; }
+
+  /* --- Hero: tighter, better rhythm --- */
+  .hero {
+    padding: 48px 32px 52px !important;
+    border-radius: 22px !important;
+    margin-bottom: 28px !important;
+  }
+  .hero__logo {
+    width: 76px !important;
+    height: 76px !important;
+    margin-bottom: 18px !important;
+  }
+  .hero__eyebrow { margin-bottom: 14px !important; }
+  .hero__title {
+    font-size: clamp(1.8rem, 4.4vw, 2.6rem) !important;
+    margin-bottom: 12px !important;
+  }
+  .hero__sub {
+    font-size: 1rem !important;
+    margin-bottom: 22px !important;
+    max-width: 600px !important;
+  }
+  .hero__cta-row { margin-bottom: 0 !important; }
+  .hero__meta { margin-top: 22px !important; }
+
+  /* --- Stats: denser --- */
+  .stats {
+    gap: 10px !important;
+    margin-bottom: 36px !important;
+  }
+  .stat {
+    padding: 18px 16px !important;
+  }
+  .stat__num { font-size: 1.7rem !important; }
+
+  /* --- Sections: real rhythm --- */
+  .section { margin-bottom: 48px !important; }
+  .section__head { margin-bottom: 20px !important; }
+  .section__eyebrow { margin-bottom: 8px !important; }
+  .section__title { margin-bottom: 8px !important; }
+  .section__sub { font-size: 0.96rem !important; }
+
+  /* --- Features: more compact --- */
+  .features { gap: 12px !important; }
+  .feature {
+    padding: 20px 18px !important;
+    border-radius: 14px !important;
+  }
+  .feature__icon {
+    width: 42px !important; height: 42px !important;
+    margin-bottom: 12px !important;
+    font-size: 1rem !important;
+  }
+  .feature__title { font-size: 1rem !important; margin-bottom: 4px !important; }
+  .feature__desc  { font-size: 0.86rem !important; line-height: 1.5 !important; }
+
+  /* --- Learning cycle --- */
+  .cycle { padding: 0 !important; }
+  .cycle__dot { width: 48px !important; height: 48px !important; margin-bottom: 10px !important; }
+  .cycle__step { padding: 12px 10px !important; }
+  .cycle__name { font-size: 0.94rem !important; margin-bottom: 4px !important; }
+  .cycle__desc { font-size: 0.8rem !important; line-height: 1.45 !important; }
+
+  /* --- Team: photos fit properly --- */
+  .team { gap: 14px !important; }
+  .team-card {
+    padding: 12px 12px 14px !important;
+    border-radius: 16px !important;
+  }
+  .team-card__photo {
+    border-radius: 12px !important;
+    margin-bottom: 10px !important;
+  }
+  .team-card__name { font-size: 0.9rem !important; margin-bottom: 3px !important; }
+  .team-card__role { font-size: 0.56rem !important; }
+
+  /* --- FAQ --- */
+  .faq details { border-radius: 12px !important; margin-bottom: 8px !important; }
+  .faq summary { padding: 14px 18px !important; font-size: 0.94rem !important; }
+  .faq .faq__body { padding: 0 18px 16px !important; font-size: 0.88rem !important; }
+
+  /* --- Final CTA --- */
+  .cta-band {
+    padding: 40px 28px !important;
+    border-radius: 22px !important;
+    margin-bottom: 22px !important;
+  }
+  .cta-band__title { font-size: clamp(1.3rem, 2.6vw, 1.7rem) !important; margin-bottom: 10px !important; }
+  .cta-band__sub   { font-size: 0.94rem !important; margin-bottom: 20px !important; }
+
+  /* --- Footer --- */
+  .about-footer { padding: 20px 0 4px !important; font-size: 0.8rem !important; }
+
+  /* --- Mobile --- */
+  @media (max-width: 640px) {
+    .hero { padding: 32px 20px 36px !important; border-radius: 18px !important; }
+    .hero__logo { width: 64px !important; height: 64px !important; }
+    .hero__title { font-size: 1.6rem !important; }
+    .hero__sub { font-size: 0.94rem !important; }
+    .stats { gap: 8px !important; margin-bottom: 28px !important; }
+    .stat { padding: 14px 12px !important; }
+    .stat__num { font-size: 1.4rem !important; }
+    .stat__label { font-size: 0.56rem !important; }
+    .section { margin-bottom: 36px !important; }
+    .feature { padding: 16px 14px !important; }
+    .team { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+    .cta-band { padding: 28px 20px !important; border-radius: 18px !important; }
+  }
+  /* ========== END FORCED ========== */
 </style>
 </head>
 <body>

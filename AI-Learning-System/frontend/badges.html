@@ -303,6 +303,203 @@
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
   }
+
+  /* ---------- FORCED CONTRAST + COMPACT PADDING ---------- */
+  /* Force white text on the dark hero */
+  .badge-hero__title,
+  .badge-hero__title em,
+  .badge-hero__sub,
+  .badge-hero__eyebrow,
+  .badge-stat__num,
+  .badge-stat__num small,
+  .badge-stat__label,
+  .badge-stat__icon,
+  .badge-stat__icon i {
+    color: #ffffff !important;
+  }
+  .badge-hero__title em {
+    -webkit-text-fill-color: #FFD97D !important;
+    background: none !important;
+    color: #FFD97D !important;
+  }
+  .badge-hero__eyebrow i {
+    color: #C9952E !important;
+  }
+  .badge-stat__icon {
+    background: rgba(201,149,46,0.24) !important;
+    color: #FFD97D !important;
+  }
+  .badge-stat--fire .badge-stat__icon {
+    background: rgba(230,17,30,0.30) !important;
+    color: #FFE0E2 !important;
+  }
+
+  /* Tighten page-level padding */
+  main.page .page-scroll {
+    padding: 16px 20px 32px !important;
+  }
+  @media (max-width: 900px) {
+    main.page .page-scroll { padding: 12px 12px 24px !important; }
+  }
+  main.page .page-inner {
+    padding: 0 !important;
+  }
+
+  /* Tighten hero + section spacing */
+  .badge-hero {
+    padding: 32px 26px 28px !important;
+    margin-bottom: 24px !important;
+    border-radius: 20px !important;
+  }
+  .badge-stats {
+    gap: 10px !important;
+  }
+  .badge-stat {
+    padding: 14px 14px !important;
+  }
+  .badge-section {
+    margin-bottom: 32px !important;
+  }
+  .badge-section__head {
+    margin-bottom: 12px !important;
+    padding-bottom: 10px !important;
+  }
+  .badge-grid {
+    gap: 12px !important;
+  }
+  @media (max-width: 640px) {
+    .badge-hero { padding: 24px 18px 22px !important; border-radius: 16px !important; }
+    .badge-section { margin-bottom: 26px !important; }
+    .badge-stat { padding: 12px 10px !important; }
+  }
+  /* ---------- END FORCED ---------- */
+
+  /* ========== FORCED CONTRAST + LAYOUT (authoritative) ========== */
+
+  /* --- Page shell: tight, wide --- */
+  main.page .page-scroll {
+    padding: 12px 20px 40px !important;
+  }
+  main.page .page-inner {
+    max-width: 1400px !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+  }
+  @media (max-width: 900px) {
+    main.page .page-scroll { padding: 10px 12px 28px !important; }
+  }
+
+  /* --- Force white text on dark hero --- */
+  .badge-hero, .badge-hero * {
+    color: #ffffff !important;
+  }
+  .badge-hero__title em {
+    color: #FFD97D !important;
+    -webkit-text-fill-color: #FFD97D !important;
+    background: none !important;
+  }
+  .badge-hero__sub { color: rgba(255,255,255,0.9) !important; }
+  .badge-hero__eyebrow, .badge-hero__eyebrow i {
+    color: #ffffff !important;
+  }
+  .badge-hero__eyebrow i { color: #FFD97D !important; }
+
+  /* --- Stat card colours: readable --- */
+  .badge-stat {
+    background: rgba(255,255,255,0.10) !important;
+    border-color: rgba(255,255,255,0.18) !important;
+    padding: 14px 14px !important;
+    border-radius: 14px !important;
+  }
+  .badge-stat__icon {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+    background: rgba(201,149,46,0.28) !important;
+    color: #FFD97D !important;
+  }
+  .badge-stat--fire .badge-stat__icon {
+    background: rgba(230,17,30,0.32) !important;
+    color: #FFE0E2 !important;
+  }
+  .badge-stat--calendar .badge-stat__icon {
+    background: rgba(110,107,229,0.32) !important;
+    color: #DAD8FF !important;
+  }
+  .badge-stat__num {
+    color: #ffffff !important;
+    font-size: 1.45rem !important;
+    margin-bottom: 2px !important;
+  }
+  .badge-stat__num small {
+    color: rgba(255,255,255,0.75) !important;
+    font-size: 0.78rem !important;
+  }
+  .badge-stat__label {
+    color: rgba(255,255,255,0.78) !important;
+    font-size: 0.56rem !important;
+  }
+
+  /* --- Hero spacing --- */
+  .badge-hero {
+    padding: 32px 26px 28px !important;
+    border-radius: 20px !important;
+    margin-bottom: 26px !important;
+  }
+  .badge-hero__eyebrow { margin-bottom: 12px !important; }
+  .badge-hero__title { margin-bottom: 8px !important; font-size: clamp(1.5rem, 3.6vw, 2.05rem) !important; }
+  .badge-hero__sub   { margin-bottom: 22px !important; font-size: 0.94rem !important; }
+  .badge-stats { gap: 10px !important; }
+
+  /* --- Section spacing --- */
+  .badge-section { margin-bottom: 34px !important; }
+  .badge-section__head {
+    margin-bottom: 12px !important;
+    padding-bottom: 10px !important;
+  }
+  .badge-section__title { font-size: 1.15rem !important; }
+  .badge-section__count { font-size: 0.62rem !important; }
+
+  /* --- Badge cards: tighter, cleaner --- */
+  .badge-grid { gap: 12px !important; }
+  .badge-card {
+    padding: 16px 16px 14px !important;
+    border-radius: 14px !important;
+    gap: 10px !important;
+  }
+  .badge-card__icon {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 12px !important;
+    font-size: 1.15rem !important;
+  }
+  .badge-card__name { font-size: 0.94rem !important; margin-bottom: 4px !important; }
+  .badge-card__desc { font-size: 0.8rem !important; line-height: 1.5 !important; }
+  .badge-card__footer {
+    padding-top: 8px !important;
+    font-size: 0.58rem !important;
+  }
+
+  /* --- Mobile --- */
+  @media (max-width: 640px) {
+    .badge-hero { padding: 22px 18px 20px !important; border-radius: 16px !important; }
+    .badge-hero__title { font-size: 1.35rem !important; }
+    .badge-hero__sub { font-size: 0.86rem !important; margin-bottom: 18px !important; }
+    .badge-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+    .badge-stat { padding: 12px 12px !important; }
+    .badge-stat__icon { width: 34px !important; height: 34px !important; font-size: 0.9rem !important; }
+    .badge-stat__num { font-size: 1.2rem !important; }
+    .badge-stat__label { font-size: 0.52rem !important; }
+    .badge-section { margin-bottom: 26px !important; }
+    .badge-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+    .badge-card { padding: 12px 12px 11px !important; border-radius: 12px !important; }
+    .badge-card__icon { width: 38px !important; height: 38px !important; font-size: 0.98rem !important; }
+    .badge-card__name { font-size: 0.82rem !important; }
+    .badge-card__desc { font-size: 0.72rem !important; line-height: 1.45 !important; }
+    .badge-card__footer { font-size: 0.52rem !important; padding-top: 6px !important; }
+  }
+  /* ========== END FORCED ========== */
 </style>
 </head>
 <body>

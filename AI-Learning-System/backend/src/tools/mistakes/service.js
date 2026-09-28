@@ -1,6 +1,6 @@
 // Reads quiz_attempts to surface the topics and questions a student got wrong.
 
-const { pool } = require('../../db').pool;
+const { pool } = require('../../db');
 
 async function getMistakes(userId) {
   // Pull every graded answer that was wrong, with the question and topic.

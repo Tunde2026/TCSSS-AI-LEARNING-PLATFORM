@@ -12,10 +12,10 @@ const cors      = require('cors');
 const session   = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
 
-const core = require('./src/core');
 const db   = require('./src/db');
 const auth = require('./src/auth');
 const ai   = require('./src/ai');
+const core = require('./src/core');
 
 const { config, logger } = core;
 const app = express();
@@ -118,6 +118,7 @@ app.use('/api', core.apiLimiter);
 app.use('/api/auth',          auth.router);
 app.use('/api/ai',            ai.router);
 app.use('/api/conversations', require('./src/conversations').router);
+app.use('/api/conversations', require('./src/conversations/editRoutes'));
 app.use('/api/chat',          require('./src/chat').router);
 app.use('/api/tools',         require('./src/tools').router);
 app.use('/api/agents',        require('./src/agents').router);
