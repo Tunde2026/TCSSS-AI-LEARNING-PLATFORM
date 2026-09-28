@@ -741,3 +741,22 @@
   el.async = true;
   document.head.appendChild(el);
 })();
+
+
+/* ------------------------------------------------------------------
+   Load the badges module on every page.
+   ------------------------------------------------------------------ */
+(function () {
+  if (window.__badgesLoading) return;
+  window.__badgesLoading = true;
+  var scripts = document.querySelectorAll('script[src*="shell.js"]');
+  var base = 'assets/';
+  if (scripts.length) {
+    var src = scripts[scripts.length - 1].getAttribute('src') || '';
+    base = src.replace(/shell\.js.*$/, '');
+  }
+  var el = document.createElement('script');
+  el.src = base + 'badges.js';
+  el.async = true;
+  document.head.appendChild(el);
+})();

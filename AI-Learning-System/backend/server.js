@@ -123,6 +123,7 @@ app.use('/api/tools',         require('./src/tools').router);
 app.use('/api/agents',        require('./src/agents').router);
 app.use('/api/library',       require('./src/library').router);
 app.use('/api/voice',         require('./src/voice').router);
+app.use('/api/badges',              require('./src/badges').router);
 app.use('/api/announcements',       require('./src/announcements').router);
 app.use('/api/admin/announcements', require('./src/announcements').adminRouter);
 app.use('/api/admin',         require('./src/admin').router);
