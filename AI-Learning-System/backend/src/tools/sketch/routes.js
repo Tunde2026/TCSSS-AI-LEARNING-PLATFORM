@@ -80,8 +80,15 @@ router.delete('/:id', requireLogin, async (req, res, next) => {
 router.post('/generate', requireLogin, async (req, res, next) => {
   try {
     const r = await service.generateFormula({ query: req.body.query });
-    if (!r.ok) return res.status(400).json({ error: 'Could not generate.', code: r.code });
-    res.json(r.result);
+    if (!r.ok) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Could not generate.',
+        code: r.code,
+      });
+    }
+    // Return the wrapped shape the frontend expects
+    res.json({ ok: true, result: r.result });
   } catch (err) { next(err); }
 });
 
@@ -89,12 +96,16 @@ router.post('/generate', requireLogin, async (req, res, next) => {
 router.post('/solve', requireLogin, async (req, res, next) => {
   try {
     const r = await service.solveExpression({ expression: req.body.expression });
-    if (!r.ok) return res.status(400).json({
-      error: 'Could not solve.',
-      code: r.code,
-      detail: r.detail,
-    });
-    res.json(r.result);
+    if (!r.ok) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Could not solve.',
+        code: r.code,
+        detail: r.detail,
+      });
+    }
+    // Return the wrapped shape the frontend expects
+    res.json({ ok: true, result: r.result });
   } catch (err) { next(err); }
 });
 module.exports = router;

@@ -373,7 +373,7 @@
               <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
               <input type="search" id="search" placeholder="Search by name or email…">
             </div>
-            <span id="filtered-count" style="margin-left:auto;font-family:var(--font-ui);font-size:0.68rem;color:var(--slate);letter-spacing:0.06em;text-transform:uppercase;font-weight:600"></span><div class="filter-chips" id="chips">
+            <div class="filter-chips" id="chips">
               <button class="chip is-active" data-filter="all" type="button">All</button>
               <button class="chip" data-filter="student" type="button">Students</button>
               <button class="chip" data-filter="admin" type="button">Admins</button>
@@ -621,17 +621,13 @@
 
     function filtered() {
       return users.filter(function (u) {
-        // ---- role / status filter ----
-        if (filterRole === 'student' && u.role !== 'student') return false;
-        if (filterRole === 'admin' && u.role !== 'admin') return false;
         if (filterRole === 'suspended' && !u.suspended) return false;
         if (filterRole === 'protected' && !u.is_protected) return false;
         if (filterRole === 'verified' && !u.verified) return false;
-        // ---- search ----
+        if (filterRole !== 'all' && filterRole !== 'suspended' && u.role !== filterRole) return false;
         if (!searchTerm) return true;
         var t = searchTerm.toLowerCase();
-        return (u.name || '').toLowerCase().includes(t)
-            || (u.email || '').toLowerCase().includes(t);
+        return (u.name || '').toLowerCase().includes(t) || (u.email || '').toLowerCase().includes(t);
       });
     }
 
@@ -648,8 +644,6 @@
     function renderTable() {
       var tbody = document.getElementById('users-tbody');
       var list = filtered();
-      var countEl = document.getElementById('filtered-count');
-      if (countEl) countEl.textContent = list.length + ' shown';
 
       if (!list.length) {
         tbody.innerHTML =
@@ -1172,22 +1166,14 @@
       renderTable();
     });
 
-    // Chip filter — event delegation on the parent
-    (function () {
-      var chipsEl = document.getElementById('chips');
-      if (!chipsEl) { console.warn('chips container missing'); return; }
-      chipsEl.addEventListener('click', function (e) {
-        var chip = e.target.closest('.chip');
-        if (!chip) return;
-        var next = chip.getAttribute('data-filter') || 'all';
-        filterRole = next;
-        chipsEl.querySelectorAll('.chip').forEach(function (c) {
-          c.classList.toggle('is-active', c === chip);
-        });
-        console.log('[users] filter →', filterRole);
+    document.querySelectorAll('#chips .chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('#chips .chip').forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        filterRole = chip.getAttribute('data-filter');
         renderTable();
       });
-    })();
+    });
 
     (async function init() {
       if (!(await guard())) return;

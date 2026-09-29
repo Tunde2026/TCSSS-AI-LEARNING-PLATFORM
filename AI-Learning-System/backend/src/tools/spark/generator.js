@@ -28,18 +28,19 @@ const SAFE_GRADED_TYPES = ['mcq', 'numerical'];
    Prompt
    ------------------------------------------------------------ */
 function buildPrompt({ skill, difficulty, category, answerType }) {
-  return `You are generating ONE assessment question for "Spark", an adaptive
-academic-direction assessment for Nigerian secondary school students (ages 13-18).
+  return `You are generating ONE short assessment question for "Spark", an adaptive
+academic-direction assessment for NIGERIAN JUNIOR SECONDARY SCHOOL students
+(JSS 1 to JSS 3, ages 11 to 14).
 
 TARGET
-- Skill being tested: ${skill}
+- Skill: ${skill}
 - Difficulty: ${difficulty}
 - Category: ${category}
 - Answer type: ${answerType}
 
-Return ONLY valid JSON. No prose, no markdown fences, no commentary.
+Return ONLY valid JSON. No prose, no markdown fences.
 
-If answer_type is "mcq":
+For answer_type "mcq":
 {
   "question_text": "...",
   "options": [
@@ -49,39 +50,56 @@ If answer_type is "mcq":
     {"label": "D", "text": "..."}
   ],
   "correct_answer": "A",
-  "explanation": "One sentence explaining the correct answer."
+  "explanation": "One short sentence."
 }
 
-If answer_type is "numerical":
-{
-  "question_text": "...",
-  "correct_answer": 42,
-  "explanation": "One sentence."
-}
+For answer_type "numerical":
+{ "question_text": "...", "correct_answer": 42, "explanation": "One short sentence." }
 
-If answer_type is "open" or "short_answer":
-{
-  "question_text": "...",
-  "explanation": "What a strong answer would include."
-}
+For answer_type "open" or "short_answer":
+{ "question_text": "...", "explanation": "What a strong answer includes." }
 
-RULES
-- Use Nigerian context naturally (naira ₦, markets, farming, school life, local transport)
-- Do not name real schools, teachers, or students
-- Do not use sensitive attributes (religion, tribe, politics)
-- Keep question_text under 220 characters
-- For numerical: the answer must be unambiguous and computable in under 60 seconds
-- For mcq: exactly 4 options, one clearly correct
-- For ${difficulty} difficulty: ${difficultyGuidance(difficulty)}
-- No trick questions, no "all of the above", no "none of the above"
+STRICT RULES — READ CAREFULLY
+- The student is 11-14 years old. Use language they actually use.
+- question_text MUST be under 140 characters. Shorter is better.
+- Answer must be reachable in under 30 seconds by a JSS student.
+- Use ONLY JSS-level maths: whole numbers, simple fractions, percentages,
+  basic ratios, simple averages. NO algebra with letters like 3x + 5 = 20.
+- Use ONLY JSS-level science: common plants, animals, water cycle, simple
+  forces, everyday materials. NO complex chemistry or physics formulas.
+- Nigerian context is welcome: naira, market, school, farm, transport, food.
+- MCQs: exactly 4 options, one clearly correct, others clearly wrong.
+- NO "all of the above", NO "none of the above", NO "both A and B".
+- NO trick wording. NO long paragraphs. NO multi-clue stories.
+- The distractor answers should be plausible but obviously wrong to someone
+  who knows the topic — that is what "tricky" means here. Not wordplay.
+- For open questions, keep the ask to one sentence.
+
+Difficulty guide
+- easy: one small step. Single fact or single arithmetic move.
+- medium: two small steps. Reasonable for a JSS 2 student.
+- hard: still JSS level, but requires noticing a small clue or avoiding a
+  common mistake. Never requires JSS 4+ knowledge.
+
+GOOD examples (JSS-level):
+- "If 3 pencils cost ₦60, what does 1 pencil cost?" → 20
+- "Which of these is NOT a source of water?" → Sun
+- "A plant in a dark room for 3 days will most likely…" → turn yellow
+- "What comes next: 2, 4, 6, 8, ___?" → 10
+- "Which word is the opposite of 'hot'?" → cold
+
+BAD examples (too hard — do not produce):
+- "A trader sold x pens at 25% profit and 3x notebooks at 15% loss…" (too long)
+- "Find the value of x in 3x + 5 = 20" (algebra — not JSS 1-3)
+- "Calculate the molarity of a solution…" (senior science)
 
 Return the JSON now.`;
 }
 
 function difficultyGuidance(d) {
-  if (d === 'easy')   return 'basic recall or single-step application';
-  if (d === 'hard')   return 'multi-step reasoning or requires insight';
-  return 'two-step reasoning appropriate for the skill';
+  if (d === 'easy')   return 'one small step — a single fact or calculation';
+  if (d === 'hard')   return 'JSS-level but requires attention to a small clue';
+  return 'two small steps — reasonable for JSS 2';
 }
 
 /* ------------------------------------------------------------
@@ -104,7 +122,7 @@ function validate(generated, { answerType }) {
   if (typeof generated.question_text !== 'string' || generated.question_text.trim().length < 8) {
     return 'question_text missing or too short';
   }
-  if (generated.question_text.length > 400) return 'question_text too long';
+  if (generated.question_text.length > 220) return 'question_text too long (JSS level: keep under 220)';
 
   if (answerType === 'mcq' || answerType === 'scenario_choice') {
     if (!Array.isArray(generated.options) || generated.options.length !== 4) {
@@ -160,7 +178,7 @@ async function generateOne({ skill, difficulty, category, answerType }) {
         { role: 'system', content: buildPrompt({ skill, difficulty, category, answerType }) },
         { role: 'user', content: 'Return the JSON only.' },
       ],
-      temperature: 0.85,
+      temperature: 0.75,
       maxTokens: 512,
     });
   } catch (err) {

@@ -50,7 +50,7 @@ async function createUser({ name, email, password, role }) {
   return { ok: true, user };
 }
 
-async function listUsers() { return db.users.listAll(); }
+async function listUsers() { return db.users.listAllWithStats(); }
 
 async function changeRole({ targetId, newRole, currentUserId }) {
   if (!VALID_ROLES.includes(newRole)) return { ok: false, code: 'INVALID_ROLE' };

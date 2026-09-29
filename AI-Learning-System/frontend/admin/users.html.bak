@@ -373,7 +373,7 @@
               <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
               <input type="search" id="search" placeholder="Search by name or email…">
             </div>
-            <span id="filtered-count" style="margin-left:auto;font-family:var(--font-ui);font-size:0.68rem;color:var(--slate);letter-spacing:0.06em;text-transform:uppercase;font-weight:600"></span><div class="filter-chips" id="chips">
+            <div class="filter-chips" id="chips">
               <button class="chip is-active" data-filter="all" type="button">All</button>
               <button class="chip" data-filter="student" type="button">Students</button>
               <button class="chip" data-filter="admin" type="button">Admins</button>
@@ -578,37 +578,17 @@
 
     
     async function loadStats() {
-      // FALLBACK stats — derive from user list if endpoint fails
       try {
         var res = await fetch('/api/admin/users/stats', { credentials: 'include' });
-        if (res.ok) {
-          var s = await res.json();
-          var el;
-          el = document.getElementById('stat-total');     if (el) el.textContent = s.total || 0;
-          el = document.getElementById('stat-new');       if (el) el.textContent = s.newWeek || 0;
-          el = document.getElementById('stat-suspended'); if (el) el.textContent = s.suspended || 0;
-          el = document.getElementById('stat-protected'); if (el) el.textContent = s.protected || 0;
-          el = document.getElementById('stat-verified');  if (el) el.textContent = s.verified || 0;
-          return;
-        }
+        if (!res.ok) return;
+        var s = await res.json();
+        var el;
+        el = document.getElementById('stat-total');     if (el) el.textContent = s.total || 0;
+        el = document.getElementById('stat-new');       if (el) el.textContent = s.newWeek || 0;
+        el = document.getElementById('stat-suspended'); if (el) el.textContent = s.suspended || 0;
+        el = document.getElementById('stat-protected'); if (el) el.textContent = s.protected || 0;
+        el = document.getElementById('stat-verified');  if (el) el.textContent = s.verified || 0;
       } catch (_) {}
-      // If the endpoint fails, derive counts from the loaded users array
-      if (typeof users !== 'undefined' && users.length) {
-        var total = users.length;
-        var week  = users.filter(function (u) {
-          var d = new Date(u.created_at);
-          return (Date.now() - d.getTime()) < 7 * 86400000;
-        }).length;
-        var susp  = users.filter(function (u) { return u.suspended; }).length;
-        var prot  = users.filter(function (u) { return u.is_protected; }).length;
-        var ver   = users.filter(function (u) { return u.verified; }).length;
-        var el1;
-        el1 = document.getElementById('stat-total');     if (el1) el1.textContent = total;
-        el1 = document.getElementById('stat-new');       if (el1) el1.textContent = week;
-        el1 = document.getElementById('stat-suspended'); if (el1) el1.textContent = susp;
-        el1 = document.getElementById('stat-protected'); if (el1) el1.textContent = prot;
-        el1 = document.getElementById('stat-verified');  if (el1) el1.textContent = ver;
-      }
     }
 
     async function loadUsers() {
@@ -621,17 +601,11 @@
 
     function filtered() {
       return users.filter(function (u) {
-        // ---- role / status filter ----
-        if (filterRole === 'student' && u.role !== 'student') return false;
-        if (filterRole === 'admin' && u.role !== 'admin') return false;
         if (filterRole === 'suspended' && !u.suspended) return false;
-        if (filterRole === 'protected' && !u.is_protected) return false;
-        if (filterRole === 'verified' && !u.verified) return false;
-        // ---- search ----
+        if (filterRole !== 'all' && filterRole !== 'suspended' && u.role !== filterRole) return false;
         if (!searchTerm) return true;
         var t = searchTerm.toLowerCase();
-        return (u.name || '').toLowerCase().includes(t)
-            || (u.email || '').toLowerCase().includes(t);
+        return (u.name || '').toLowerCase().includes(t) || (u.email || '').toLowerCase().includes(t);
       });
     }
 
@@ -648,8 +622,6 @@
     function renderTable() {
       var tbody = document.getElementById('users-tbody');
       var list = filtered();
-      var countEl = document.getElementById('filtered-count');
-      if (countEl) countEl.textContent = list.length + ' shown';
 
       if (!list.length) {
         tbody.innerHTML =
@@ -1172,26 +1144,17 @@
       renderTable();
     });
 
-    // Chip filter — event delegation on the parent
-    (function () {
-      var chipsEl = document.getElementById('chips');
-      if (!chipsEl) { console.warn('chips container missing'); return; }
-      chipsEl.addEventListener('click', function (e) {
-        var chip = e.target.closest('.chip');
-        if (!chip) return;
-        var next = chip.getAttribute('data-filter') || 'all';
-        filterRole = next;
-        chipsEl.querySelectorAll('.chip').forEach(function (c) {
-          c.classList.toggle('is-active', c === chip);
-        });
-        console.log('[users] filter →', filterRole);
+    document.querySelectorAll('#chips .chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('#chips .chip').forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        filterRole = chip.getAttribute('data-filter');
         renderTable();
       });
-    })();
+    });
 
     (async function init() {
       if (!(await guard())) return;
-      loadStats();
       await loadUsers();
     })();
   })();

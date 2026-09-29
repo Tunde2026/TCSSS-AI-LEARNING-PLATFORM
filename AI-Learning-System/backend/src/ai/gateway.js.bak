@@ -127,48 +127,6 @@ async function readErrorBody(res) {
   }
 }
 
-
-/* ---------- Message trimming for free-tier token limits ----------
-   Groq free = 8000 TPM, Cerebras/Google similar. We keep the system
-   prompt and the newest messages, dropping older ones until we're
-   safely under budget. Estimate = chars / 4 (approximation). */
-const MAX_KEEP_MESSAGES = 16;
-const MAX_EST_TOKENS    = 5500;
-
-function estimateTokens(str) {
-  return Math.ceil(String(str || '').length / 4);
-}
-
-function trimMessages(messages) {
-  if (!Array.isArray(messages) || !messages.length) return messages;
-
-  const system = messages[0] && messages[0].role === 'system' ? messages[0] : null;
-  const rest   = system ? messages.slice(1) : messages.slice();
-
-  // Keep last N
-  let kept = rest.slice(-MAX_KEEP_MESSAGES);
-
-  // Roll off oldest until we're under budget
-  let total = estimateTokens(system ? system.content : '');
-  for (const m of kept) total += estimateTokens(m.content);
-
-  while (total > MAX_EST_TOKENS && kept.length > 2) {
-    const removed = kept.shift();
-    total -= estimateTokens(removed.content);
-  }
-
-  // Prepend a note if we actually trimmed
-  if (kept.length < rest.length) {
-    const note = {
-      role: 'system',
-      content: '[Earlier messages in this conversation have been trimmed to fit the model limit. Continue naturally with the remaining context.]',
-    };
-    return system ? [system, note].concat(kept) : [note].concat(kept);
-  }
-
-  return system ? [system].concat(kept) : kept;
-}
-
 async function chat(input) {
   const messages = input.messages;
   const temperature = input.temperature != null ? input.temperature : 0.7;
@@ -183,10 +141,9 @@ async function chat(input) {
   }
 
   const hasSystem = messages[0] && messages[0].role === 'system';
-  const baseMessages = hasSystem
+  const fullMessages = hasSystem
     ? messages
     : [{ role: 'system', content: systemPrompt }].concat(messages);
-  const fullMessages = trimMessages(baseMessages);
 
   const chain = buildChain();
   const attempts = [];

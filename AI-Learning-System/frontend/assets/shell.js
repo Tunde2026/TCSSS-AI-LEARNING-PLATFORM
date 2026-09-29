@@ -163,7 +163,8 @@
     { href: 'spark.html',   icon: 'fa-wand-magic-sparkles', label: 'Spark' },
     { href: 'lab.html',     icon: 'fa-flask',        label: 'Studying Lab' },
     { href: 'library.html', icon: 'fa-book-open',    label: 'Library'      },
-    { href: 'badges.html',  icon: 'fa-trophy',       label: 'Achievements' }
+    { href: 'badges.html',  icon: 'fa-trophy',       label: 'Achievements' },
+    { href: 'progress.html', icon: 'fa-chart-line', label: 'Progress' }
   ];
   var SETTINGS_ITEM = { href: 'settings.html', icon: 'fa-gear', label: 'Settings' };
   var SCHOOL_URL = 'https://gideon-olukanni.github.io/TCSSS/';
@@ -406,6 +407,14 @@
         '</div>' +
                 '<div class="sidebar__footer">' +
           settingsLink +
+          '<button class="sidebar__more-toggle" id="sidebar-more-toggle" type="button" aria-expanded="false">' +
+            '<span class="sidebar__more-toggle__label">' +
+              '<i class="fa-solid fa-sliders" aria-hidden="true"></i>' +
+              '<span>More options</span>' +
+            '</span>' +
+            '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>' +
+          '</button>' +
+          '<div class="sidebar__drawer" id="sidebar-drawer">' +
           '<a class="nav-item nav-item--support" href="' + BASE + 'support.html" title="Contact support">' +
             '<i class="fa-solid fa-headset" aria-hidden="true"></i>' +
             '<span>Contact Us</span>' +
@@ -424,6 +433,7 @@
             '<i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>' +
             '<span>Log out</span>' +
           '</button>' +
+          '</div>' +
           '<div class="user-chip" id="user-chip" style="display:none">' +
             '<div class="user-chip__avatar">?</div>' +
             '<div class="user-chip__info">' +
@@ -466,6 +476,26 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') closeDrawer();
     });
+
+    /* Sidebar more/less toggle */
+    var moreToggle = document.getElementById('sidebar-more-toggle');
+    var drawer = document.getElementById('sidebar-drawer');
+    if (moreToggle && drawer) {
+      try {
+        if (localStorage.getItem('sidebar-drawer-open') === '1') {
+          moreToggle.classList.add('is-open');
+          drawer.classList.add('is-open');
+          moreToggle.setAttribute('aria-expanded', 'true');
+        }
+      } catch (_) {}
+      moreToggle.addEventListener('click', function () {
+        var open = !moreToggle.classList.contains('is-open');
+        moreToggle.classList.toggle('is-open', open);
+        drawer.classList.toggle('is-open', open);
+        moreToggle.setAttribute('aria-expanded', String(open));
+        try { localStorage.setItem('sidebar-drawer-open', open ? '1' : '0'); } catch (_) {}
+      });
+    }
 
     var logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Progress — AI Learning Platform</title>
+<link rel="icon" type="image/png" href="/uploads/branding/logo.png">
+<link rel="stylesheet" href="assets/shell.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+<style>
+  /* ---------- Page shell ---------- */
+  main.page .page-scroll { padding: 14px 18px 40px !important; }
+  main.page .page-inner {
+    max-width: 1280px !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+  }
+  @media (max-width: 900px) {
+    main.page .page-scroll { padding: 10px 12px 28px !important; }
+  }
+
+  /* ---------- Hero ---------- */
+  .pr-hero {
+    background: linear-gradient(135deg, #11104A 0%, #201F6B 45%, #3D1F5C 75%, #11104A 100%);
+    background-size: 300% 300%;
+    animation: heroPan 18s ease infinite;
+    border-radius: 20px;
+    padding: 28px 26px 26px;
+    margin-bottom: 22px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(17,16,74,0.28);
+  }
+  @keyframes heroPan { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .pr-hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 12% 15%, rgba(201,149,46,0.20), transparent 42%),
+      radial-gradient(circle at 88% 85%, rgba(230,17,30,0.16), transparent 42%);
+    pointer-events: none;
+  }
+  .pr-hero > * { position: relative; z-index: 1; }
+  .pr-hero__eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+    font-family: var(--font-ui); font-size: 0.6rem;
+    letter-spacing: 0.13em; text-transform: uppercase; font-weight: 700;
+    margin-bottom: 14px;
+    color: #ffffff !important;
+  }
+  .pr-hero__eyebrow i { color: #FFD97D !important; }
+  .pr-hero__title {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: clamp(1.4rem, 3.2vw, 1.9rem);
+    margin: 0 0 6px; letter-spacing: -0.02em;
+    color: #ffffff !important;
+  }
+  .pr-hero__sub {
+    font-size: 0.92rem; line-height: 1.55;
+    color: rgba(255,255,255,0.88) !important;
+    margin: 0; max-width: 620px;
+  }
+
+  /* ---------- Stat cards ---------- */
+  .pr-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .pr-stat {
+    background: #fff;
+    border: 1.5px solid rgba(17,16,74,0.12);
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+    transition: transform 240ms cubic-bezier(0.16,1,0.3,1), border-color 220ms, box-shadow 240ms;
+  }
+  .pr-stat:hover {
+    transform: translateY(-3px);
+    border-color: var(--gold);
+    box-shadow: 0 12px 26px rgba(17,16,74,0.09);
+  }
+  .pr-stat__icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: grid; place-items: center; font-size: 0.95rem;
+    margin-bottom: 10px;
+  }
+  .pr-stat__icon--fire   { background: #FDECEC; color: #B80F1A; }
+  .pr-stat__icon--navy   { background: #ECEBF5; color: #11104A; }
+  .pr-stat__icon--gold   { background: #FBF3E1; color: #9E7524; }
+  .pr-stat__icon--green  { background: #EAF7EE; color: #2F8F4A; }
+  .pr-stat__num {
+    font-family: var(--font-head); font-weight: 700;
+    font-size: 1.5rem; line-height: 1; letter-spacing: -0.02em;
+    color: #11104A; margin-bottom: 4px;
+  }
+  .pr-stat__num small {
+    font-family: var(--font-body); font-size: 0.72rem;
+    font-weight: 500; color: #5B5A6B; margin-left: 4px;
+  }
+  .pr-stat__label {
+    font-family: var(--font-ui); font-size: 0.56rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: #5B5A6B; font-weight: 600;
+  }
+
+  /* ---------- Sections ---------- */
+  .pr-section { margin-bottom: 24px; }
+  .pr-section__title {
+    font-family: var(--font-head); font-size: 1.15rem; font-weight: 600;
+    color: #11104A; margin: 0 0 3px; letter-spacing: -0.01em;
+  }
+  .pr-section__sub {
+    font-size: 0.82rem; color: #5B5A6B; margin: 0 0 12px;
+  }
+  .pr-card {
+    background: #fff;
+    border: 1.5px solid rgba(17,16,74,0.12);
+    border-radius: 14px;
+    padding: 16px;
+  }
+
+  /* ---------- Week rows (CSS bar chart) ---------- */
+  .pr-week {
+    display: grid;
+    grid-template-columns: 110px 1fr 60px;
+    gap: 12px;
+    align-items: center;
+    padding: 9px 4px;
+    border-bottom: 1px solid rgba(17,16,74,0.06);
+    font-size: 0.85rem;
+  }
+  .pr-week:last-child { border-bottom: none; }
+  .pr-week--head {
+    padding: 8px 4px;
+    font-family: var(--font-ui);
+    font-size: 0.58rem; letter-spacing: 0.09em;
+    text-transform: uppercase; color: #5B5A6B;
+    font-weight: 700; border-bottom: 2px solid rgba(17,16,74,0.10);
+  }
+  .pr-week.is-current .pr-week__label { color: var(--red); font-weight: 700; }
+  .pr-week__label { color: #11104A; font-weight: 600; }
+  .pr-week__bars { display: flex; flex-direction: column; gap: 3px; }
+  .pr-week__bar {
+    height: 7px;
+    background: rgba(17,16,74,0.07);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .pr-week__fill {
+    height: 100%; border-radius: 4px;
+    transition: width 600ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .pr-week__fill--m { background: #11104A; }
+  .pr-week__fill--q { background: #C9952E; }
+  .pr-week__fill--f { background: #E6111E; }
+  .pr-week__counts {
+    text-align: right;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    color: #5B5A6B;
+    letter-spacing: 0.02em;
+    line-height: 1.5;
+  }
+  .pr-week__counts b { color: #11104A; }
+  @media (max-width: 640px) {
+    .pr-week { grid-template-columns: 80px 1fr 50px; gap: 10px; font-size: 0.78rem; }
+    .pr-week--head { font-size: 0.54rem; }
+  }
+
+  /* Legend */
+  .pr-legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    padding: 8px 4px 14px;
+    font-family: var(--font-ui);
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #5B5A6B;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(17,16,74,0.06);
+    margin-bottom: 6px;
+  }
+  .pr-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .pr-legend__dot {
+    width: 10px; height: 10px; border-radius: 3px;
+  }
+
+  /* ---------- Topics ---------- */
+  .pr-topics { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pr-topic {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    background: #fff;
+    border: 1.5px solid rgba(17,16,74,0.12);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #11104A;
+    transition: border-color 180ms, background 180ms;
+  }
+  .pr-topic:hover { border-color: var(--gold); background: #FBF3E1; }
+  .pr-topic__count {
+    font-family: var(--font-ui);
+    font-size: 0.58rem;
+    background: #F6E0E0;
+    color: #11104A;
+    padding: 1px 6px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  /* ---------- Hours heat map ---------- */
+  .pr-hours { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; }
+  .pr-hour {
+    aspect-ratio: 1;
+    border-radius: 5px;
+    background: #ECEBF5;
+    transition: transform 180ms;
+    cursor: help;
+  }
+  .pr-hour:hover { transform: scale(1.15); }
+  .pr-hour[data-level="0"] { background: #ECEBF5; }
+  .pr-hour[data-level="1"] { background: #D6D3E8; }
+  .pr-hour[data-level="2"] { background: #A6A0D0; }
+  .pr-hour[data-level="3"] { background: #6E6BE5; }
+  .pr-hour[data-level="4"] { background: #11104A; }
+  .pr-hours-labels {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 3px;
+    margin-top: 6px;
+  }
+  .pr-hours-labels div {
+    font-family: var(--font-ui);
+    font-size: 0.55rem;
+    color: #5B5A6B;
+    text-align: center;
+  }
+  @media (max-width: 640px) {
+    .pr-hours, .pr-hours-labels { gap: 2px; }
+    .pr-hours-labels div { font-size: 0.5rem; }
+  }
+
+  /* ---------- Empty / error states ---------- */
+  .pr-empty {
+    background: #fff;
+    border: 1.5px dashed rgba(17,16,74,0.15);
+    border-radius: 12px;
+    padding: 28px 22px;
+    text-align: center;
+    color: #5B5A6B;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+  .pr-empty i {
+    font-size: 1.6rem;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 10px;
+  }
+  .pr-error {
+    background: #FDECEC;
+    border: 1.5px solid rgba(230,17,30,0.25);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    color: #B80F1A;
+    font-size: 0.88rem;
+  }
+  .pr-error small { display: block; margin-top: 6px; opacity: 0.75; font-size: 0.75rem; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <section class="pr-hero">
+            <div class="pr-hero__eyebrow">
+              <i class="fa-solid fa-chart-line"></i>
+              Your learning journey
+            </div>
+            <h1 class="pr-hero__title">Progress</h1>
+            <p class="pr-hero__sub">See what you've studied, how consistent you've been, and which topics you focus on. Your progress is yours alone.</p>
+          </section>
+
+          <section class="pr-stats" id="stat-grid">
+            <div class="pr-stat">
+              <div class="pr-stat__icon pr-stat__icon--fire"><i class="fa-solid fa-fire"></i></div>
+              <div class="pr-stat__num" id="stat-streak">—</div>
+              <div class="pr-stat__label">Current streak</div>
+            </div>
+            <div class="pr-stat">
+              <div class="pr-stat__icon pr-stat__icon--gold"><i class="fa-solid fa-medal"></i></div>
+              <div class="pr-stat__num" id="stat-longest">—</div>
+              <div class="pr-stat__label">Longest streak</div>
+            </div>
+            <div class="pr-stat">
+              <div class="pr-stat__icon pr-stat__icon--navy"><i class="fa-solid fa-comment-dots"></i></div>
+              <div class="pr-stat__num" id="stat-messages">—</div>
+              <div class="pr-stat__label">Questions asked</div>
+            </div>
+            <div class="pr-stat">
+              <div class="pr-stat__icon pr-stat__icon--green"><i class="fa-solid fa-circle-question"></i></div>
+              <div class="pr-stat__num" id="stat-quizzes">—</div>
+              <div class="pr-stat__label">Quizzes taken</div>
+            </div>
+            <div class="pr-stat">
+              <div class="pr-stat__icon pr-stat__icon--navy"><i class="fa-solid fa-clone"></i></div>
+              <div class="pr-stat__num" id="stat-flashcards">—</div>
+              <div class="pr-stat__label">Cards reviewed</div>
+            </div>
+            <div class="pr-stat">
+              <div class="pr-stat__icon pr-stat__icon--gold"><i class="fa-solid fa-note-sticky"></i></div>
+              <div class="pr-stat__num" id="stat-notes">—</div>
+              <div class="pr-stat__label">Notes saved</div>
+            </div>
+          </section>
+
+          <section class="pr-section">
+            <h2 class="pr-section__title">Last 8 weeks</h2>
+            <p class="pr-section__sub">How active you were each week — messages, quizzes, and flashcards.</p>
+            <div class="pr-card" id="weeks-card">
+              <div class="pr-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading your activity…</div>
+            </div>
+          </section>
+
+          <section class="pr-section">
+            <h2 class="pr-section__title">Topics you studied</h2>
+            <p class="pr-section__sub">Subjects you spend the most time on.</p>
+            <div id="topics">
+              <div class="pr-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading topics…</div>
+            </div>
+          </section>
+
+          <section class="pr-section">
+            <h2 class="pr-section__title">When you study</h2>
+            <p class="pr-section__sub">Your activity by hour of the day over the last 30 days.</p>
+            <div class="pr-card" id="hours-card">
+              <div class="pr-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading heat map…</div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="assets/shell.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function fmtWeek(iso) {
+    try {
+      var d = new Date(iso + 'T00:00:00');
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    } catch (_) { return iso; }
+  }
+
+  async function guard() {
+    try {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (res.status === 401) { window.location.href = 'index.html'; return false; }
+      return true;
+    } catch (_) {
+      window.location.href = 'index.html';
+      return false;
+    }
+  }
+
+  function setText(id, txt) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = txt;
+  }
+
+  function paintStats(data) {
+    var s = data.streak || {};
+    var c = s.current_streak || 0;
+    var l = s.longest_streak || 0;
+    document.getElementById('stat-streak').innerHTML = c + '<small>day' + (c === 1 ? '' : 's') + '</small>';
+    document.getElementById('stat-longest').innerHTML = l + '<small>day' + (l === 1 ? '' : 's') + '</small>';
+    setText('stat-messages', data.totals.messages || 0);
+    setText('stat-quizzes', data.totals.quizzes || 0);
+    setText('stat-flashcards', data.totals.flashcards || 0);
+    setText('stat-notes', data.totals.notes || 0);
+  }
+
+  function paintWeeks(weeks) {
+    var card = document.getElementById('weeks-card');
+    if (!weeks.length || !weeks.some(function (w) { return w.messages || w.quizzes || w.flashcards; })) {
+      card.innerHTML = '<div class="pr-empty"><i class="fa-solid fa-seedling"></i>No activity in the last 8 weeks yet.<br>Start a chat, take a quiz, or review a flashcard and come back.</div>';
+      return;
+    }
+
+    // Find max for scaling
+    var maxM = Math.max.apply(null, weeks.map(function (w) { return w.messages; }).concat([1]));
+    var maxQ = Math.max.apply(null, weeks.map(function (w) { return w.quizzes; }).concat([1]));
+    var maxF = Math.max.apply(null, weeks.map(function (w) { return w.flashcards; }).concat([1]));
+
+    var html = '<div class="pr-legend">' +
+      '<span><span class="pr-legend__dot" style="background:#11104A"></span>Messages</span>' +
+      '<span><span class="pr-legend__dot" style="background:#C9952E"></span>Quizzes</span>' +
+      '<span><span class="pr-legend__dot" style="background:#E6111E"></span>Flashcards</span>' +
+    '</div>';
+
+    html += '<div class="pr-week pr-week--head">' +
+      '<div>Week</div><div>Activity</div><div style="text-align:right">Total</div>' +
+    '</div>';
+
+    var ordered = weeks.slice().reverse();
+    ordered.forEach(function (w, i) {
+      var total = (w.messages || 0) + (w.quizzes || 0) + (w.flashcards || 0);
+      var isCurrent = i === 0;
+      var label = isCurrent ? 'This week' : fmtWeek(w.weekStart);
+      var mPct = Math.round((w.messages / maxM) * 100);
+      var qPct = Math.round((w.quizzes / maxQ) * 100);
+      var fPct = Math.round((w.flashcards / maxF) * 100);
+      if (w.messages > 0 && mPct < 6) mPct = 6;
+      if (w.quizzes > 0 && qPct < 6) qPct = 6;
+      if (w.flashcards > 0 && fPct < 6) fPct = 6;
+
+      html += '<div class="pr-week' + (isCurrent ? ' is-current' : '') + '">' +
+        '<div class="pr-week__label">' + esc(label) + '</div>' +
+        '<div class="pr-week__bars">' +
+          '<div class="pr-week__bar"><div class="pr-week__fill pr-week__fill--m" style="width:' + mPct + '%"></div></div>' +
+          '<div class="pr-week__bar"><div class="pr-week__fill pr-week__fill--q" style="width:' + qPct + '%"></div></div>' +
+          '<div class="pr-week__bar"><div class="pr-week__fill pr-week__fill--f" style="width:' + fPct + '%"></div></div>' +
+        '</div>' +
+        '<div class="pr-week__counts">' +
+          '<b>' + total + '</b><br>' +
+          '<span style="opacity:0.7">' + w.messages + '·' + w.quizzes + '·' + w.flashcards + '</span>' +
+        '</div>' +
+      '</div>';
+    });
+
+    card.innerHTML = html;
+  }
+
+  function paintTopics(topics) {
+    var el = document.getElementById('topics');
+    if (!topics.length) {
+      el.innerHTML = '<div class="pr-empty"><i class="fa-solid fa-book-open"></i>No topics yet. Take a quiz or theory set and the subjects you study will appear here.</div>';
+      return;
+    }
+    el.innerHTML = '<div class="pr-topics">' +
+      topics.map(function (t) {
+        return '<span class="pr-topic">' + esc(t.topic) + '<span class="pr-topic__count">' + t.count + '</span></span>';
+      }).join('') +
+    '</div>';
+  }
+
+  function paintHours(hourDist) {
+    var card = document.getElementById('hours-card');
+    var buckets = new Array(24).fill(0);
+    var total = 0;
+    hourDist.forEach(function (h) { buckets[h.hour] = h.count; total += h.count; });
+
+    if (total === 0) {
+      card.innerHTML = '<div class="pr-empty"><i class="fa-solid fa-clock"></i>No activity in the last 30 days yet.</div>';
+      return;
+    }
+
+    var max = Math.max.apply(null, buckets.concat([1]));
+    var html = '<div class="pr-hours">';
+    for (var i = 0; i < 24; i++) {
+      var level = buckets[i] === 0 ? 0 : Math.min(4, Math.max(1, Math.ceil((buckets[i] / max) * 4)));
+      html += '<div class="pr-hour" data-level="' + level + '" title="' + i + ':00 — ' + buckets[i] + ' message' + (buckets[i] === 1 ? '' : 's') + '"></div>';
+    }
+    html += '</div>';
+    html += '<div class="pr-hours-labels">';
+    for (var j = 0; j < 24; j++) {
+      html += '<div>' + (j % 3 === 0 ? j : '') + '</div>';
+    }
+    html += '</div>';
+    html += '<div style="display:flex;gap:8px;align-items:center;margin-top:14px;font-family:var(--font-ui);font-size:0.6rem;color:#5B5A6B;letter-spacing:0.05em;text-transform:uppercase;font-weight:600">' +
+      '<span>Quiet</span>' +
+      '<span style="width:12px;height:12px;border-radius:3px;background:#ECEBF5"></span>' +
+      '<span style="width:12px;height:12px;border-radius:3px;background:#D6D3E8"></span>' +
+      '<span style="width:12px;height:12px;border-radius:3px;background:#A6A0D0"></span>' +
+      '<span style="width:12px;height:12px;border-radius:3px;background:#6E6BE5"></span>' +
+      '<span style="width:12px;height:12px;border-radius:3px;background:#11104A"></span>' +
+      '<span>Busy</span>' +
+    '</div>';
+
+    card.innerHTML = html;
+  }
+
+  async function load() {
+    try {
+      console.log('[progress] fetching /api/badges/progress');
+      var res = await fetch('/api/badges/progress', { credentials: 'include' });
+      console.log('[progress] HTTP ' + res.status);
+
+      if (res.status === 401) {
+        window.location.href = 'index.html';
+        return;
+      }
+      if (!res.ok) {
+        var errBody = await res.text();
+        console.error('[progress] server error:', errBody.slice(0, 400));
+        document.getElementById('weeks-card').innerHTML =
+          '<div class="pr-error"><i class="fa-solid fa-triangle-exclamation" style="font-size:1.5rem;display:block;margin-bottom:8px"></i>' +
+          'Could not load your progress.<br><small>Server returned HTTP ' + res.status + '</small></div>';
+        document.getElementById('topics').innerHTML = '';
+        document.getElementById('hours-card').innerHTML = '';
+        return;
+      }
+
+      var data = await res.json();
+      console.log('[progress] data received. Keys:', Object.keys(data).join(','));
+
+      paintStats(data);
+      paintWeeks(data.weeks || []);
+      paintTopics(data.topics || []);
+      paintHours(data.hourDist || []);
+    } catch (err) {
+      console.error('[progress] load error:', err);
+      document.getElementById('weeks-card').innerHTML =
+        '<div class="pr-error"><i class="fa-solid fa-triangle-exclamation" style="font-size:1.5rem;display:block;margin-bottom:8px"></i>' +
+        'Could not reach the server.<br><small>' + esc(err.message || 'Unknown error') + '</small></div>';
+      document.getElementById('topics').innerHTML = '';
+      document.getElementById('hours-card').innerHTML = '';
+    }
+  }
+
+  (async function init() {
+    if (!(await guard())) return;
+    await load();
+  })();
+
+})();
+</script>
+
+  <!-- Hero background video (loaded dynamically from Giphy) -->
+  <script>
+  (function () {
+    'use strict';
+    var video = document.querySelector('.hero-bg-video');
+    if (!video) return;
+
+    // Ask the backend for one random video
+    fetch('/api/theme/hero-video', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.url) return;
+        var source = video.querySelector('source');
+        if (source) source.src = data.url;
+        else {
+          source = document.createElement('source');
+          source.src = data.url;
+          source.type = 'video/mp4';
+          video.appendChild(source);
+        }
+        video.load();
+        var playPromise = video.play();
+        if (playPromise && playPromise.catch) playPromise.catch(function () {});
+      })
+      .catch(function () { /* fallback URL still plays */ });
+  })();
+  </script>
+
+</body>
+</html>

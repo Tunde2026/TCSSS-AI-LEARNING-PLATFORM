@@ -2,7 +2,7 @@ module.exports = {
   id: 'nvidia',
   supportsTools: true,  // NIM OpenAI-compatible
   baseUrl: 'https://integrate.api.nvidia.com/v1',
-  model: 'meta/llama-3.3-70b-instruct',
+  model: 'meta/llama-4-behemoth',
   timeoutMs: 25000,
   keys: [process.env.NVIDIA_KEY_1].filter(Boolean),
 };

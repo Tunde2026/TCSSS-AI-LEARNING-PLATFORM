@@ -6,137 +6,391 @@
 <title>Flashcards — Studying Lab</title>
 <link rel="stylesheet" href="../assets/shell.css">
 <style>
-  .page-inner, .viz-inner, .fc-inner, .pr-inner, .sp-inner, .qh-inner, .exam-inner { max-width: 1440px; }
-  .fc-inner { max-width: 1440px; }
+  main.page .page-scroll { padding: 16px 20px 40px !important; }
+  main.page .page-inner { max-width: 1280px !important; width: 100% !important; padding: 0 !important; margin: 0 auto !important; }
+  @media (max-width: 900px) { main.page .page-scroll { padding: 12px 12px 28px !important; } }
 
-  .setup-card { padding: 28px; }
-  .setup-field { margin-bottom: 18px; }
+  /* ============================================================
+     DECK SETUP + LIST
+     ============================================================ */
+  .setup-card { padding: 24px; }
+  .setup-field { margin-bottom: 16px; }
   .setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .setup-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
-
+  .setup-actions { display: flex; justify-content: flex-end; margin-top: 6px; }
   .desc-input {
-    width: 100%;
-    resize: vertical;
-    min-height: 62px;
-    padding: 10px 12px;
-    font-family: var(--font-body);
-    font-size: 0.92rem;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    outline: none;
-    color: var(--ink);
+    width: 100%; resize: vertical; min-height: 58px; padding: 10px 12px;
+    font-family: var(--font-body); font-size: 0.92rem;
+    border: 1px solid var(--border); border-radius: 10px; outline: none; color: var(--ink);
   }
-  .desc-input:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(201,149,46,0.12);
-  }
+  .desc-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.12); }
 
-  /* Deck list */
   .deck-list { display: flex; flex-direction: column; gap: 10px; }
   .deck-row {
-    display: flex; align-items: flex-start; gap: 16px;
-    padding: 16px 20px; background: var(--white);
-    border: 1px solid var(--border); border-radius: var(--radius);
-    transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 18px; background: var(--white);
+    border: 1px solid var(--border); border-radius: 14px;
+    transition: border-color 200ms, box-shadow 200ms, transform 200ms;
     cursor: pointer;
   }
-  .deck-row:hover {
-    border-color: var(--gold);
-    box-shadow: var(--shadow-sm);
-    transform: translateY(-1px);
-  }
+  .deck-row:hover { border-color: var(--gold); box-shadow: 0 8px 22px rgba(17,16,74,0.08); transform: translateY(-1px); }
   .deck-icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    background: #FDECEC; color: var(--red);
-    display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(155deg, #FDECEC, #F8D4D4);
+    color: var(--deep-red);
+    display: grid; place-items: center; font-size: 1.05rem; flex-shrink: 0;
     margin-top: 2px;
   }
   .deck-body { flex: 1; min-width: 0; }
   .deck-title {
     font-family: var(--font-head); font-weight: 600;
-    font-size: 1rem; color: var(--navy); margin: 0 0 2px;
+    font-size: 1rem; color: var(--navy); margin: 0 0 3px;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .deck-meta {
-    font-size: 0.82rem; color: var(--slate); margin: 0;
-    display: flex; gap: 10px; flex-wrap: wrap;
-  }
-  .deck-due { color: var(--red); font-weight: 600; }
+  .deck-meta { font-size: 0.82rem; color: var(--slate); margin: 0; display: flex; gap: 10px; flex-wrap: wrap; }
+  .deck-due { color: var(--deep-red); font-weight: 600; }
   .deck-desc {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background: var(--gold-50);
-    border-left: 3px solid var(--gold);
+    margin-top: 8px; padding: 7px 11px;
+    background: var(--gold-50); border-left: 3px solid var(--gold);
     border-radius: 0 8px 8px 0;
-    font-size: 0.8rem;
-    color: #6A4F13;
-    line-height: 1.5;
-    font-style: italic;
+    font-size: 0.8rem; color: #6A4F13; line-height: 1.5; font-style: italic;
   }
   .deck-del {
-    width: 34px; height: 34px; border-radius: 8px;
-    border: none; background: transparent; color: var(--slate);
-    cursor: pointer; display: grid; place-items: center;
-    flex-shrink: 0;
-    transition: background var(--transition), color var(--transition);
+    width: 32px; height: 32px; border-radius: 8px; border: none;
+    background: transparent; color: var(--slate); cursor: pointer;
+    display: grid; place-items: center; flex-shrink: 0;
+    transition: background 150ms, color 150ms;
   }
   .deck-del:hover { background: #FCECEC; color: var(--deep-red); }
 
-  .study-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-  .study-progress { font-family: var(--font-ui); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); }
-  .study-bar { height: 4px; background: var(--blush-deep); border-radius: 2px; overflow: hidden; margin-bottom: 28px; }
-  .study-bar__fill { height: 100%; background: var(--red); transition: width 240ms var(--ease); }
+  /* ============================================================
+     STUDY MODE — full experience
+     ============================================================ */
+  .study-wrap {
+    display: flex; flex-direction: column;
+    gap: 16px;
+  }
+  .study-topbar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px;
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 14px;
+  }
+  .study-topbar__title {
+    font-family: var(--font-head); font-size: 0.98rem; font-weight: 600;
+    color: var(--navy); margin: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    flex: 1; min-width: 0;
+  }
+  .study-topbar__counter {
+    font-family: var(--font-ui); font-size: 0.7rem; letter-spacing: 0.06em;
+    color: var(--slate); font-weight: 700;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--blush); white-space: nowrap;
+  }
+  .study-topbar__btn {
+    width: 34px; height: 34px; border-radius: 9px; border: none;
+    background: transparent; color: var(--slate); cursor: pointer;
+    display: grid; place-items: center; font-size: 0.9rem;
+    transition: background 150ms, color 150ms;
+    flex-shrink: 0;
+  }
+  .study-topbar__btn:hover { background: var(--blush); color: var(--navy); }
 
-  .flashcard {
-    width: 100%;
-    min-height: 280px;
-    padding: 40px 32px;
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-sm);
+  /* Progress bar */
+  .study-progress {
+    height: 5px; background: var(--blush-deep); border-radius: 4px;
+    overflow: hidden;
+  }
+  .study-progress__fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), var(--gold));
+    border-radius: 4px;
+    transition: width 340ms cubic-bezier(0.16,1,0.3,1);
+  }
+
+  /* The stage (card area) */
+  .card-stage {
+    display: flex; flex-direction: column;
+    align-items: center; gap: 20px;
+    padding: 8px 0 24px;
+  }
+
+  /* 3D card */
+  .fc3d {
+    width: 100%; max-width: 620px;
+    height: 360px;
+    perspective: 1600px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+  .fc3d__inner {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 620ms cubic-bezier(0.55, 0.05, 0.25, 1);
+  }
+  .fc3d.is-flipped .fc3d__inner { transform: rotateY(180deg); }
+
+  .fc3d__face {
+    position: absolute; inset: 0;
+    border-radius: 20px;
+    padding: 32px 28px;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     text-align: center;
-    cursor: pointer;
-    user-select: none;
-    transition: border-color var(--transition);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    box-shadow: 0 18px 44px rgba(17,16,74,0.18);
   }
-  .flashcard:hover { border-color: var(--gold); }
-  .flashcard__label { font-family: var(--font-ui); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate); margin-bottom: 18px; }
-  .flashcard__text { font-family: var(--font-head); font-size: 1.35rem; color: var(--navy); line-height: 1.4; margin: 0; max-width: 560px; }
-  .flashcard__hint { margin-top: 20px; font-size: 0.75rem; color: var(--slate); opacity: 0.7; }
+  .fc3d__face--front {
+    background: linear-gradient(155deg, #11104A 0%, #201F6B 45%, #2A2978 100%);
+    color: #fff;
+  }
+  .fc3d__face--back {
+    background: linear-gradient(155deg, #FFFFFF 0%, #FBF3E1 100%);
+    color: var(--ink);
+    border: 2px solid var(--gold);
+    transform: rotateY(180deg);
+  }
 
-  .rate-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 20px; }
+  /* Corner label */
+  .fc3d__corner {
+    position: absolute;
+    top: 16px; left: 18px;
+    font-family: var(--font-ui); font-size: 0.6rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    font-weight: 700;
+    padding: 4px 11px; border-radius: 999px;
+  }
+  .fc3d__face--front .fc3d__corner {
+    background: rgba(255,255,255,0.14);
+    color: #FFD97D;
+  }
+  .fc3d__face--back .fc3d__corner {
+    background: var(--gold-50);
+    color: #6A4F13;
+  }
+
+  /* Card index in the corner */
+  .fc3d__index {
+    position: absolute;
+    top: 16px; right: 18px;
+    font-family: var(--font-ui); font-size: 0.6rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    font-weight: 700;
+    padding: 4px 11px; border-radius: 999px;
+  }
+  .fc3d__face--front .fc3d__index {
+    background: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.85);
+  }
+  .fc3d__face--back .fc3d__index {
+    background: #ECEBF5;
+    color: var(--navy);
+  }
+
+  /* Card text */
+  .fc3d__text {
+    font-family: var(--font-head);
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    letter-spacing: -0.01em;
+  }
+  .fc3d__face--front .fc3d__text { font-size: 1.5rem; color: #fff; }
+  .fc3d__face--back .fc3d__text { font-size: 1.2rem; color: var(--navy); }
+
+  /* Hint at bottom of each face */
+  .fc3d__hint {
+    position: absolute;
+    bottom: 16px; left: 50%; transform: translateX(-50%);
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    font-weight: 500;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+  .fc3d__face--front .fc3d__hint { color: rgba(255,255,255,0.75); }
+  .fc3d__face--back .fc3d__hint { color: var(--slate); }
+
+  /* Nav arrows */
+  .fc-nav {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px;
+    width: 100%; max-width: 620px;
+  }
+  .fc-nav__btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    border: 1.5px solid var(--border); background: var(--white);
+    color: var(--navy); cursor: pointer; font-size: 0.9rem;
+    display: grid; place-items: center;
+    transition: background 150ms, border-color 150ms, transform 150ms;
+    flex-shrink: 0;
+  }
+  .fc-nav__btn:hover:not(:disabled) { background: var(--blush); border-color: var(--navy); }
+  .fc-nav__btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .fc-nav__dots {
+    display: flex; gap: 5px; flex: 1; justify-content: center;
+    padding: 0 8px; overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .fc-nav__dots::-webkit-scrollbar { display: none; }
+  .fc-nav__dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--blush-deep); flex-shrink: 0;
+    cursor: pointer;
+    transition: background 180ms, transform 180ms;
+    border: none; padding: 0;
+  }
+  .fc-nav__dot:hover { transform: scale(1.25); }
+  .fc-nav__dot.is-current { background: var(--red); transform: scale(1.35); }
+  .fc-nav__dot.is-done { background: #2F8F4A; }
+
+  /* Rating row */
+  .rate-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px; width: 100%; max-width: 620px;
+    opacity: 0; transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity 300ms cubic-bezier(0.16,1,0.3,1), transform 300ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .rate-row.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
   .rate-btn {
-    padding: 14px 10px; border-radius: 12px;
+    padding: 14px 8px; border-radius: 14px;
     border: 1.5px solid var(--border);
     background: var(--white); cursor: pointer;
-    font-family: var(--font-body); font-size: 0.85rem;
-    font-weight: 600;
-    display: flex; flex-direction: column; gap: 2px; align-items: center;
-    transition: border-color var(--transition), background var(--transition);
+    font-family: var(--font-body); font-size: 0.86rem; font-weight: 600;
+    display: flex; flex-direction: column; gap: 3px; align-items: center;
+    transition: border-color 150ms, background 150ms, transform 120ms;
+    -webkit-tap-highlight-color: transparent;
   }
-  .rate-btn:hover { border-color: var(--navy); }
-  .rate-btn small { font-family: var(--font-ui); font-size: 0.62rem; color: var(--slate); font-weight: 400; letter-spacing: 0.04em; }
-  .rate-btn--again { color: var(--deep-red); }
-  .rate-btn--hard  { color: #B77700; }
-  .rate-btn--good  { color: var(--navy); }
-  .rate-btn--easy  { color: #2F8F4A; }
+  .rate-btn:active { transform: scale(0.97); }
+  .rate-btn small {
+    font-family: var(--font-ui); font-size: 0.6rem;
+    color: var(--slate); font-weight: 500; letter-spacing: 0.04em;
+  }
+  .rate-btn__key {
+    display: inline-block;
+    width: 18px; height: 18px; border-radius: 5px;
+    background: var(--blush-deep); color: var(--navy);
+    font-family: var(--font-ui); font-size: 0.6rem; font-weight: 700;
+    display: grid; place-items: center; margin-bottom: 3px;
+  }
 
-  @media (max-width: 860px) {
-    .setup-row { grid-template-columns: 1fr; }
-    .rate-row  { grid-template-columns: repeat(2, 1fr); }
+  .rate-btn--again { color: var(--deep-red); border-color: #F3C5C5; }
+  .rate-btn--again:hover { background: #FDECEC; border-color: var(--red); }
+  .rate-btn--again .rate-btn__key { background: #FDECEC; color: var(--deep-red); }
+
+  .rate-btn--hard  { color: #B77700; border-color: #EFD9A6; }
+  .rate-btn--hard:hover { background: var(--gold-50); border-color: var(--gold); }
+  .rate-btn--hard .rate-btn__key { background: #FBF3E1; color: #B77700; }
+
+  .rate-btn--good  { color: var(--navy); border-color: #C7C6E0; }
+  .rate-btn--good:hover { background: var(--blush); border-color: var(--navy); }
+  .rate-btn--good .rate-btn__key { background: #ECEBF5; color: var(--navy); }
+
+  .rate-btn--easy  { color: #2F8F4A; border-color: #B9DDC3; }
+  .rate-btn--easy:hover { background: #EAF7EE; border-color: #2F8F4A; }
+  .rate-btn--easy .rate-btn__key { background: #EAF7EE; color: #2F8F4A; }
+
+  /* Shortcut hint row */
+  .kbd-hint {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-family: var(--font-ui); font-size: 0.66rem;
+    color: var(--slate); letter-spacing: 0.04em;
+    opacity: 0.75; justify-content: center;
+    padding: 0 12px;
+  }
+  .kbd-hint kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--white); border: 1px solid var(--border);
+    border-bottom-width: 2px; border-radius: 5px;
+    font-family: var(--font-ui); font-size: 0.62rem;
+    color: var(--navy); font-weight: 700;
+    margin-right: 4px;
+  }
+  @media (max-width: 720px) {
+    .kbd-hint { display: none; }
+  }
+
+  /* Card dot animation when flipped */
+  @keyframes fcPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+  .fc3d.just-flipped .fc3d__inner { animation: fcPulse 380ms ease-out; }
+
+  /* Session complete screen */
+  .done-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 44px 28px;
+    text-align: center;
+    max-width: 520px;
+    margin: 40px auto;
+    box-shadow: 0 12px 32px rgba(17,16,74,0.10);
+  }
+  .done-icon {
+    width: 64px; height: 64px; border-radius: 18px;
+    background: linear-gradient(155deg, #EAF7EE, #C9E8D2);
+    color: #2F8F4A;
+    display: grid; place-items: center;
+    font-size: 1.7rem; margin: 0 auto 20px;
+  }
+  .done-title {
+    font-family: var(--font-head); font-size: 1.5rem;
+    color: var(--navy); margin: 0 0 6px; font-weight: 600;
+  }
+  .done-sub { color: var(--slate); margin: 0 0 24px; font-size: 0.94rem; }
+  .done-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-bottom: 26px;
+  }
+  .done-stat {
+    padding: 14px 10px; border-radius: 12px;
+    background: var(--blush);
+  }
+  .done-stat__num {
+    font-family: var(--font-head); font-size: 1.5rem;
+    font-weight: 700; color: var(--navy); line-height: 1;
+    margin-bottom: 4px;
+  }
+  .done-stat__label {
+    font-family: var(--font-ui); font-size: 0.58rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--slate); font-weight: 600;
+  }
+  .done-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  /* Mobile tweaks */
+  @media (max-width: 640px) {
+    .fc3d { height: 320px; }
+    .fc3d__face { padding: 24px 20px; border-radius: 16px; }
+    .fc3d__face--front .fc3d__text { font-size: 1.25rem; }
+    .fc3d__face--back .fc3d__text { font-size: 1.05rem; }
+    .rate-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .rate-btn { padding: 12px 6px; font-size: 0.8rem; }
+    .done-card { padding: 32px 20px; margin: 20px auto; }
   }
 </style>
 </head>
 <body>
   <div class="app">
     <div id="sidebar-mount"></div>
-
     <main class="page">
       <div class="page-scroll">
-        <div class="page-inner fc-inner">
+        <div class="page-inner">
 
           <header class="page-header">
             <div>
@@ -145,7 +399,7 @@
             </div>
           </header>
 
-          <!-- Stage: list -->
+          <!-- ============ STAGE: LIST ============ -->
           <div id="stage-list">
             <section class="section">
               <h2 class="section__title">Create a deck</h2>
@@ -191,7 +445,7 @@
             </section>
           </div>
 
-          <!-- Stage: generating -->
+          <!-- ============ STAGE: GENERATING ============ -->
           <div id="stage-generating" style="display:none">
             <div class="card" style="text-align:center;padding:60px 20px">
               <div style="width:40px;height:40px;border:3px solid var(--blush-deep);border-top-color:var(--red);border-radius:50%;margin:0 auto 20px;animation:spin .9s linear infinite"></div>
@@ -201,49 +455,124 @@
             </div>
           </div>
 
-          <!-- Stage: study -->
+          <!-- ============ STAGE: STUDY ============ -->
           <div id="stage-study" style="display:none">
-            <div class="study-header">
-              <span class="study-progress" id="study-progress">Card 1 of 10</span>
-              <button class="btn btn-ghost" id="study-exit" type="button">
-                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Exit
-              </button>
-            </div>
-            <div class="study-bar"><div class="study-bar__fill" id="study-bar" style="width:10%"></div></div>
+            <div class="study-wrap">
 
-            <div class="flashcard" id="flashcard">
-              <div class="flashcard__label" id="fc-label">Front — click to reveal</div>
-              <h2 class="flashcard__text" id="fc-text">—</h2>
-              <div class="flashcard__hint">Click the card or press Space to flip</div>
-            </div>
+              <!-- Top bar -->
+              <div class="study-topbar">
+                <button class="study-topbar__btn" id="study-exit" title="Back to decks" type="button">
+                  <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                </button>
+                <h2 class="study-topbar__title" id="study-deck-title">Deck</h2>
+                <span class="study-topbar__counter" id="study-counter">1 / 10</span>
+                <button class="study-topbar__btn" id="shuffle-btn" title="Shuffle" type="button">
+                  <i class="fa-solid fa-shuffle" aria-hidden="true"></i>
+                </button>
+              </div>
 
-            <div class="rate-row" id="rate-row" style="display:none">
-              <button class="rate-btn rate-btn--again" data-q="0" type="button">
-                Again <small>&lt; 1 min</small>
-              </button>
-              <button class="rate-btn rate-btn--hard" data-q="1" type="button">
-                Hard <small>~1 day</small>
-              </button>
-              <button class="rate-btn rate-btn--good" data-q="2" type="button">
-                Good <small>days</small>
-              </button>
-              <button class="rate-btn rate-btn--easy" data-q="3" type="button">
-                Easy <small>longer</small>
-              </button>
+              <!-- Progress bar -->
+              <div class="study-progress">
+                <div class="study-progress__fill" id="study-progress-fill" style="width:0%"></div>
+              </div>
+
+              <!-- The card stage -->
+              <div class="card-stage">
+
+                <div class="fc3d" id="fc3d" role="button" tabindex="0" aria-label="Flashcard">
+                  <div class="fc3d__inner">
+                    <div class="fc3d__face fc3d__face--front">
+                      <span class="fc3d__corner">Question</span>
+                      <span class="fc3d__index" id="fc-index-front">Card 1</span>
+                      <p class="fc3d__text" id="fc-text-front">—</p>
+                      <div class="fc3d__hint">Tap to reveal</div>
+                    </div>
+                    <div class="fc3d__face fc3d__face--back">
+                      <span class="fc3d__corner">Answer</span>
+                      <span class="fc3d__index" id="fc-index-back">Card 1</span>
+                      <p class="fc3d__text" id="fc-text-back">—</p>
+                      <div class="fc3d__hint">Rate yourself below</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Prev / Next + dots -->
+                <div class="fc-nav">
+                  <button class="fc-nav__btn" id="prev-btn" title="Previous (←)" type="button">
+                    <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                  </button>
+                  <div class="fc-nav__dots" id="dots"></div>
+                  <button class="fc-nav__btn" id="next-btn" title="Next (→)" type="button">
+                    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                  </button>
+                </div>
+
+                <!-- Rating row -->
+                <div class="rate-row" id="rate-row">
+                  <button class="rate-btn rate-btn--again" data-q="0" type="button">
+                    <span class="rate-btn__key">1</span>
+                    Again
+                    <small>&lt; 1 min</small>
+                  </button>
+                  <button class="rate-btn rate-btn--hard" data-q="1" type="button">
+                    <span class="rate-btn__key">2</span>
+                    Hard
+                    <small>~1 day</small>
+                  </button>
+                  <button class="rate-btn rate-btn--good" data-q="2" type="button">
+                    <span class="rate-btn__key">3</span>
+                    Good
+                    <small>days</small>
+                  </button>
+                  <button class="rate-btn rate-btn--easy" data-q="3" type="button">
+                    <span class="rate-btn__key">4</span>
+                    Easy
+                    <small>longer</small>
+                  </button>
+                </div>
+
+                <!-- Keyboard hints -->
+                <div class="kbd-hint">
+                  <span><kbd>Space</kbd> flip</span>
+                  <span><kbd>←</kbd> <kbd>→</kbd> navigate</span>
+                  <span><kbd>1</kbd>–<kbd>4</kbd> rate</span>
+                  <span><kbd>Esc</kbd> exit</span>
+                </div>
+
+              </div>
             </div>
           </div>
 
-          <!-- Stage: done -->
+          <!-- ============ STAGE: DONE ============ -->
           <div id="stage-done" style="display:none">
-            <div class="card" style="text-align:center;padding:48px 28px">
-              <div style="width:56px;height:56px;border-radius:16px;background:#EAF7EE;color:#2F8F4A;display:grid;place-items:center;font-size:1.6rem;margin:0 auto 20px">
-                <i class="fa-solid fa-check" aria-hidden="true"></i>
+            <div class="done-card">
+              <div class="done-icon"><i class="fa-solid fa-check" aria-hidden="true"></i></div>
+              <h2 class="done-title">Session complete</h2>
+              <p class="done-sub">Great work — you finished the deck.</p>
+
+              <div class="done-stats">
+                <div class="done-stat">
+                  <div class="done-stat__num" id="done-reviewed">0</div>
+                  <div class="done-stat__label">Cards</div>
+                </div>
+                <div class="done-stat">
+                  <div class="done-stat__num" id="done-easy">0</div>
+                  <div class="done-stat__label">Easy</div>
+                </div>
+                <div class="done-stat">
+                  <div class="done-stat__num" id="done-hard">0</div>
+                  <div class="done-stat__label">Need work</div>
+                </div>
               </div>
-              <h2 style="font-family:var(--font-head);color:var(--navy);margin:0 0 8px;font-size:1.4rem">Session complete</h2>
-              <p style="color:var(--slate);margin:0 0 24px">You reviewed <strong id="done-count">0</strong> cards.</p>
-              <button class="btn btn-primary" id="done-btn" type="button">
-                Back to decks
-              </button>
+
+              <div class="done-actions">
+                <button class="btn btn-ghost" id="done-again" type="button">
+                  <i class="fa-solid fa-rotate" aria-hidden="true"></i> Review hard cards
+                </button>
+                <button class="btn btn-primary" id="done-btn" type="button">
+                  Back to decks
+                </button>
+              </div>
             </div>
           </div>
 
@@ -254,251 +583,428 @@
 
 <script src="../assets/shell.js"></script>
 <script>
-  (function () {
-    'use strict';
+(function () {
+  'use strict';
 
-    var stages = {
-      list:       document.getElementById('stage-list'),
-      generating: document.getElementById('stage-generating'),
-      study:      document.getElementById('stage-study'),
-      done:       document.getElementById('stage-done'),
-    };
-    function showStage(name) {
-      Object.keys(stages).forEach(function (k) {
-        stages[k].style.display = (k === name) ? '' : 'none';
-      });
+  var stages = {
+    list:       document.getElementById('stage-list'),
+    generating: document.getElementById('stage-generating'),
+    study:      document.getElementById('stage-study'),
+    done:       document.getElementById('stage-done'),
+  };
+  function showStage(name) {
+    Object.keys(stages).forEach(function (k) {
+      stages[k].style.display = (k === name) ? '' : 'none';
+    });
+  }
+
+  var decks        = [];
+  var queue        = [];
+  var currentIdx   = 0;
+  var flipped      = false;
+  var reviewed     = 0;
+  var ratedEasy    = 0;
+  var ratedHard    = 0;
+  var currentDeck  = null;
+  var completed    = {}; // id -> quality
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function toast(msg, isError) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = [
+      'position:fixed','bottom:24px','left:50%','transform:translateX(-50%)',
+      'background:' + (isError ? 'var(--deep-red)' : 'var(--navy)'),
+      'color:#fff','padding:12px 20px','border-radius:999px',
+      'font-family:var(--font-body)','font-size:0.9rem',
+      'box-shadow:0 8px 24px rgba(17,16,74,0.2)','z-index:300'
+    ].join(';');
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2400);
+  }
+
+  async function guard() {
+    var res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (res.status === 401) { window.location.href = '../index.html'; return false; }
+    return true;
+  }
+
+  /* ============================================================
+     DECK LIST
+     ============================================================ */
+  async function loadDecks() {
+    var res = await fetch('/api/tools/flashcards', { credentials: 'include' });
+    if (!res.ok) return;
+    var data = await res.json();
+    decks = data.decks || [];
+    renderDecks();
+  }
+
+  function renderDecks() {
+    var wrap = document.getElementById('decks-wrap');
+    if (!decks.length) {
+      wrap.innerHTML =
+        '<div class="empty-state">' +
+          '<div class="empty-state__icon"><i class="fa-solid fa-clone" aria-hidden="true"></i></div>' +
+          '<h3 class="empty-state__title">No decks yet</h3>' +
+          '<p class="empty-state__desc">Generate your first deck above to start reviewing.</p>' +
+        '</div>';
+      return;
     }
 
-    var decks       = [];
-    var queue       = [];
-    var currentIdx  = 0;
-    var flipped     = false;
-    var reviewed    = 0;
-    var currentDeck = null;
-
-    function esc(s) {
-      return String(s == null ? '' : s)
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    }
-
-    function toast(msg, isError) {
-      var t = document.createElement('div');
-      t.textContent = msg;
-      t.style.cssText = [
-        'position:fixed','bottom:24px','left:50%','transform:translateX(-50%)',
-        'background:' + (isError ? 'var(--deep-red)' : 'var(--navy)'),
-        'color:#fff','padding:12px 20px','border-radius:999px',
-        'font-family:var(--font-body)','font-size:0.9rem',
-        'box-shadow:0 8px 24px rgba(17,16,74,0.2)','z-index:300'
-      ].join(';');
-      document.body.appendChild(t);
-      setTimeout(function () { t.remove(); }, 2400);
-    }
-
-    async function guard() {
-      var res = await fetch('/api/auth/me', { credentials: 'include' });
-      if (res.status === 401) { window.location.href = '../index.html'; return false; }
-      return true;
-    }
-
-    async function loadDecks() {
-      var res = await fetch('/api/tools/flashcards', { credentials: 'include' });
-      if (!res.ok) return;
-      var data = await res.json();
-      decks = data.decks || [];
-      renderDecks();
-    }
-
-    function renderDecks() {
-      var wrap = document.getElementById('decks-wrap');
-      if (!decks.length) {
-        wrap.innerHTML =
-          '<div class="empty-state">' +
-            '<div class="empty-state__icon"><i class="fa-solid fa-clone" aria-hidden="true"></i></div>' +
-            '<h3 class="empty-state__title">No decks yet</h3>' +
-            '<p class="empty-state__desc">Generate your first deck above to start reviewing.</p>' +
-          '</div>';
-        return;
-      }
-
-      wrap.innerHTML = decks.map(function (d) {
-        var dueLine = d.due_count > 0
-          ? '<span class="deck-due">' + d.due_count + ' due now</span>'
-          : '<span>' + d.card_count + ' cards</span>';
-        return (
-          '<div class="deck-row" data-id="' + d.id + '">' +
-            '<div class="deck-icon"><i class="fa-solid fa-clone" aria-hidden="true"></i></div>' +
-            '<div class="deck-body">' +
-              '<div class="deck-title">' + esc(d.title) + '</div>' +
-              '<div class="deck-meta">' + dueLine +
-                (d.subject ? ' · ' + esc(d.subject) : '') +
-              '</div>' +
-              (d.description
-                ? '<div class="deck-desc">' + esc(d.description) + '</div>'
-                : '') +
+    wrap.innerHTML = decks.map(function (d) {
+      var dueLine = d.due_count > 0
+        ? '<span class="deck-due">' + d.due_count + ' due now</span>'
+        : '<span>' + d.card_count + ' cards</span>';
+      return (
+        '<div class="deck-row" data-id="' + d.id + '">' +
+          '<div class="deck-icon"><i class="fa-solid fa-clone" aria-hidden="true"></i></div>' +
+          '<div class="deck-body">' +
+            '<div class="deck-title">' + esc(d.title) + '</div>' +
+            '<div class="deck-meta">' + dueLine +
+              (d.subject ? ' · ' + esc(d.subject) : '') +
             '</div>' +
-            '<button class="deck-del" data-id="' + d.id + '" title="Delete" type="button">' +
-              '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
-            '</button>' +
-          '</div>'
-        );
-      }).join('');
+            (d.description
+              ? '<div class="deck-desc">' + esc(d.description) + '</div>'
+              : '') +
+          '</div>' +
+          '<button class="deck-del" data-id="' + d.id + '" title="Delete" type="button">' +
+            '<i class="fa-solid fa-trash" aria-hidden="true"></i>' +
+          '</button>' +
+        '</div>'
+      );
+    }).join('');
 
-      wrap.querySelectorAll('.deck-row').forEach(function (row) {
-        row.addEventListener('click', function (e) {
-          if (e.target.closest('.deck-del')) return;
-          var id = row.getAttribute('data-id');
-          var deck = decks.find(function (d) { return d.id === id; });
-          if (deck) startStudy(deck);
-        });
+    wrap.querySelectorAll('.deck-row').forEach(function (row) {
+      row.addEventListener('click', function (e) {
+        if (e.target.closest('.deck-del')) return;
+        var id = row.getAttribute('data-id');
+        var deck = decks.find(function (d) { return d.id === id; });
+        if (deck) startStudy(deck);
       });
+    });
 
-      wrap.querySelectorAll('.deck-del').forEach(function (btn) {
-        btn.addEventListener('click', async function (e) {
-          e.stopPropagation();
-          var id = btn.getAttribute('data-id');
-          if (!confirm('Delete this deck and all its cards?')) return;
-          var res = await fetch('/api/tools/flashcards/' + id, {
-            method: 'DELETE', credentials: 'include',
-          });
-          if (!res.ok) { toast('Could not delete.', true); return; }
-          decks = decks.filter(function (d) { return d.id !== id; });
-          renderDecks();
-          toast('Deck deleted.');
+    wrap.querySelectorAll('.deck-del').forEach(function (btn) {
+      btn.addEventListener('click', async function (e) {
+        e.stopPropagation();
+        var id = btn.getAttribute('data-id');
+        if (!confirm('Delete this deck and all its cards?')) return;
+        var res = await fetch('/api/tools/flashcards/' + id, {
+          method: 'DELETE', credentials: 'include',
         });
+        if (!res.ok) { toast('Could not delete.', true); return; }
+        decks = decks.filter(function (d) { return d.id !== id; });
+        renderDecks();
+        toast('Deck deleted.');
       });
-    }
+    });
+  }
 
-    async function generate() {
-      var topic = document.getElementById('topic').value.trim();
-      if (!topic) { toast('Please enter a topic.', true); return; }
-      var subject     = document.getElementById('subject').value.trim() || null;
-      var count       = parseInt(document.getElementById('count').value, 10);
-      var description = document.getElementById('description').value.trim() || null;
+  /* ============================================================
+     GENERATE
+     ============================================================ */
+  async function generate() {
+    var topic = document.getElementById('topic').value.trim();
+    if (!topic) { toast('Please enter a topic.', true); return; }
+    var subject     = document.getElementById('subject').value.trim() || null;
+    var count       = parseInt(document.getElementById('count').value, 10);
+    var description = document.getElementById('description').value.trim() || null;
 
-      showStage('generating');
+    showStage('generating');
 
-      try {
-        var res = await fetch('/api/tools/flashcards/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ topic: topic, count: count, subject: subject, description: description }),
-        });
-        var data = await res.json().catch(function () { return {}; });
-        if (!res.ok) {
-          toast(data.error || 'Could not generate.', true);
-          showStage('list');
-          return;
-        }
-        await loadDecks();
-        showStage('list');
-        toast('Deck created.');
-      } catch (err) {
-        toast('Cannot reach the server.', true);
-        showStage('list');
-      }
-    }
-
-    async function startStudy(deck) {
-      currentDeck = deck;
-      var res = await fetch('/api/tools/flashcards/' + deck.id + '/due', {
-        credentials: 'include',
-      });
-      if (!res.ok) { toast('Could not load cards.', true); return; }
-      var data = await res.json();
-      queue = data.cards || [];
-
-      if (!queue.length) {
-        toast('No cards due right now. Great job!');
-        return;
-      }
-
-      currentIdx = 0;
-      reviewed = 0;
-      renderCard();
-      showStage('study');
-    }
-
-    function renderCard() {
-      if (currentIdx >= queue.length) {
-        document.getElementById('done-count').textContent = reviewed;
-        showStage('done');
-        return;
-      }
-      flipped = false;
-      var card = queue[currentIdx];
-      document.getElementById('study-progress').textContent =
-        'Card ' + (currentIdx + 1) + ' of ' + queue.length;
-      document.getElementById('study-bar').style.width =
-        ((currentIdx + 1) / queue.length * 100) + '%';
-      document.getElementById('fc-label').textContent = 'Front — click to reveal';
-      document.getElementById('fc-text').textContent = card.front;
-      document.getElementById('rate-row').style.display = 'none';
-    }
-
-    function flipCard() {
-      if (flipped) return;
-      flipped = true;
-      var card = queue[currentIdx];
-      document.getElementById('fc-label').textContent = 'Back';
-      document.getElementById('fc-text').textContent = card.back;
-      document.getElementById('rate-row').style.display = 'grid';
-    }
-
-    async function rate(q) {
-      if (!flipped) return;
-      var card = queue[currentIdx];
-      fetch('/api/tools/flashcards/card/' + card.id + '/review', {
+    try {
+      var res = await fetch('/api/tools/flashcards/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ quality: q }),
-      }).catch(function () {});
-
-      reviewed += 1;
-      currentIdx += 1;
-      renderCard();
-    }
-
-    document.getElementById('gen-btn').addEventListener('click', generate);
-    document.getElementById('topic').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); generate(); }
-    });
-
-    document.getElementById('flashcard').addEventListener('click', flipCard);
-
-    document.querySelectorAll('.rate-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        rate(parseInt(btn.getAttribute('data-q'), 10));
+        body: JSON.stringify({ topic: topic, count: count, subject: subject, description: description }),
       });
-    });
-
-    document.getElementById('study-exit').addEventListener('click', function () {
-      showStage('list');
-      loadDecks();
-    });
-    document.getElementById('done-btn').addEventListener('click', function () {
-      showStage('list');
-      loadDecks();
-    });
-
-    document.addEventListener('keydown', function (e) {
-      if (stages.study.style.display === 'none') return;
-      if (e.code === 'Space') { e.preventDefault(); flipCard(); }
-      if (e.key === '1') rate(0);
-      if (e.key === '2') rate(1);
-      if (e.key === '3') rate(2);
-      if (e.key === '4') rate(3);
-    });
-
-    (async function init() {
-      if (!(await guard())) return;
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) {
+        toast(data.error || 'Could not generate.', true);
+        showStage('list');
+        return;
+      }
       await loadDecks();
       showStage('list');
-    })();
+      toast('Deck created.');
+    } catch (err) {
+      toast('Cannot reach the server.', true);
+      showStage('list');
+    }
+  }
+
+  /* ============================================================
+     STUDY MODE
+     ============================================================ */
+  async function startStudy(deck) {
+    currentDeck = deck;
+    var res = await fetch('/api/tools/flashcards/' + deck.id + '/due', {
+      credentials: 'include',
+    });
+    if (!res.ok) { toast('Could not load cards.', true); return; }
+    var data = await res.json();
+    queue = data.cards || [];
+
+    if (!queue.length) {
+      toast('No cards due right now. Great job!');
+      return;
+    }
+
+    document.getElementById('study-deck-title').textContent = deck.title || 'Deck';
+    currentIdx = 0;
+    reviewed = 0;
+    ratedEasy = 0;
+    ratedHard = 0;
+    completed = {};
+
+    buildDots();
+    renderCard();
+    showStage('study');
+  }
+
+  function buildDots() {
+    var dots = document.getElementById('dots');
+    dots.innerHTML = queue.map(function (_, i) {
+      return '<button type="button" class="fc-nav__dot" data-i="' + i + '" aria-label="Go to card ' + (i + 1) + '"></button>';
+    }).join('');
+    dots.querySelectorAll('.fc-nav__dot').forEach(function (d) {
+      d.addEventListener('click', function () {
+        var i = parseInt(d.getAttribute('data-i'), 10);
+        if (!isNaN(i) && i >= 0 && i < queue.length) {
+          currentIdx = i;
+          renderCard();
+        }
+      });
+    });
+  }
+
+  function updateDots() {
+    var dots = document.querySelectorAll('.fc-nav__dot');
+    dots.forEach(function (d, i) {
+      d.classList.toggle('is-current', i === currentIdx);
+      d.classList.toggle('is-done', completed[i] != null);
+    });
+  }
+
+  function renderCard() {
+    if (currentIdx >= queue.length) { finishSession(); return; }
+
+    var card = queue[currentIdx];
+
+    // Un-flip (without animation if transitioning)
+    flipped = false;
+    var fc3d = document.getElementById('fc3d');
+    fc3d.classList.remove('is-flipped');
+
+    // Fill both faces
+    document.getElementById('fc-text-front').textContent = card.front;
+    document.getElementById('fc-text-back').textContent  = card.back;
+    document.getElementById('fc-index-front').textContent = 'Card ' + (currentIdx + 1);
+    document.getElementById('fc-index-back').textContent  = 'Card ' + (currentIdx + 1);
+
+    // Update counter, progress, nav
+    document.getElementById('study-counter').textContent = (currentIdx + 1) + ' / ' + queue.length;
+    document.getElementById('study-progress-fill').style.width =
+      ((currentIdx + 1) / queue.length * 100) + '%';
+
+    document.getElementById('prev-btn').disabled = currentIdx === 0;
+    document.getElementById('next-btn').disabled = currentIdx === queue.length - 1;
+
+    document.getElementById('rate-row').classList.remove('is-visible');
+    updateDots();
+  }
+
+  function flipCard() {
+    if (flipped) {
+      // Flip back
+      flipped = false;
+      document.getElementById('fc3d').classList.remove('is-flipped');
+      document.getElementById('rate-row').classList.remove('is-visible');
+      return;
+    }
+    flipped = true;
+    var fc3d = document.getElementById('fc3d');
+    fc3d.classList.add('is-flipped');
+    fc3d.classList.add('just-flipped');
+    setTimeout(function () { fc3d.classList.remove('just-flipped'); }, 420);
+    document.getElementById('rate-row').classList.add('is-visible');
+  }
+
+  async function rate(q) {
+    if (!flipped) return;
+    var card = queue[currentIdx];
+
+    // Record locally for the done-screen stats
+    completed[currentIdx] = q;
+    if (q === 3) ratedEasy++;
+    if (q === 0 || q === 1) ratedHard++;
+    reviewed++;
+
+    // Fire-and-forget persistence
+    fetch('/api/tools/flashcards/card/' + card.id + '/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ quality: q }),
+    }).catch(function () {});
+
+    // Advance
+    currentIdx++;
+    renderCard();
+  }
+
+  function prevCard() {
+    if (currentIdx > 0) {
+      currentIdx--;
+      renderCard();
+    }
+  }
+  function nextCard() {
+    if (currentIdx < queue.length - 1) {
+      currentIdx++;
+      renderCard();
+    }
+  }
+
+  function finishSession() {
+    document.getElementById('done-reviewed').textContent = reviewed;
+    document.getElementById('done-easy').textContent = ratedEasy;
+    document.getElementById('done-hard').textContent = ratedHard;
+    showStage('done');
+  }
+
+  /* ============================================================
+     WIRE UP
+     ============================================================ */
+  document.getElementById('gen-btn').addEventListener('click', generate);
+  document.getElementById('topic').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); generate(); }
+  });
+
+  var fc3d = document.getElementById('fc3d');
+  fc3d.addEventListener('click', flipCard);
+  fc3d.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flipCard(); }
+  });
+
+  document.getElementById('prev-btn').addEventListener('click', prevCard);
+  document.getElementById('next-btn').addEventListener('click', nextCard);
+
+  document.querySelectorAll('.rate-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      rate(parseInt(btn.getAttribute('data-q'), 10));
+    });
+  });
+
+  document.getElementById('shuffle-btn').addEventListener('click', function () {
+    if (queue.length < 2) return;
+    for (var i = queue.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = queue[i]; queue[i] = queue[j]; queue[j] = t;
+    }
+    currentIdx = 0;
+    completed = {};
+    ratedEasy = 0;
+    ratedHard = 0;
+    reviewed = 0;
+    buildDots();
+    renderCard();
+    toast('Deck shuffled.');
+  });
+
+  document.getElementById('study-exit').addEventListener('click', function () {
+    showStage('list');
+    loadDecks();
+  });
+
+  document.getElementById('done-btn').addEventListener('click', function () {
+    showStage('list');
+    loadDecks();
+  });
+
+  document.getElementById('done-again').addEventListener('click', function () {
+    // Build a queue of only the cards rated Again/Hard
+    var hard = [];
+    queue.forEach(function (c, i) {
+      var q = completed[i];
+      if (q === 0 || q === 1) hard.push(c);
+    });
+    if (!hard.length) {
+      toast('Nothing to review — you aced them all!');
+      return;
+    }
+    queue = hard;
+    currentIdx = 0;
+    completed = {};
+    ratedEasy = 0;
+    ratedHard = 0;
+    reviewed = 0;
+    buildDots();
+    renderCard();
+    showStage('study');
+  });
+
+  /* Keyboard shortcuts */
+  document.addEventListener('keydown', function (e) {
+    if (stages.study.style.display === 'none') return;
+    // Don't fire if user is typing in an input
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+    if (e.code === 'Space')  { e.preventDefault(); flipCard(); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); prevCard(); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); nextCard(); }
+    if (e.key === '1') { e.preventDefault(); rate(0); }
+    if (e.key === '2') { e.preventDefault(); rate(1); }
+    if (e.key === '3') { e.preventDefault(); rate(2); }
+    if (e.key === '4') { e.preventDefault(); rate(3); }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      showStage('list');
+      loadDecks();
+    }
+  });
+
+  /* Touch swipe for mobile — swipe up = rate good, swipe left = next, swipe right = prev */
+  (function attachSwipe() {
+    var el = document.getElementById('fc3d');
+    var startX = 0, startY = 0, startTime = 0;
+    el.addEventListener('touchstart', function (e) {
+      if (!e.touches.length) return;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startTime = Date.now();
+    }, { passive: true });
+    el.addEventListener('touchend', function (e) {
+      if (!e.changedTouches.length) return;
+      var dx = e.changedTouches[0].clientX - startX;
+      var dy = e.changedTouches[0].clientY - startY;
+      var dt = Date.now() - startTime;
+      if (dt > 600) return; // too slow, treat as tap
+      if (Math.abs(dx) < 40 && Math.abs(dy) < 40) return; // tap
+      // Horizontal swipe
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) nextCard(); else prevCard();
+      } else {
+        // Vertical swipe
+        if (dy < -50 && flipped) rate(2); // swipe up = Good
+      }
+    }, { passive: true });
   })();
+
+  /* Init */
+  (async function init() {
+    if (!(await guard())) return;
+    await loadDecks();
+    showStage('list');
+  })();
+})();
 </script>
 </body>
 </html>

@@ -22,6 +22,13 @@ const ALLOWED_DOC_TYPES = {
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
   'text/plain': ['.txt'],
   'text/markdown': ['.md'],
+  // ---- images (handled by the vision path in ai/routes.js) ----
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png':  ['.png'],
+  'image/webp': ['.webp'],
+  'image/gif':  ['.gif'],
+  'image/heic': ['.heic'],
+  'image/heif': ['.heif'],
 };
 
 function ensureDirs() {
@@ -31,7 +38,7 @@ function ensureDirs() {
 function validateFile(file) {
   if (!file) return { ok: false, reason: 'No file' };
   const allowed = ALLOWED_DOC_TYPES[file.mimetype];
-  if (!allowed) return { ok: false, reason: 'Unsupported file type. Use PDF, DOCX, TXT, MD, or EPUB.' };
+  if (!allowed) return { ok: false, reason: 'Unsupported file type. Use PDF, DOCX, TXT, MD, EPUB, or an image (JPG, PNG, WEBP, GIF, HEIC).' };
   if (file.size > MAX_SIZE) return { ok: false, reason: 'File is too large. Maximum is 20 MB.' };
   const ext = path.extname(file.originalname || '').toLowerCase();
   if (ext && !allowed.includes(ext)) {
@@ -59,6 +66,12 @@ function generateFilename(originalName) {
 }
 
 async function extractText(filePath, mimeType) {
+  // Images are read directly by the vision module in ai/routes.js.
+  // Return empty string so the upload flow doesn't fail.
+  if (mimeType && mimeType.indexOf('image/') === 0) {
+    return '';
+  }
+
   const ext = path.extname(filePath).toLowerCase();
 
   if (mimeType === 'text/plain' || mimeType === 'text/markdown'

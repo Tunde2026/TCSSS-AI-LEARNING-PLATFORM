@@ -500,6 +500,83 @@
     .badge-card__footer { font-size: 0.52rem !important; padding-top: 6px !important; }
   }
   /* ========== END FORCED ========== */
+
+  /* ========== HERO REWORK — shorter + animated background ========== */
+  .badge-hero {
+    padding: 26px 24px 24px !important;
+    min-height: 0 !important;
+    position: relative;
+    overflow: hidden;
+  }
+  .badge-hero__logo {
+    width: 0px !important;
+    height: 0px !important;
+    margin-bottom: 0px !important;
+  }
+  .badge-hero__title {
+    margin-bottom: 6px !important;
+    font-size: clamp(1.4rem, 3vw, 1.95rem) !important;
+    line-height: 1.15 !important;
+  }
+  .badge-hero__sub {
+    margin-bottom: 16px !important;
+    font-size: 0.92rem !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Background video layer — blended with the gradient */
+  .hero-bg-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.22;
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 1;
+    filter: saturate(1.4) contrast(1.15);
+  }
+  /* Soft color wash on top of the video so text stays legible */
+  .hero-bg-wash {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 18% 12%, rgba(201,149,46,0.30), transparent 45%),
+      radial-gradient(circle at 82% 88%, rgba(230,17,30,0.22), transparent 45%),
+      linear-gradient(180deg, rgba(17,16,74,0.10), rgba(17,16,74,0.55));
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 2;
+  }
+  /* Content sits above both layers */
+  .badge-hero > *:not(.hero-bg-video):not(.hero-bg-wash) {
+    position: relative;
+    z-index: 3;
+  }
+  /* Slow motion gradient already exists — this kicks it a bit more */
+  @keyframes heroPan {
+    0%,100% { background-position: 0% 50%; }
+    33%     { background-position: 50% 100%; }
+    66%     { background-position: 100% 0%; }
+    100%    { background-position: 0% 50%; }
+  }
+  .badge-hero {
+    background-size: 400% 400% !important;
+    animation-duration: 22s !important;
+  }
+  /* ========== END HERO REWORK ========== */
+
+  /* extra tightening for badge hero */
+  .badge-hero__eyebrow { margin-bottom: 10px !important; }
+  .badge-stats { gap: 8px !important; }
+  .badge-stat { padding: 12px 12px !important; }
+  .badge-stat__num { font-size: 1.35rem !important; }
+  @media (max-width: 640px) {
+    .badge-hero { padding: 20px 16px 18px !important; }
+    .badge-hero__title { font-size: 1.25rem !important; }
+    .badge-hero__sub { font-size: 0.85rem !important; margin-bottom: 14px !important; }
+  }
 </style>
 </head>
 <body>
@@ -512,6 +589,10 @@
 
           <!-- ============== HERO STATS ============== -->
           <section class="badge-hero">
+            <video class="hero-bg-video" autoplay loop muted playsinline preload="metadata">
+              <source src="about:blank" type="video/mp4">
+            </video>
+            <div class="hero-bg-wash" aria-hidden="true"></div>
             <div class="badge-hero__orb badge-hero__orb--1" aria-hidden="true"></div>
             <div class="badge-hero__orb badge-hero__orb--2" aria-hidden="true"></div>
 
@@ -561,7 +642,36 @@
           </section>
 
           <!-- ============== BADGE SECTIONS ============== -->
-          <div id="badge-sections">
+          
+          <!-- ================= FEATURED VIDEO ================= -->
+          <section class="video-section reveal">
+            <div class="video-section__head">
+              <div class="video-section__eyebrow">
+                <i class="fa-solid fa-fire" aria-hidden="true"></i>
+                Stay motivated
+              </div>
+              <h2 class="video-section__title">How to earn every badge</h2>
+              <p class="video-section__sub">
+                A short walkthrough of the streaks, badges, and milestones — and how
+                to unlock them by studying a little every day.
+              </p>
+            </div>
+            <div class="video-frame" id="featured-video">
+              <div class="video-frame__placeholder">
+                <div class="video-frame__orb video-frame__orb--1" aria-hidden="true"></div>
+                <div class="video-frame__orb video-frame__orb--2" aria-hidden="true"></div>
+                <div class="video-frame__orb video-frame__orb--3" aria-hidden="true"></div>
+                <div class="video-frame__grid" aria-hidden="true"></div>
+                <div class="video-frame__play">
+                  <i class="fa-solid fa-play" aria-hidden="true"></i>
+                </div>
+                <div class="video-frame__caption">Badge guide coming soon</div>
+                <div class="video-frame__note">Admins can set a video URL in settings</div>
+              </div>
+            </div>
+          </section>
+
+<div id="badge-sections">
             <div class="badge-loading">
               <i class="fa-solid fa-spinner fa-spin"></i>
               Loading your achievements…
@@ -766,5 +876,155 @@
   })();
 })();
 </script>
+
+<script>
+(function () {
+  'use strict';
+  var frame = document.getElementById('featured-video');
+  if (!frame) return;
+
+  function videoExt(u) {
+    var m = u.match(/\.(mp4|webm|ogg|mov)(\?|$)/i);
+    return m ? m[1].toLowerCase() : null;
+  }
+
+  async function loadVideo() {
+    try {
+      var res = await fetch('/api/platform/info', { credentials: 'include' });
+      if (!res.ok) return;
+      var data = await res.json();
+      var url = data.demoVideoUrl;
+      if (!url) return;
+
+      var ext = videoExt(url);
+      if (ext) {
+        frame.innerHTML =
+          '<video controls autoplay muted loop playsinline preload="metadata">' +
+            '<source src="' + url.replace(/"/g, '&quot;') + '" type="video/' + ext + '">' +
+          '</video>';
+      } else {
+        frame.innerHTML =
+          '<iframe src="' + url.replace(/"/g, '&quot;') + '" ' +
+                  'allow="autoplay; encrypted-media; picture-in-picture; fullscreen" ' +
+                  'allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+      }
+    } catch (_) {}
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadVideo);
+  } else {
+    loadVideo();
+  }
+})();
+</script>
+
+<!-- GIF-LOADER-START -->
+<script>
+(function () {
+  'use strict';
+  var frame = document.getElementById('featured-video');
+  if (!frame) return;
+
+  function showLoading() {
+    frame.innerHTML =
+      '<div class="video-frame__placeholder">' +
+        '<div class="video-frame__orb video-frame__orb--1" aria-hidden="true"></div>' +
+        '<div class="video-frame__orb video-frame__orb--2" aria-hidden="true"></div>' +
+        '<div class="video-frame__orb video-frame__orb--3" aria-hidden="true"></div>' +
+        '<div class="video-frame__grid" aria-hidden="true"></div>' +
+        '<div class="video-frame__play">' +
+          '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>' +
+        '</div>' +
+        '<div class="video-frame__caption">Loading animation…</div>' +
+        '<div class="video-frame__note">Powered by Giphy</div>' +
+      '</div>';
+  }
+
+  function showGif(gif) {
+    var img = document.createElement('img');
+    img.alt = gif.title || 'Animated illustration';
+    img.loading = 'lazy';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;background:#11104A;';
+    img.onerror = function () {
+      frame.innerHTML = '<div class="video-frame__placeholder">' +
+        '<div class="video-frame__orb video-frame__orb--1" aria-hidden="true"></div>' +
+        '<div class="video-frame__orb video-frame__orb--2" aria-hidden="true"></div>' +
+        '<div class="video-frame__play"><i class="fa-solid fa-play"></i></div>' +
+        '<div class="video-frame__caption">Animation unavailable</div>' +
+      '</div>';
+    };
+    img.src = gif.url;
+    frame.innerHTML = '';
+    frame.appendChild(img);
+    if (gif.webUrl) {
+      frame.style.cursor = 'pointer';
+      frame.onclick = function () {
+        window.open(gif.webUrl, '_blank', 'noopener');
+      };
+    }
+  }
+
+  function showFallback() {
+    frame.innerHTML = '<div class="video-frame__placeholder">' +
+      '<div class="video-frame__orb video-frame__orb--1" aria-hidden="true"></div>' +
+      '<div class="video-frame__orb video-frame__orb--2" aria-hidden="true"></div>' +
+      '<div class="video-frame__orb video-frame__orb--3" aria-hidden="true"></div>' +
+      '<div class="video-frame__grid" aria-hidden="true"></div>' +
+      '<div class="video-frame__play"><i class="fa-solid fa-play" aria-hidden="true"></i></div>' +
+      '<div class="video-frame__caption">Animation coming soon</div>' +
+      '<div class="video-frame__note">Add GIPHY_API_KEY in Render to enable live animations</div>' +
+    '</div>';
+  }
+
+  async function loadGif() {
+    showLoading();
+    try {
+      var res = await fetch('/api/platform/gif', { credentials: 'include' });
+      if (!res.ok) { showFallback(); return; }
+      var data = await res.json();
+      if (!data.gif || !data.gif.url) { showFallback(); return; }
+      showGif(data.gif);
+    } catch (_) { showFallback(); }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadGif);
+  } else {
+    loadGif();
+  }
+})();
+</script>
+<!-- GIF-LOADER-END -->
+
+
+  <!-- Hero background video (loaded dynamically from Giphy) -->
+  <script>
+  (function () {
+    'use strict';
+    var video = document.querySelector('.hero-bg-video');
+    if (!video) return;
+
+    // Ask the backend for one random video
+    fetch('/api/theme/hero-video', { credentials: 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.url) return;
+        var source = video.querySelector('source');
+        if (source) source.src = data.url;
+        else {
+          source = document.createElement('source');
+          source.src = data.url;
+          source.type = 'video/mp4';
+          video.appendChild(source);
+        }
+        video.load();
+        var playPromise = video.play();
+        if (playPromise && playPromise.catch) playPromise.catch(function () {});
+      })
+      .catch(function () { /* fallback URL still plays */ });
+  })();
+  </script>
+
 </body>
 </html>

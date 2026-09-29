@@ -7,7 +7,7 @@ const { pool } = require('../pool');
 async function findById(id) {
   const { rows } = await pool.query(
     `SELECT id, name, email, role, suspended, suspended_at,
-            suspended_reason, is_protected, verified, created_at
+            suspended_reason, created_at
        FROM users WHERE id = $1`,
     [id]
   );
@@ -17,7 +17,7 @@ async function findById(id) {
 async function findByEmail(email) {
   const { rows } = await pool.query(
     `SELECT id, name, email, role, password_hash, suspended,
-            suspended_at, suspended_reason, is_protected, verified, created_at
+            suspended_at, suspended_reason, created_at
        FROM users WHERE email = $1`,
     [email.toLowerCase()]
   );
@@ -37,7 +37,7 @@ async function create({ name, email, passwordHash, role = 'student' }) {
 async function listAll() {
   const { rows } = await pool.query(
     `SELECT id, name, email, role, suspended, suspended_at,
-            suspended_reason, created_at, is_protected, verified
+            suspended_reason, created_at
        FROM users
       ORDER BY created_at DESC`
   );
@@ -193,36 +193,8 @@ async function getActivity(userId, { limit = 40 } = {}) {
   return items.slice(0, limit);
 }
 
-
-async function listAllWithStats() {
-  try {
-    const { rows } = await pool.query(
-      `SELECT u.id, u.name, u.email, u.role, u.suspended, u.suspended_at,
-              u.suspended_reason, u.created_at, u.is_protected, u.verified,
-              COALESCE(s.current_streak, 0) AS current_streak,
-              COALESCE(s.longest_streak, 0) AS longest_streak,
-              COALESCE(b.cnt, 0) AS badge_count
-         FROM users u
-         LEFT JOIN user_streaks s ON s.user_id = u.id
-         LEFT JOIN (
-           SELECT user_id, COUNT(*)::int AS cnt
-             FROM user_badges GROUP BY user_id
-         ) b ON b.user_id = u.id
-        ORDER BY u.created_at DESC`
-    );
-    return rows;
-  } catch (err) {
-    const { rows } = await pool.query(
-      `SELECT id, name, email, role, suspended, suspended_at,
-              suspended_reason, created_at, is_protected, verified
-         FROM users ORDER BY created_at DESC`
-    );
-    return rows;
-  }
-}
-
 module.exports = {
-  findById, findByEmail, create, listAll, listAllWithStats,
+  findById, findByEmail, create, listAll,
   updateRole, updatePassword, setSuspended, remove,
   countAll, countAdmins, countStudents, countNewSince,
   getActivity,

@@ -455,56 +455,30 @@ router.post('/chat', requireLogin, async (req, res, next) => {
     let visionHandled = false;
 
     // ---- Vision path: if any attachment is an image, use OpenAI vision ----
-    /* duplicate removed */
     if (Array.isArray(attachmentIds) && attachmentIds.length) {
       try {
         const attRows = await db.pool.query(
           'SELECT * FROM chat_attachments WHERE id = ANY($1::uuid[]) AND user_id = $2',
           [attachmentIds, req.user.id]
         );
-
-        if (attRows.rows.length) {
-          logger.info('[ai/chat] attachment columns: ' + Object.keys(attRows.rows[0]).join(','));
-        } else {
-          logger.warn('[ai/chat] no attachment rows for ids: ' + JSON.stringify(attachmentIds));
-        }
-
-        // Tolerant accessors for whatever column names the schema uses
-        function mimeOf(a) {
-          return a.mime_type || a.mimetype || a.mimeType || a.content_type || '';
-        }
-        function pathOf(a) {
-          return a.storage_path || a.file_path || a.filepath || a.path || a.absolute_path || '';
-        }
-
         const imageAtts = attRows.rows.filter(function (a) {
-          return String(mimeOf(a)).indexOf('image/') === 0;
+          return a.mime_type && a.mime_type.indexOf('image/') === 0;
         });
-
-        logger.info('[ai/chat] vision: ' + imageAtts.length + ' of ' +
-                    attRows.rows.length + ' attachment(s) are images');
-
         if (imageAtts.length) {
           const images = [];
           for (const a of imageAtts) {
-            const mime = mimeOf(a) || 'image/jpeg';
-            const filePath = pathOf(a);
-            if (!filePath) {
-              logger.warn('[ai/chat] vision: no path field on attachment ' + a.id);
-              continue;
-            }
+            const filePath = a.storage_path || a.file_path || a.path;
+            if (!filePath) continue;
             try {
               const buf = fsx.readFileSync(filePath);
-              images.push({ mimetype: mime, base64: buf.toString('base64') });
-              logger.info('[ai/chat] vision: loaded image ' + filePath + ' (' + buf.length + ' bytes)');
+              images.push({ mimetype: a.mime_type, base64: buf.toString('base64') });
             } catch (e) {
-              logger.warn('[ai/chat] vision: cannot read ' + filePath + ' — ' + e.message);
+              logger.warn('[ai/chat] could not read image ' + filePath + ': ' + e.message);
             }
           }
-
           if (images.length) {
             const v = await vision.describeImages({
-              userText: lastUser.content || 'Look at this image and explain what it shows.',
+              userText: lastUser.content,
               images: images,
             });
             if (v.ok) {
@@ -514,19 +488,8 @@ router.post('/chat', requireLogin, async (req, res, next) => {
               visionHandled = true;
               logger.info('[ai/chat] answered by vision (' + v.model + ')');
             } else {
-              logger.warn('[ai/chat] vision failed code=' + v.code + ' detail=' + (v.detail || '(none)'));
-              // IMPORTANT: don't let the AI hallucinate — return a direct message.
-              result = {
-                text: "I could not read that image just now. Please try uploading it again, or describe it in text and I'll help.",
-                provider: 'vision-fallback',
-                attempts: [],
-              };
-              toolResult.tools = [];
-              toolResult.injectedContext = [];
-              visionHandled = true;
+              logger.warn('[ai/chat] vision failed (' + v.code + ') — using text gateway');
             }
-          } else {
-            logger.warn('[ai/chat] vision: could not read any images off disk');
           }
         }
       } catch (err) {

@@ -2,7 +2,7 @@ module.exports = {
   id: 'google',
   supportsTools: true,  // OpenAI-compat endpoint
   baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
-  model: 'gemini-3.8-flash',
+  model: 'gemini-2.5-flash',
   timeoutMs: 25000,
   keys: [process.env.GOOGLE_KEY_1].filter(Boolean),
 };

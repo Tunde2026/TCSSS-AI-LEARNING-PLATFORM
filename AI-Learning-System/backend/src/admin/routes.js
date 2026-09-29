@@ -35,6 +35,28 @@ const backupUpload = multer({
 // USERS
 // ============================================================
 
+
+router.get('/users/stats', requireAdmin, async (req, res, next) => {
+  try {
+    async function countWhere(sql) {
+      try {
+        const rr = await db.pool.query(sql);
+        return rr.rows[0].n || 0;
+      } catch (_) { return 0; }
+    }
+    const [total, admins, students, newWeek, suspended, verified, protectedN] = await Promise.all([
+      db.users.countAll(),
+      db.users.countAdmins(),
+      db.users.countStudents(),
+      db.users.countNewSince(7),
+      countWhere("SELECT COUNT(*)::int AS n FROM users WHERE suspended = TRUE"),
+      countWhere("SELECT COUNT(*)::int AS n FROM users WHERE verified = TRUE"),
+      countWhere("SELECT COUNT(*)::int AS n FROM users WHERE is_protected = TRUE"),
+    ]);
+    res.json({ total, admins, students, newWeek, suspended, verified, protected: protectedN });
+  } catch (err) { next(err); }
+});
+
 router.get('/users', requireAdmin, async (req, res, next) => {
   try { res.json({ users: await service.listUsers() }); }
   catch (err) { next(err); }
