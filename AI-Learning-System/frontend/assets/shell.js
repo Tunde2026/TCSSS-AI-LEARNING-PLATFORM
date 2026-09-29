@@ -180,6 +180,7 @@
     { href: 'audit.html',     icon: 'fa-clipboard-list', label: 'Audit'  },
     { href: 'backup.html',    icon: 'fa-database',    label: 'Backup'    },
     { href: 'announcements.html', icon: 'fa-bullhorn', label: 'Announcements' },
+    { href: 'announcement-replies.html', icon: 'fa-comment-dots', label: 'Replies' },
     { href: 'settings.html',  icon: 'fa-gears',       label: 'Settings'  }
   ];
     var LAB_SECTIONS = [

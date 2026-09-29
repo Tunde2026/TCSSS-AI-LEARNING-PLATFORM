@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Announcement Replies — Admin</title>
+<link rel="stylesheet" href="../assets/shell.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
+<style>
+  main.page .page-scroll { padding: 16px 20px 40px !important; }
+  main.page .page-inner { max-width: 1200px !important; width: 100% !important; margin: 0 auto !important; padding: 0 !important; }
+
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .chip {
+    padding: 7px 14px; border-radius: 999px;
+    border: 1.5px solid var(--border); background: var(--white);
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 600;
+    color: var(--navy); cursor: pointer;
+    transition: background 150ms, border-color 150ms;
+  }
+  .chip:hover { background: var(--blush); }
+  .chip.is-active { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .chip__count {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 7px;
+    background: rgba(255,255,255,0.22);
+    border-radius: 999px;
+    font-family: var(--font-ui); font-size: 0.62rem;
+    font-weight: 700;
+  }
+  .chip.is-active .chip__count { background: rgba(255,255,255,0.3); }
+
+  .reply-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 16px 18px;
+    margin-bottom: 10px;
+    display: flex; gap: 14px;
+    transition: border-color 200ms, box-shadow 200ms;
+    position: relative;
+  }
+  .reply-card:hover { border-color: var(--gold); box-shadow: 0 6px 18px rgba(17,16,74,0.06); }
+  .reply-card.is-unread { border-left: 4px solid var(--red); }
+  .reply-card.is-archived { opacity: 0.7; }
+
+  .reply-card__check {
+    width: 20px; height: 20px; margin-top: 3px;
+    accent-color: var(--red); flex-shrink: 0;
+    cursor: pointer;
+  }
+  .reply-card__body { flex: 1; min-width: 0; }
+  .reply-card__head {
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap; margin-bottom: 10px;
+  }
+  .reply-card__who { font-family: var(--font-head); font-size: 0.96rem; font-weight: 600; color: var(--navy); }
+  .reply-card__email { font-family: var(--font-ui); font-size: 0.68rem; color: var(--slate); }
+  .reply-card__time { font-family: var(--font-ui); font-size: 0.66rem; color: var(--slate); margin-left: auto; }
+
+  .badge-pill {
+    font-family: var(--font-ui); font-size: 0.58rem; letter-spacing: 0.06em;
+    text-transform: uppercase; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge-pill--unread { background: var(--red); color: #fff; }
+  .badge-pill--verified { background: #ECEBF5; color: var(--navy); }
+  .badge-pill--protected { background: #FBF3E1; color: #6A4F13; border: 1px solid rgba(201,149,46,0.4); }
+  .badge-pill--archived { background: var(--blush); color: var(--slate); }
+  .badge-pill--urgent { background: #FDECEC; color: var(--deep-red); }
+  .badge-pill--important { background: #FBF3E1; color: #6A4F13; }
+
+  .reply-card__ann {
+    font-size: 0.82rem; color: var(--slate); margin-bottom: 8px;
+    padding-left: 10px; border-left: 3px solid var(--gold);
+    line-height: 1.4;
+  }
+  .reply-card__ann strong { color: var(--navy); font-weight: 600; }
+
+  .reply-card__text {
+    font-size: 0.92rem; color: var(--ink); line-height: 1.6;
+    white-space: pre-wrap; word-wrap: break-word;
+    padding: 12px 14px; background: var(--blush);
+    border-radius: 10px; margin: 0;
+  }
+
+  .reply-card__actions {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .action-btn {
+    padding: 6px 12px; border-radius: 999px;
+    border: 1.5px solid var(--border); background: var(--white);
+    color: var(--navy); font-family: var(--font-body);
+    font-size: 0.76rem; font-weight: 600;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    transition: background 150ms, border-color 150ms;
+  }
+  .action-btn:hover { background: var(--blush); border-color: var(--navy); }
+  .action-btn--danger { color: var(--deep-red); border-color: #F3C5C5; }
+  .action-btn--danger:hover { background: #FDECEC; border-color: var(--red); }
+  .action-btn.is-done { background: #EAF7EE; color: #2F8F4A; border-color: #B9DDC3; }
+
+  /* Bulk bar */
+  .bulk-bar {
+    display: none; align-items: center; gap: 10px;
+    padding: 10px 16px; background: var(--navy); color: #fff;
+    border-radius: 12px; margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .bulk-bar.is-visible { display: flex; }
+  .bulk-bar strong { font-family: var(--font-ui); }
+  .bulk-bar .action-btn { background: rgba(255,255,255,0.14); color: #fff; border-color: rgba(255,255,255,0.2); }
+  .bulk-bar .action-btn:hover { background: rgba(255,255,255,0.22); }
+  .bulk-bar__close { margin-left: auto; background: transparent; border: none; color: #fff; cursor: pointer; font-size: 0.9rem; }
+
+  .empty-state {
+    padding: 60px 24px; text-align: center;
+    background: var(--white); border: 1.5px dashed var(--border);
+    border-radius: 14px; color: var(--slate);
+  }
+  .empty-state i { font-size: 2rem; color: var(--gold); display: block; margin-bottom: 12px; }
+  .empty-state__title { font-family: var(--font-head); font-size: 1.1rem; color: var(--navy); margin: 0 0 6px; }
+
+  .ann-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: #fff; padding: 12px 22px; border-radius: 999px;
+    font-size: 0.9rem; z-index: 500; box-shadow: 0 12px 32px rgba(17,16,74,0.35); }
+  .ann-toast--error { background: var(--deep-red); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div id="sidebar-mount"></div>
+    <main class="page">
+      <div class="page-scroll">
+        <div class="page-inner">
+
+          <header class="page-header">
+            <div>
+              <h1 class="page-header__title">Announcement Replies</h1>
+              <p class="page-header__sub">Messages students have sent back in response to your announcements.</p>
+            </div>
+          </header>
+
+          <div class="toolbar">
+            <button class="chip is-active" data-filter="inbox" type="button">
+              <i class="fa-solid fa-inbox"></i> Inbox
+            </button>
+            <button class="chip" data-filter="unread" type="button">
+              <i class="fa-solid fa-envelope"></i> Unread
+              <span class="chip__count" id="count-unread">0</span>
+            </button>
+            <button class="chip" data-filter="archived" type="button">
+              <i class="fa-solid fa-box-archive"></i> Archived
+            </button>
+            <button class="chip" data-filter="all" type="button">
+              <i class="fa-solid fa-layer-group"></i> All
+            </button>
+            <button class="chip" id="refresh-btn" type="button" style="margin-left:auto">
+              <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+          </div>
+
+          <div class="bulk-bar" id="bulk-bar">
+            <span><strong id="bulk-count">0</strong> selected</span>
+            <button class="action-btn" data-bulk="read" type="button">Mark read</button>
+            <button class="action-btn" data-bulk="unread" type="button">Mark unread</button>
+            <button class="action-btn" data-bulk="archive" type="button">Archive</button>
+            <button class="action-btn" data-bulk="delete" type="button" style="color:#F3C5C5">Delete</button>
+            <button class="bulk-bar__close" id="bulk-clear" type="button" title="Clear">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div id="replies-list">
+            <div class="empty-state">
+              <i class="fa-solid fa-spinner fa-spin"></i>
+              <p class="empty-state__title">Loading…</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script src="../assets/shell.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var currentFilter = 'inbox';
+  var replies = [];
+  var selected = {};
+  var currentUser = null;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function toast(msg, isError) {
+    var t = document.createElement('div');
+    t.className = 'ann-toast' + (isError ? ' ann-toast--error' : '');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2400);
+  }
+  function fmtDateTime(iso) {
+    try {
+      return new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch (_) { return ''; }
+  }
+
+  async function guard() {
+    var res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (res.status === 401) { window.location.href = '../index.html'; return false; }
+    var d = await res.json();
+    if (!d.user || d.user.role !== 'admin') { window.location.href = '../chat.html'; return false; }
+    currentUser = d.user;
+    return true;
+  }
+
+  async function load() {
+    var url = '/api/admin/announcements/replies?filter=' + encodeURIComponent(currentFilter);
+    var res = await fetch(url, { credentials: 'include' });
+    if (!res.ok) {
+      document.getElementById('replies-list').innerHTML =
+        '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p class="empty-state__title">Could not load replies</p></div>';
+      return;
+    }
+    var data = await res.json();
+    replies = data.replies || [];
+    render();
+    loadUnreadCount();
+  }
+
+  async function loadUnreadCount() {
+    try {
+      var res = await fetch('/api/admin/announcements/replies/unread/count', { credentials: 'include' });
+      if (!res.ok) return;
+      var d = await res.json();
+      document.getElementById('count-unread').textContent = d.unread || 0;
+    } catch (_) {}
+  }
+
+  function render() {
+    var wrap = document.getElementById('replies-list');
+    if (!replies.length) {
+      wrap.innerHTML =
+        '<div class="empty-state"><i class="fa-solid fa-inbox"></i>' +
+        '<p class="empty-state__title">No replies ' + (currentFilter === 'archived' ? 'archived' : 'yet') + '</p>' +
+        '<p style="margin:6px 0 0;font-size:0.88rem">Students can reply from any announcement popup.</p></div>';
+      updateBulkBar();
+      return;
+    }
+
+    wrap.innerHTML = replies.map(function (r) {
+      var unreadCls   = !r.admin_read ? ' is-unread' : '';
+      var archCls     = r.admin_archived ? ' is-archived' : '';
+      var priorityTag = r.announcement_priority && r.announcement_priority !== 'normal'
+        ? '<span class="badge-pill badge-pill--' + esc(r.announcement_priority) + '">' + esc(r.announcement_priority) + '</span>'
+        : '';
+      var verifiedTag = r.user_verified ? '<span class="badge-pill badge-pill--verified"><i class="fa-solid fa-circle-check"></i> Verified</span>' : '';
+      var protectedTag= r.user_protected ? '<span class="badge-pill badge-pill--protected"><i class="fa-solid fa-shield-halved"></i> Protected</span>' : '';
+      var unreadTag   = !r.admin_read ? '<span class="badge-pill badge-pill--unread">New</span>' : '';
+      var archiveTag  = r.admin_archived ? '<span class="badge-pill badge-pill--archived">Archived</span>' : '';
+
+      return '<div class="reply-card' + unreadCls + archCls + '" data-id="' + r.id + '">' +
+        '<input type="checkbox" class="reply-card__check" data-check="' + r.id + '"' + (selected[r.id] ? ' checked' : '') + '>' +
+        '<div class="reply-card__body">' +
+          '<div class="reply-card__head">' +
+            '<span class="reply-card__who">' + esc(r.user_name || 'Student') + '</span>' +
+            '<span class="reply-card__email">' + esc(r.user_email) + '</span>' +
+            verifiedTag + protectedTag + unreadTag + archiveTag +
+            '<span class="reply-card__time">' + fmtDateTime(r.created_at) + '</span>' +
+          '</div>' +
+          '<div class="reply-card__ann">' +
+            '<strong>Re: ' + esc(r.announcement_title) + '</strong> ' + priorityTag +
+          '</div>' +
+          '<p class="reply-card__text">' + esc(r.body) + '</p>' +
+          '<div class="reply-card__actions">' +
+            '<button class="action-btn" data-act="copy" data-id="' + r.id + '"><i class="fa-solid fa-copy"></i> Copy</button>' +
+            '<button class="action-btn" data-act="toggle-read" data-id="' + r.id + '"><i class="fa-solid ' + (r.admin_read ? 'fa-envelope' : 'fa-envelope-open') + '"></i> Mark ' + (r.admin_read ? 'unread' : 'read') + '</button>' +
+            '<button class="action-btn" data-act="' + (r.admin_archived ? 'unarchive' : 'archive') + '" data-id="' + r.id + '"><i class="fa-solid fa-box-archive"></i> ' + (r.admin_archived ? 'Unarchive' : 'Archive') + '</button>' +
+            '<button class="action-btn action-btn--danger" data-act="delete" data-id="' + r.id + '"><i class="fa-solid fa-trash"></i> Delete</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    /* Wire checkboxes */
+    wrap.querySelectorAll('[data-check]').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        var id = cb.getAttribute('data-check');
+        if (cb.checked) selected[id] = true; else delete selected[id];
+        cb.closest('.reply-card').classList.toggle('is-archived', false);
+        updateBulkBar();
+      });
+    });
+
+    /* Wire actions */
+    wrap.querySelectorAll('[data-act]').forEach(function (btn) {
+      btn.addEventListener('click', async function () {
+        var act = btn.getAttribute('data-act');
+        var id = btn.getAttribute('data-id');
+        var r = replies.find(function (x) { return x.id === id; });
+        if (!r) return;
+
+        if (act === 'copy') {
+          var text = 'From: ' + r.user_name + ' <' + r.user_email + '>\n' +
+                     'Re: ' + r.announcement_title + '\n' +
+                     'Sent: ' + fmtDateTime(r.created_at) + '\n\n' +
+                     r.body;
+          navigator.clipboard.writeText(text).then(function () {
+            btn.classList.add('is-done');
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+            setTimeout(function () {
+              btn.classList.remove('is-done');
+              btn.innerHTML = '<i class="fa-solid fa-copy"></i> Copy';
+            }, 1600);
+          });
+          return;
+        }
+
+        if (act === 'toggle-read') {
+          var newRead = !r.admin_read;
+          var res = await fetch('/api/admin/announcements/replies/' + id + '/read', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ read: newRead }),
+          });
+          if (!res.ok) { toast('Could not update', true); return; }
+          r.admin_read = newRead;
+          render(); loadUnreadCount();
+          return;
+        }
+
+        if (act === 'archive' || act === 'unarchive') {
+          var newArch = act === 'archive';
+          var res2 = await fetch('/api/admin/announcements/replies/' + id + '/archive', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ archived: newArch }),
+          });
+          if (!res2.ok) { toast('Could not update', true); return; }
+          r.admin_archived = newArch;
+          if (currentFilter === 'inbox' && newArch) {
+            replies = replies.filter(function (x) { return x.id !== id; });
+          }
+          render();
+          toast(newArch ? 'Archived' : 'Unarchived');
+          return;
+        }
+
+        if (act === 'delete') {
+          if (!confirm('Delete this reply permanently?')) return;
+          var res3 = await fetch('/api/admin/announcements/replies/' + id, {
+            method: 'DELETE', credentials: 'include',
+          });
+          if (!res3.ok) { toast('Could not delete', true); return; }
+          replies = replies.filter(function (x) { return x.id !== id; });
+          render();
+          toast('Deleted');
+        }
+      });
+    });
+
+    updateBulkBar();
+  }
+
+  function updateBulkBar() {
+    var n = Object.keys(selected).filter(function (k) { return selected[k]; }).length;
+    document.getElementById('bulk-count').textContent = n;
+    document.getElementById('bulk-bar').classList.toggle('is-visible', n > 0);
+  }
+
+  /* Wire filter chips */
+  document.querySelectorAll('.toolbar .chip').forEach(function (chip) {
+    if (!chip.getAttribute('data-filter')) return;
+    chip.addEventListener('click', function () {
+      document.querySelectorAll('.toolbar .chip[data-filter]').forEach(function (c) { c.classList.remove('is-active'); });
+      chip.classList.add('is-active');
+      currentFilter = chip.getAttribute('data-filter');
+      selected = {};
+      load();
+    });
+  });
+
+  document.getElementById('refresh-btn').addEventListener('click', load);
+
+  document.getElementById('bulk-clear').addEventListener('click', function () {
+    selected = {};
+    render();
+  });
+
+  document.querySelectorAll('[data-bulk]').forEach(function (btn) {
+    btn.addEventListener('click', async function () {
+      var ids = Object.keys(selected).filter(function (k) { return selected[k]; });
+      if (!ids.length) return;
+      var action = btn.getAttribute('data-bulk');
+      if (action === 'delete' && !confirm('Delete ' + ids.length + ' reply(s)? This cannot be undone.')) return;
+      var res = await fetch('/api/admin/announcements/replies/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ids: ids, action: action }),
+      });
+      if (!res.ok) { toast('Bulk action failed', true); return; }
+      selected = {};
+      await load();
+      toast('Updated ' + ids.length + ' reply(s).');
+    });
+  });
+
+  (async function init() {
+    if (!(await guard())) return;
+    await load();
+  })();
+})();
+</script>
+</body>
+</html>

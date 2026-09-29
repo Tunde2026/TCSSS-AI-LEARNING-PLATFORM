@@ -36,4 +36,36 @@ router.post('/:id/dismiss', requireLogin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+
+// Student submits a reply to an announcement
+router.post('/:id/reply', requireLogin, async (req, res, next) => {
+  try {
+    const db = require('../db');
+    const body = String((req.body && req.body.body) || '').trim();
+
+    if (!body) return res.status(400).json({ error: 'Reply cannot be empty.' });
+    if (body.length > 2000) return res.status(400).json({ error: 'Reply is too long (2000 char max).' });
+
+    const ann = await db.announcements.findById(req.params.id);
+    if (!ann) return res.status(404).json({ error: 'Announcement not found.' });
+
+    const reply = await db.announcementReplies.create({
+      announcementId: req.params.id,
+      userId: req.user.id,
+      body,
+    });
+
+    res.status(201).json({ reply });
+  } catch (err) { next(err); }
+});
+
+// Student sees their own replies on an announcement
+router.get('/:id/my-replies', requireLogin, async (req, res, next) => {
+  try {
+    const db = require('../db');
+    const replies = await db.announcementReplies.listMineForAnnouncement(req.user.id, req.params.id);
+    res.json({ replies });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

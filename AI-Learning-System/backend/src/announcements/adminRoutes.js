@@ -56,6 +56,97 @@ router.delete('/:id', requireAdmin, async (req, res, next) => {
 });
 
 /* ---------- Viewers ---------- */
+
+/* ============================================================
+   ANNOUNCEMENT REPLIES — admin inbox
+   ============================================================ */
+
+router.get('/replies', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await db.announcementReplies.listAll({
+      filter: req.query.filter || 'inbox',
+      limit: req.query.limit,
+      offset: req.query.offset,
+    });
+    res.json(result);
+  } catch (err) { next(err); }
+});
+
+router.get('/replies/unread/count', requireAdmin, async (req, res, next) => {
+  try {
+    const unread = await db.announcementReplies.countUnread();
+    res.json({ unread });
+  } catch (err) { next(err); }
+});
+
+router.get('/:id/replies', requireAdmin, async (req, res, next) => {
+  try {
+    const announcement = await service.getById(req.params.id);
+    if (!announcement) return res.status(404).json({ error: 'Not found' });
+    const replies = await db.announcementReplies.listForAnnouncement(req.params.id, {
+      includeArchived: req.query.archived === '1',
+    });
+    res.json({ announcement, replies });
+  } catch (err) { next(err); }
+});
+
+router.patch('/replies/:id/read', requireAdmin, async (req, res, next) => {
+  try {
+    const read = req.body && req.body.read !== undefined ? !!req.body.read : true;
+    const updated = await db.announcementReplies.setRead(req.params.id, read);
+    if (!updated) return res.status(404).json({ error: 'Not found' });
+    await audit.log({
+      req, action: 'announcement_reply.mark_read',
+      targetType: 'announcement_reply', targetId: req.params.id,
+      details: { read },
+    });
+    res.json({ reply: updated });
+  } catch (err) { next(err); }
+});
+
+router.patch('/replies/:id/archive', requireAdmin, async (req, res, next) => {
+  try {
+    const archived = req.body && req.body.archived !== undefined ? !!req.body.archived : true;
+    const updated = await db.announcementReplies.setArchived(req.params.id, archived);
+    if (!updated) return res.status(404).json({ error: 'Not found' });
+    await audit.log({
+      req, action: archived ? 'announcement_reply.archive' : 'announcement_reply.unarchive',
+      targetType: 'announcement_reply', targetId: req.params.id,
+    });
+    res.json({ reply: updated });
+  } catch (err) { next(err); }
+});
+
+router.delete('/replies/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const ok = await db.announcementReplies.softDelete(req.params.id);
+    if (!ok) return res.status(404).json({ error: 'Not found' });
+    await audit.log({
+      req, action: 'announcement_reply.delete',
+      targetType: 'announcement_reply', targetId: req.params.id,
+    });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+router.post('/replies/bulk', requireAdmin, async (req, res, next) => {
+  try {
+    const { ids, action } = req.body || {};
+    if (!Array.isArray(ids) || !ids.length) return res.status(400).json({ error: 'ids required' });
+    if (!['read', 'unread', 'archive', 'unarchive', 'delete'].includes(action)) {
+      return res.status(400).json({ error: 'invalid action' });
+    }
+    const affected = await db.announcementReplies.bulkAction(ids, action);
+    await audit.log({
+      req, action: 'announcement_reply.bulk_' + action,
+      targetType: 'announcement_reply',
+      details: { count: affected, ids: ids.slice(0, 20) },
+    });
+    res.json({ ok: true, affected });
+  } catch (err) { next(err); }
+});
+
+
 router.get('/:id/views', requireAdmin, async (req, res, next) => {
   try {
     const result = await service.listViewers(req.params.id);

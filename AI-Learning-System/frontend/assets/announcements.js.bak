@@ -104,12 +104,6 @@
       '.ann-bar--important .ann-bar__count{background:#9E7524;}',
 
       /* Mobile */
-      '.ann-reply-box{margin-top:14px;padding:12px 14px;background:#F4F2FB;border-left:3px solid #11104A;border-radius:8px;}',
-      '.ann-reply-box__label{font-family:var(--font-ui,monospace);font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:#11104A;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;}',
-      '.ann-reply-box__input{width:100%;min-height:64px;padding:10px 12px;border:1.5px solid #E5E3EE;border-radius:8px;font-family:var(--font-body,sans-serif);font-size:0.88rem;color:#1E1D3D;resize:vertical;outline:none;line-height:1.5;}',
-      '.ann-reply-box__input:focus{border-color:#C9952E;box-shadow:0 0 0 3px rgba(201,149,46,0.15);}',
-      '.ann-reply-row{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;}',
-      '.ann-reply-row__status{flex:1;font-size:0.78rem;color:#2F8F4A;align-self:center;}',
       '@media(max-width:600px){',
       '.ann-overlay{padding:0;align-items:flex-end;}',
       '.ann-popup{max-width:100%;border-radius:22px 22px 0 0;transform:translateY(100%);}',
@@ -181,8 +175,6 @@
           '<h2 class="ann-popup__title">' + esc(ann.title) + '</h2>' +
           '<div class="ann-popup__text md-content"></div>' +
         '</div>' +
-        replyBoxHtml(ann) +
-        '\n' +
         '<div class="ann-popup__foot">' +
           (ann.action_url && ann.action_label
             ? '<a class="ann-btn ann-btn--' + esc(ann.action_style || 'primary') +
@@ -198,7 +190,6 @@
       '</div>';
     document.body.appendChild(ov);
     renderBody(ann.body, ov.querySelector('.ann-popup__text'));
-    attachReplyBox(ov, ann);
 
     recordView(ann);
 
