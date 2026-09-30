@@ -8,673 +8,399 @@
 <link rel="stylesheet" href="assets/shell.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
 <style>
-  /* Full-width page */
-  main.page .page-scroll { padding: 24px 28px 56px; }
-  main.page .page-inner {
-    max-width: 1320px !important;
-    width: 100% !important;
-    margin: 0 auto;
-    padding: 0;
-  }
-  @media (max-width: 900px) {
-    main.page .page-scroll { padding: 16px 16px 40px; }
-  }
+  main.page .page-scroll { padding: 14px 18px 40px !important; }
+  main.page .page-inner { max-width: 1280px !important; width: 100% !important; padding: 0 !important; margin: 0 auto !important; }
+  @media (max-width: 900px) { main.page .page-scroll { padding: 10px 12px 28px !important; } }
 
-  /* ---------- Hero stats ---------- */
-  .badge-hero {
-    position: relative;
-    overflow: hidden;
-    border-radius: 24px;
-    padding: 36px 32px 32px;
-    margin-bottom: 32px;
+  /* ---------- HERO ---------- */
+  .bd-hero {
+    position: relative; overflow: hidden;
+    border-radius: 20px;
+    padding: 28px 26px 24px;
+    margin-bottom: 20px;
+    color: #fff;
     background: linear-gradient(135deg, #11104A 0%, #201F6B 40%, #3D1F5C 70%, #11104A 100%);
     background-size: 300% 300%;
-    animation: heroPan 16s ease infinite;
-    color: #fff;
-    box-shadow: 0 20px 50px rgba(17,16,74,0.28);
+    animation: heroPan 18s ease infinite;
+    box-shadow: 0 16px 40px rgba(17,16,74,0.28);
   }
-  @keyframes heroPan {
-    0%,100% { background-position: 0% 50%; }
-    50%     { background-position: 100% 50%; }
+  @keyframes heroPan { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .bd-hero::after {
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(circle at 15% 12%, rgba(201,149,46,0.22), transparent 45%),
+                radial-gradient(circle at 85% 88%, rgba(230,17,30,0.16), transparent 45%);
+    pointer-events:none;
   }
-  .badge-hero__orb {
-    position: absolute; border-radius: 50%;
-    filter: blur(70px); pointer-events: none;
-  }
-  .badge-hero__orb--1 {
-    width: 260px; height: 260px; background: #C9952E;
-    top: -90px; left: -60px; opacity: 0.36;
-    animation: orb1 18s ease-in-out infinite;
-  }
-  .badge-hero__orb--2 {
-    width: 220px; height: 220px; background: #E6111E;
-    bottom: -80px; right: -40px; opacity: 0.24;
-    animation: orb2 22s ease-in-out infinite;
-  }
-  @keyframes orb1 {
-    0%,100% { transform: translate(0,0) scale(1); }
-    50%     { transform: translate(30px,-20px) scale(1.12); }
-  }
-  @keyframes orb2 {
-    0%,100% { transform: translate(0,0) scale(1); }
-    50%     { transform: translate(-30px,20px) scale(1.15); }
-  }
-  .badge-hero > * { position: relative; z-index: 2; }
-
-  .badge-hero__eyebrow {
+  .bd-hero > * { position: relative; z-index: 1; }
+  .bd-hero__eyebrow {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 5px 14px; border-radius: 999px;
-    background: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.10);
     border: 1px solid rgba(255,255,255,0.18);
-    font-family: var(--font-ui); font-size: 0.62rem;
-    letter-spacing: 0.14em; text-transform: uppercase;
-    color: rgba(255,255,255,0.88);
-    margin-bottom: 16px;
-  }
-  .badge-hero__eyebrow i { color: var(--gold); }
-
-  .badge-hero__title {
-    font-family: var(--font-head);
-    font-size: clamp(1.7rem, 4vw, 2.3rem);
-    font-weight: 600; margin: 0 0 10px;
-    letter-spacing: -0.02em; line-height: 1.15;
-  }
-  .badge-hero__title em {
-    font-style: normal;
-    background: linear-gradient(120deg, #C9952E 0%, #FFD97D 50%, #C9952E 100%);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: #C9952E;
-  }
-  .badge-hero__sub {
-    font-size: 0.98rem; color: rgba(255,255,255,0.8);
-    max-width: 560px; margin: 0 0 28px;
-    line-height: 1.6;
-  }
-
-  .badge-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-  }
-  @media (max-width: 760px) {
-    .badge-stats { grid-template-columns: repeat(2, 1fr); }
-    .badge-hero { padding: 28px 20px 26px; border-radius: 20px; }
-  }
-  .badge-stat {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.14);
-    border-radius: 16px;
-    padding: 18px 16px;
-    display: flex; gap: 12px; align-items: center;
-    backdrop-filter: blur(6px);
-  }
-  .badge-stat__icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    background: rgba(201,149,46,0.22); color: #FFD97D;
-    display: grid; place-items: center; font-size: 1.1rem;
-    flex-shrink: 0;
-  }
-  .badge-stat--fire .badge-stat__icon { background: rgba(230,17,30,0.28); color: #FFE0E2; }
-  .badge-stat--trophy .badge-stat__icon { background: rgba(201,149,46,0.28); color: #FFE8B8; }
-  .badge-stat--calendar .badge-stat__icon { background: rgba(110,107,229,0.28); color: #DAD8FF; }
-  .badge-stat__body { min-width: 0; }
-  .badge-stat__num {
-    font-family: var(--font-head); font-size: 1.6rem; font-weight: 700;
-    line-height: 1; margin-bottom: 4px; letter-spacing: -0.02em;
-  }
-  .badge-stat__num small {
-    font-size: 0.85rem; opacity: 0.7; margin-left: 3px;
-    font-weight: 500; font-family: var(--font-body);
-  }
-  .badge-stat__label {
     font-family: var(--font-ui); font-size: 0.6rem;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    opacity: 0.75; font-weight: 600;
+    letter-spacing: 0.13em; text-transform: uppercase; font-weight: 700;
+    color: #fff !important;
+    margin-bottom: 12px;
+  }
+  .bd-hero__eyebrow i { color: #FFD97D !important; }
+  .bd-hero__title {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    color: #ffffff !important;
+    margin: 0 0 6px; letter-spacing: -0.02em;
+  }
+  .bd-hero__sub {
+    font-size: 0.92rem; line-height: 1.55;
+    color: rgba(255,255,255,0.88) !important;
+    max-width: 620px; margin: 0 0 18px;
   }
 
-  /* ---------- Sections ---------- */
-  .badge-section { margin-bottom: 40px; }
-  .badge-section__head {
-    display: flex; align-items: baseline; gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border);
+  .bd-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
   }
-  .badge-section__title {
-    font-family: var(--font-head); font-size: 1.25rem;
-    font-weight: 600; color: var(--navy);
-    margin: 0; letter-spacing: -0.01em;
+  @media (max-width: 760px) { .bd-stats { grid-template-columns: repeat(2, 1fr); } }
+  .bd-stat {
+    padding: 12px 12px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 12px;
+    display: flex; align-items: center; gap: 10px;
   }
-  .badge-section__count {
-    font-family: var(--font-ui); font-size: 0.68rem;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--slate); font-weight: 700;
-    padding: 3px 10px; border-radius: 999px;
-    background: var(--blush); margin-left: auto;
+  .bd-stat__icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: grid; place-items: center;
+    font-size: 1rem; flex-shrink: 0;
+    background: rgba(201,149,46,0.24); color: #FFD97D;
+  }
+  .bd-stat--fire .bd-stat__icon { background: rgba(230,17,30,0.30); color: #FFE0E2; }
+  .bd-stat--progress .bd-stat__icon { background: rgba(110,107,229,0.28); color: #DAD8FF; }
+  .bd-stat--time .bd-stat__icon { background: rgba(47,143,74,0.30); color: #C7E9D1; }
+  .bd-stat__num {
+    font-family: var(--font-head); font-size: 1.3rem; font-weight: 700;
+    line-height: 1; color: #fff !important; letter-spacing: -0.02em;
+    margin-bottom: 3px;
+  }
+  .bd-stat__num small {
+    font-size: 0.72rem; font-family: var(--font-body); font-weight: 500;
+    color: rgba(255,255,255,0.75) !important; margin-left: 3px;
+  }
+  .bd-stat__label {
+    font-family: var(--font-ui); font-size: 0.56rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.78) !important; font-weight: 600;
   }
 
-  /* ---------- Badge grid ---------- */
-  .badge-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 14px;
-  }
-  @media (max-width: 540px) {
-    .badge-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  }
-
-  .badge-card {
+  /* ---------- TABS ---------- */
+  .bd-tabs {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    padding: 4px;
     background: var(--white);
     border: 1.5px solid var(--border);
-    border-radius: 18px;
-    padding: 20px 18px 18px;
-    display: flex; flex-direction: column; gap: 12px;
-    position: relative; overflow: hidden;
-    transition:
-      border-color 300ms ease,
-      transform 380ms cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 380ms ease;
+    border-radius: 999px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
-  .badge-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--gold);
-    box-shadow: 0 16px 36px rgba(17,16,74,0.12);
-  }
-
-  .badge-card--locked {
-    background: #FAF9FC;
-    border-color: var(--border-soft);
-  }
-  .badge-card--locked:hover {
-    border-color: rgba(17,16,74,0.24);
-    box-shadow: 0 12px 28px rgba(17,16,74,0.08);
-  }
-
-  .badge-card__icon {
-    width: 56px; height: 56px; border-radius: 16px;
-    display: grid; place-items: center;
-    font-size: 1.35rem;
+  .bd-tabs::-webkit-scrollbar { display: none; }
+  .bd-tab {
     flex-shrink: 0;
-    transition: transform 380ms cubic-bezier(0.16,1,0.3,1);
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    font-family: var(--font-body); font-size: 0.82rem; font-weight: 600;
+    color: var(--slate); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background 150ms, color 150ms;
   }
-  .badge-card:hover .badge-card__icon {
-    transform: scale(1.08) rotate(-5deg);
+  .bd-tab:hover { background: var(--blush); color: var(--navy); }
+  .bd-tab.is-active { background: var(--navy); color: #fff; }
+  .bd-tab__count {
+    font-family: var(--font-ui); font-size: 0.6rem;
+    padding: 1px 7px; border-radius: 999px;
+    background: var(--blush-deep); color: var(--navy); font-weight: 700;
+  }
+  .bd-tab.is-active .bd-tab__count { background: rgba(255,255,255,0.24); color: #fff; }
+
+  /* ---------- GRID ---------- */
+  .bd-section { margin-bottom: 28px; }
+  .bd-section__head {
+    display: flex; align-items: baseline; gap: 12px;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .bd-section__title {
+    font-family: var(--font-head); font-size: 1.15rem; font-weight: 600;
+    color: var(--navy); margin: 0; letter-spacing: -0.01em;
+  }
+  .bd-section__count {
+    margin-left: auto;
+    font-family: var(--font-ui); font-size: 0.62rem;
+    padding: 3px 10px; border-radius: 999px;
+    background: var(--blush); color: var(--slate); font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
   }
 
-  /* Color variants */
-  .badge-card__icon--navy   { background: linear-gradient(155deg, #ECEBF5, #DAD8EA); color: var(--navy); }
-  .badge-card__icon--gold   { background: linear-gradient(155deg, #FBF3E1, #F4E2B8); color: #9E7524; }
-  .badge-card__icon--red    { background: linear-gradient(155deg, #FDECEC, #F8D4D4); color: var(--deep-red); }
-  .badge-card__icon--green  { background: linear-gradient(155deg, #EAF7EE, #C9E8D2); color: #2F8F4A; }
-
-  /* Locked state: greyed out */
-  .badge-card--locked .badge-card__icon {
-    background: linear-gradient(155deg, #ECEBF0, #E0DEEC);
-    color: var(--slate);
-    opacity: 0.75;
+  .bd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  @media (max-width: 540px) {
+    .bd-grid { grid-template-columns: 1fr; }
   }
 
-  .badge-card__body { flex: 1; min-width: 0; }
+  .bd-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 16px 14px;
+    display: flex; flex-direction: column; gap: 10px;
+    position: relative; overflow: hidden;
+    transition: border-color 260ms, transform 320ms cubic-bezier(0.16,1,0.3,1), box-shadow 320ms;
+  }
+  .bd-card:hover { transform: translateY(-3px); border-color: var(--gold); box-shadow: 0 12px 26px rgba(17,16,74,0.10); }
+  .bd-card--locked { opacity: 0.85; }
+  .bd-card--locked:hover { opacity: 1; }
+  .bd-card--earned { background: linear-gradient(155deg, #FFFFFF, #FBF3E1); }
 
-  .badge-card__name {
-    font-family: var(--font-head);
-    font-size: 1rem; font-weight: 600;
-    color: var(--navy); margin: 0 0 6px;
+  .bd-card__icon {
+    width: 46px; height: 46px; border-radius: 13px;
+    display: grid; place-items: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    transition: transform 320ms;
+  }
+  .bd-card:hover .bd-card__icon { transform: scale(1.06) rotate(-4deg); }
+  .bd-card__icon--navy   { background: linear-gradient(155deg, #ECEBF5, #DAD8EA); color: var(--navy); }
+  .bd-card__icon--gold   { background: linear-gradient(155deg, #FBF3E1, #F4E2B8); color: #9E7524; }
+  .bd-card__icon--red    { background: linear-gradient(155deg, #FDECEC, #F8D4D4); color: var(--deep-red); }
+  .bd-card__icon--green  { background: linear-gradient(155deg, #EAF7EE, #C9E8D2); color: #2F8F4A; }
+  .bd-card--locked .bd-card__icon { filter: grayscale(0.7); opacity: 0.7; }
+
+  .bd-card__body { flex: 1; min-width: 0; }
+  .bd-card__name {
+    font-family: var(--font-head); font-size: 1rem;
+    color: var(--navy); margin: 0 0 4px; font-weight: 600;
     line-height: 1.3;
   }
-  .badge-card--locked .badge-card__name { color: var(--slate); }
-
-  .badge-card__desc {
-    font-size: 0.84rem; color: var(--slate);
-    line-height: 1.55; margin: 0;
+  .bd-card__desc {
+    font-size: 0.82rem; color: var(--slate);
+    line-height: 1.5; margin: 0;
   }
 
-  .badge-card__footer {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border-soft);
+  /* Progress bar for in-progress badges */
+  .bd-card__progress {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 4px;
+  }
+  .bd-card__progress-bar {
+    flex: 1; height: 6px;
+    background: var(--blush-deep);
+    border-radius: 4px; overflow: hidden;
+  }
+  .bd-card__progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), var(--gold));
+    border-radius: 4px;
+    transition: width 400ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .bd-card__progress-text {
     font-family: var(--font-ui); font-size: 0.62rem;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    font-weight: 700;
-  }
-  .badge-card__earned { color: #2F8F4A; display: inline-flex; align-items: center; gap: 5px; }
-  .badge-card__earned i { font-size: 0.72rem; }
-  .badge-card__locked {
-    color: var(--slate); display: inline-flex; align-items: center; gap: 5px;
-  }
-  .badge-card__date { color: var(--slate); font-weight: 500; font-size: 0.6rem; }
-
-  /* Locked overlay — diagonal ribbon */
-  .badge-card--locked::after {
-    content: '';
-    position: absolute; top: 0; right: 0;
-    width: 60px; height: 60px;
-    background: linear-gradient(135deg, transparent 50%, rgba(91,90,107,0.06) 50%);
-    pointer-events: none;
+    color: var(--slate); font-weight: 700; letter-spacing: 0.04em;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
-  /* Just-unlocked pulse */
-  @keyframes badgeUnlock {
-    0%   { transform: scale(0.9); opacity: 0; }
-    60%  { transform: scale(1.04); opacity: 1; }
-    100% { transform: scale(1); opacity: 1; }
+  /* Footer */
+  .bd-card__footer {
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-soft);
+    font-family: var(--font-ui); font-size: 0.6rem;
+    color: var(--slate); letter-spacing: 0.04em;
+    flex-wrap: wrap;
   }
-  .badge-card--new { animation: badgeUnlock 600ms cubic-bezier(0.16,1,0.3,1) both; }
-  .badge-card--new::before {
+  .bd-card__badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 999px;
+    font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; font-size: 0.56rem;
+  }
+  .bd-card__badge--earned { background: #EAF7EE; color: #2F8F4A; }
+  .bd-card__badge--reset { background: var(--blush); color: var(--slate); }
+
+  .bd-reset-btn {
+    margin-left: auto;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--navy);
+    font-family: var(--font-body); font-size: 0.72rem; font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: background 150ms, border-color 150ms;
+  }
+  .bd-reset-btn:hover { background: var(--blush); border-color: var(--navy); }
+
+  /* NEW badge ribbon */
+  .bd-card--new::before {
     content: 'NEW';
-    position: absolute; top: 12px; right: 12px;
+    position: absolute; top: 10px; right: 10px;
     background: linear-gradient(135deg, var(--red), var(--deep-red));
     color: #fff;
     padding: 3px 9px; border-radius: 999px;
-    font-family: var(--font-ui); font-size: 0.54rem;
+    font-family: var(--font-ui); font-size: 0.52rem;
     letter-spacing: 0.1em; font-weight: 700;
     box-shadow: 0 3px 10px rgba(230,17,30,0.32);
   }
 
-  /* ---------- Empty & loading ---------- */
-  .badge-loading {
-    padding: 60px 20px; text-align: center;
-    color: var(--slate); font-size: 0.9rem;
+  /* Empty state */
+  .bd-empty {
+    padding: 50px 24px; text-align: center;
+    background: var(--white); border: 1.5px dashed var(--border);
+    border-radius: 14px; color: var(--slate);
   }
-  .badge-loading i { font-size: 1.8rem; color: var(--gold); display: block; margin-bottom: 12px; }
+  .bd-empty i { font-size: 2rem; color: var(--gold); display: block; margin-bottom: 12px; }
+  .bd-empty__title { font-family: var(--font-head); font-size: 1.05rem; color: var(--navy); margin: 0 0 6px; }
 
-  /* ---------- Mobile ---------- */
-  @media (max-width: 540px) {
-    .badge-card { padding: 16px 14px 14px; border-radius: 14px; }
-    .badge-card__icon { width: 44px; height: 44px; border-radius: 12px; font-size: 1.1rem; }
-    .badge-card__name { font-size: 0.9rem; }
-    .badge-card__desc { font-size: 0.76rem; }
-    .badge-card__footer { font-size: 0.56rem; padding-top: 8px; }
-    .badge-stat__num { font-size: 1.35rem; }
-    .badge-stat { padding: 14px 12px; }
-    .badge-stat__icon { width: 38px; height: 38px; font-size: 0.95rem; }
-    .badge-section__title { font-size: 1.05rem; }
+  /* History table */
+  .bd-history { background: var(--white); border: 1.5px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .bd-history__row {
+    display: grid; grid-template-columns: 40px 1fr 120px 120px;
+    gap: 12px; align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 0.88rem;
   }
+  .bd-history__row:last-child { border-bottom: none; }
+  .bd-history__row--head {
+    background: var(--blush);
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--slate); font-weight: 700;
+  }
+  .bd-history__icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(155deg, #FBF3E1, #F4E2B8);
+    color: #9E7524;
+    display: grid; place-items: center;
+    font-size: 0.92rem;
+  }
+  .bd-history__name { font-weight: 600; color: var(--navy); }
+  .bd-history__time, .bd-history__duration {
+    font-family: var(--font-ui); font-size: 0.72rem; color: var(--slate);
+  }
+  @media (max-width: 640px) {
+    .bd-history__row { grid-template-columns: 40px 1fr; gap: 8px; padding: 10px 12px; font-size: 0.82rem; }
+    .bd-history__row--head > :nth-child(3),
+    .bd-history__row--head > :nth-child(4),
+    .bd-history__row > :nth-child(3),
+    .bd-history__row > :nth-child(4) { display: none; }
+  }
+
+  /* Toast */
+  .bd-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: #fff;
+    padding: 12px 22px; border-radius: 999px;
+    font-size: 0.88rem; z-index: 500;
+    box-shadow: 0 12px 32px rgba(17,16,74,0.35);
+    animation: bdToastIn 240ms cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes bdToastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  .bd-toast--error { background: var(--deep-red); }
+  .bd-toast--success { background: #2F8F4A; }
 
   /* Reveal */
-  .reveal {
-    opacity: 0; transform: translateY(16px);
-    transition: opacity 560ms cubic-bezier(0.16,1,0.3,1),
-                transform 560ms cubic-bezier(0.16,1,0.3,1);
-    transition-delay: calc(var(--i, 0) * 45ms);
+  .bd-reveal {
+    opacity: 0; transform: translateY(12px);
+    transition: opacity 500ms cubic-bezier(0.16,1,0.3,1),
+                transform 500ms cubic-bezier(0.16,1,0.3,1);
+    transition-delay: calc(var(--i, 0) * 40ms);
   }
-  .reveal.is-visible { opacity: 1; transform: translateY(0); }
-  @media (prefers-reduced-motion: reduce) {
-    .reveal { opacity: 1; transform: none; transition: none; }
-  }
-
-  /* ---------- FORCED CONTRAST + COMPACT PADDING ---------- */
-  /* Force white text on the dark hero */
-  .badge-hero__title,
-  .badge-hero__title em,
-  .badge-hero__sub,
-  .badge-hero__eyebrow,
-  .badge-stat__num,
-  .badge-stat__num small,
-  .badge-stat__label,
-  .badge-stat__icon,
-  .badge-stat__icon i {
-    color: #ffffff !important;
-  }
-  .badge-hero__title em {
-    -webkit-text-fill-color: #FFD97D !important;
-    background: none !important;
-    color: #FFD97D !important;
-  }
-  .badge-hero__eyebrow i {
-    color: #C9952E !important;
-  }
-  .badge-stat__icon {
-    background: rgba(201,149,46,0.24) !important;
-    color: #FFD97D !important;
-  }
-  .badge-stat--fire .badge-stat__icon {
-    background: rgba(230,17,30,0.30) !important;
-    color: #FFE0E2 !important;
-  }
-
-  /* Tighten page-level padding */
-  main.page .page-scroll {
-    padding: 16px 20px 32px !important;
-  }
-  @media (max-width: 900px) {
-    main.page .page-scroll { padding: 12px 12px 24px !important; }
-  }
-  main.page .page-inner {
-    padding: 0 !important;
-  }
-
-  /* Tighten hero + section spacing */
-  .badge-hero {
-    padding: 32px 26px 28px !important;
-    margin-bottom: 24px !important;
-    border-radius: 20px !important;
-  }
-  .badge-stats {
-    gap: 10px !important;
-  }
-  .badge-stat {
-    padding: 14px 14px !important;
-  }
-  .badge-section {
-    margin-bottom: 32px !important;
-  }
-  .badge-section__head {
-    margin-bottom: 12px !important;
-    padding-bottom: 10px !important;
-  }
-  .badge-grid {
-    gap: 12px !important;
-  }
-  @media (max-width: 640px) {
-    .badge-hero { padding: 24px 18px 22px !important; border-radius: 16px !important; }
-    .badge-section { margin-bottom: 26px !important; }
-    .badge-stat { padding: 12px 10px !important; }
-  }
-  /* ---------- END FORCED ---------- */
-
-  /* ========== FORCED CONTRAST + LAYOUT (authoritative) ========== */
-
-  /* --- Page shell: tight, wide --- */
-  main.page .page-scroll {
-    padding: 12px 20px 40px !important;
-  }
-  main.page .page-inner {
-    max-width: 1400px !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 auto !important;
-  }
-  @media (max-width: 900px) {
-    main.page .page-scroll { padding: 10px 12px 28px !important; }
-  }
-
-  /* --- Force white text on dark hero --- */
-  .badge-hero, .badge-hero * {
-    color: #ffffff !important;
-  }
-  .badge-hero__title em {
-    color: #FFD97D !important;
-    -webkit-text-fill-color: #FFD97D !important;
-    background: none !important;
-  }
-  .badge-hero__sub { color: rgba(255,255,255,0.9) !important; }
-  .badge-hero__eyebrow, .badge-hero__eyebrow i {
-    color: #ffffff !important;
-  }
-  .badge-hero__eyebrow i { color: #FFD97D !important; }
-
-  /* --- Stat card colours: readable --- */
-  .badge-stat {
-    background: rgba(255,255,255,0.10) !important;
-    border-color: rgba(255,255,255,0.18) !important;
-    padding: 14px 14px !important;
-    border-radius: 14px !important;
-  }
-  .badge-stat__icon {
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 10px !important;
-    background: rgba(201,149,46,0.28) !important;
-    color: #FFD97D !important;
-  }
-  .badge-stat--fire .badge-stat__icon {
-    background: rgba(230,17,30,0.32) !important;
-    color: #FFE0E2 !important;
-  }
-  .badge-stat--calendar .badge-stat__icon {
-    background: rgba(110,107,229,0.32) !important;
-    color: #DAD8FF !important;
-  }
-  .badge-stat__num {
-    color: #ffffff !important;
-    font-size: 1.45rem !important;
-    margin-bottom: 2px !important;
-  }
-  .badge-stat__num small {
-    color: rgba(255,255,255,0.75) !important;
-    font-size: 0.78rem !important;
-  }
-  .badge-stat__label {
-    color: rgba(255,255,255,0.78) !important;
-    font-size: 0.56rem !important;
-  }
-
-  /* --- Hero spacing --- */
-  .badge-hero {
-    padding: 32px 26px 28px !important;
-    border-radius: 20px !important;
-    margin-bottom: 26px !important;
-  }
-  .badge-hero__eyebrow { margin-bottom: 12px !important; }
-  .badge-hero__title { margin-bottom: 8px !important; font-size: clamp(1.5rem, 3.6vw, 2.05rem) !important; }
-  .badge-hero__sub   { margin-bottom: 22px !important; font-size: 0.94rem !important; }
-  .badge-stats { gap: 10px !important; }
-
-  /* --- Section spacing --- */
-  .badge-section { margin-bottom: 34px !important; }
-  .badge-section__head {
-    margin-bottom: 12px !important;
-    padding-bottom: 10px !important;
-  }
-  .badge-section__title { font-size: 1.15rem !important; }
-  .badge-section__count { font-size: 0.62rem !important; }
-
-  /* --- Badge cards: tighter, cleaner --- */
-  .badge-grid { gap: 12px !important; }
-  .badge-card {
-    padding: 16px 16px 14px !important;
-    border-radius: 14px !important;
-    gap: 10px !important;
-  }
-  .badge-card__icon {
-    width: 46px !important;
-    height: 46px !important;
-    border-radius: 12px !important;
-    font-size: 1.15rem !important;
-  }
-  .badge-card__name { font-size: 0.94rem !important; margin-bottom: 4px !important; }
-  .badge-card__desc { font-size: 0.8rem !important; line-height: 1.5 !important; }
-  .badge-card__footer {
-    padding-top: 8px !important;
-    font-size: 0.58rem !important;
-  }
-
-  /* --- Mobile --- */
-  @media (max-width: 640px) {
-    .badge-hero { padding: 22px 18px 20px !important; border-radius: 16px !important; }
-    .badge-hero__title { font-size: 1.35rem !important; }
-    .badge-hero__sub { font-size: 0.86rem !important; margin-bottom: 18px !important; }
-    .badge-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-    .badge-stat { padding: 12px 12px !important; }
-    .badge-stat__icon { width: 34px !important; height: 34px !important; font-size: 0.9rem !important; }
-    .badge-stat__num { font-size: 1.2rem !important; }
-    .badge-stat__label { font-size: 0.52rem !important; }
-    .badge-section { margin-bottom: 26px !important; }
-    .badge-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-    .badge-card { padding: 12px 12px 11px !important; border-radius: 12px !important; }
-    .badge-card__icon { width: 38px !important; height: 38px !important; font-size: 0.98rem !important; }
-    .badge-card__name { font-size: 0.82rem !important; }
-    .badge-card__desc { font-size: 0.72rem !important; line-height: 1.45 !important; }
-    .badge-card__footer { font-size: 0.52rem !important; padding-top: 6px !important; }
-  }
-  /* ========== END FORCED ========== */
-
-  /* ========== HERO REWORK — shorter + animated background ========== */
-  .badge-hero {
-    padding: 26px 24px 24px !important;
-    min-height: 0 !important;
-    position: relative;
-    overflow: hidden;
-  }
-  .badge-hero__logo {
-    width: 0px !important;
-    height: 0px !important;
-    margin-bottom: 0px !important;
-  }
-  .badge-hero__title {
-    margin-bottom: 6px !important;
-    font-size: clamp(1.4rem, 3vw, 1.95rem) !important;
-    line-height: 1.15 !important;
-  }
-  .badge-hero__sub {
-    margin-bottom: 16px !important;
-    font-size: 0.92rem !important;
-    line-height: 1.5 !important;
-  }
-
-  /* Background video layer — blended with the gradient */
-  .hero-bg-video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.22;
-    mix-blend-mode: screen;
-    pointer-events: none;
-    z-index: 1;
-    filter: saturate(1.4) contrast(1.15);
-  }
-  /* Soft color wash on top of the video so text stays legible */
-  .hero-bg-wash {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 18% 12%, rgba(201,149,46,0.30), transparent 45%),
-      radial-gradient(circle at 82% 88%, rgba(230,17,30,0.22), transparent 45%),
-      linear-gradient(180deg, rgba(17,16,74,0.10), rgba(17,16,74,0.55));
-    mix-blend-mode: multiply;
-    pointer-events: none;
-    z-index: 2;
-  }
-  /* Content sits above both layers */
-  .badge-hero > *:not(.hero-bg-video):not(.hero-bg-wash) {
-    position: relative;
-    z-index: 3;
-  }
-  /* Slow motion gradient already exists — this kicks it a bit more */
-  @keyframes heroPan {
-    0%,100% { background-position: 0% 50%; }
-    33%     { background-position: 50% 100%; }
-    66%     { background-position: 100% 0%; }
-    100%    { background-position: 0% 50%; }
-  }
-  .badge-hero {
-    background-size: 400% 400% !important;
-    animation-duration: 22s !important;
-  }
-  /* ========== END HERO REWORK ========== */
-
-  /* extra tightening for badge hero */
-  .badge-hero__eyebrow { margin-bottom: 10px !important; }
-  .badge-stats { gap: 8px !important; }
-  .badge-stat { padding: 12px 12px !important; }
-  .badge-stat__num { font-size: 1.35rem !important; }
-  @media (max-width: 640px) {
-    .badge-hero { padding: 20px 16px 18px !important; }
-    .badge-hero__title { font-size: 1.25rem !important; }
-    .badge-hero__sub { font-size: 0.85rem !important; margin-bottom: 14px !important; }
-  }
+  .bd-reveal.is-visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) { .bd-reveal { opacity: 1; transform: none; transition: none; } }
 </style>
 </head>
 <body>
   <div class="app">
     <div id="sidebar-mount"></div>
-
     <main class="page">
       <div class="page-scroll">
         <div class="page-inner">
 
-          <!-- ============== HERO STATS ============== -->
-          <section class="badge-hero">
-            <video class="hero-bg-video" autoplay loop muted playsinline preload="metadata">
-              <source src="about:blank" type="video/mp4">
-            </video>
-            <div class="hero-bg-wash" aria-hidden="true"></div>
-            <div class="badge-hero__orb badge-hero__orb--1" aria-hidden="true"></div>
-            <div class="badge-hero__orb badge-hero__orb--2" aria-hidden="true"></div>
-
-            <div class="badge-hero__eyebrow">
-              <i class="fa-solid fa-trophy" aria-hidden="true"></i>
-              Your achievements
+          <!-- ============ HERO ============ -->
+          <section class="bd-hero">
+            <div class="bd-hero__eyebrow">
+              <i class="fa-solid fa-trophy"></i> Your achievements
             </div>
-
-            <h1 class="badge-hero__title">
-              Your <em>learning journey</em>, one badge at a time
-            </h1>
-            <p class="badge-hero__sub">
+            <h1 class="bd-hero__title">Your learning journey, one badge at a time</h1>
+            <p class="bd-hero__sub">
               Every message, quiz, flashcard, and day you show up earns progress.
-              See what you have unlocked — and what is waiting next.
+              See what you've unlocked — and what's waiting next.
             </p>
 
-            <div class="badge-stats">
-              <div class="badge-stat badge-stat--fire">
-                <div class="badge-stat__icon"><i class="fa-solid fa-fire"></i></div>
-                <div class="badge-stat__body">
-                  <div class="badge-stat__num" id="stat-streak">0<small>days</small></div>
-                  <div class="badge-stat__label">Current streak</div>
+            <div class="bd-stats">
+              <div class="bd-stat bd-stat--fire">
+                <div class="bd-stat__icon"><i class="fa-solid fa-fire"></i></div>
+                <div>
+                  <div class="bd-stat__num" id="stat-streak">0<small>days</small></div>
+                  <div class="bd-stat__label">Current streak</div>
                 </div>
               </div>
-              <div class="badge-stat badge-stat--trophy">
-                <div class="badge-stat__icon"><i class="fa-solid fa-medal"></i></div>
-                <div class="badge-stat__body">
-                  <div class="badge-stat__num" id="stat-longest">0<small>days</small></div>
-                  <div class="badge-stat__label">Longest streak</div>
+              <div class="bd-stat">
+                <div class="bd-stat__icon"><i class="fa-solid fa-medal"></i></div>
+                <div>
+                  <div class="bd-stat__num" id="stat-longest">0<small>days</small></div>
+                  <div class="bd-stat__label">Longest streak</div>
                 </div>
               </div>
-              <div class="badge-stat badge-stat--calendar">
-                <div class="badge-stat__icon"><i class="fa-solid fa-calendar-check"></i></div>
-                <div class="badge-stat__body">
-                  <div class="badge-stat__num" id="stat-active">0<small>days</small></div>
-                  <div class="badge-stat__label">Active days</div>
+              <div class="bd-stat bd-stat--progress">
+                <div class="bd-stat__icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div>
+                  <div class="bd-stat__num" id="stat-earned">0<small>/ 0</small></div>
+                  <div class="bd-stat__label">Badges earned</div>
                 </div>
               </div>
-              <div class="badge-stat badge-stat--trophy">
-                <div class="badge-stat__icon"><i class="fa-solid fa-circle-check"></i></div>
-                <div class="badge-stat__body">
-                  <div class="badge-stat__num" id="stat-badges">0<small>/ 0</small></div>
-                  <div class="badge-stat__label">Badges earned</div>
+              <div class="bd-stat bd-stat--time">
+                <div class="bd-stat__icon"><i class="fa-solid fa-clock"></i></div>
+                <div>
+                  <div class="bd-stat__num" id="stat-duration">—</div>
+                  <div class="bd-stat__label">Avg. time</div>
                 </div>
               </div>
             </div>
           </section>
 
-          <!-- ============== BADGE SECTIONS ============== -->
-          
-          <!-- ================= FEATURED VIDEO ================= -->
-          <section class="video-section reveal">
-            <div class="video-section__head">
-              <div class="video-section__eyebrow">
-                <i class="fa-solid fa-fire" aria-hidden="true"></i>
-                Stay motivated
-              </div>
-              <h2 class="video-section__title">How to earn every badge</h2>
-              <p class="video-section__sub">
-                A short walkthrough of the streaks, badges, and milestones — and how
-                to unlock them by studying a little every day.
-              </p>
-            </div>
-            <div class="video-frame" id="featured-video">
-              <div class="video-frame__placeholder">
-                <div class="video-frame__orb video-frame__orb--1" aria-hidden="true"></div>
-                <div class="video-frame__orb video-frame__orb--2" aria-hidden="true"></div>
-                <div class="video-frame__orb video-frame__orb--3" aria-hidden="true"></div>
-                <div class="video-frame__grid" aria-hidden="true"></div>
-                <div class="video-frame__play">
-                  <i class="fa-solid fa-play" aria-hidden="true"></i>
-                </div>
-                <div class="video-frame__caption">Badge guide coming soon</div>
-                <div class="video-frame__note">Admins can set a video URL in settings</div>
-              </div>
-            </div>
-          </section>
+          <!-- ============ TABS ============ -->
+          <div class="bd-tabs" id="tabs">
+            <button class="bd-tab is-active" data-tab="all">
+              <i class="fa-solid fa-layer-group"></i> All badges
+              <span class="bd-tab__count" id="cnt-all">—</span>
+            </button>
+            <button class="bd-tab" data-tab="earned">
+              <i class="fa-solid fa-trophy"></i> Earned
+              <span class="bd-tab__count" id="cnt-earned">—</span>
+            </button>
+            <button class="bd-tab" data-tab="progress">
+              <i class="fa-solid fa-hourglass-half"></i> In progress
+              <span class="bd-tab__count" id="cnt-progress">—</span>
+            </button>
+            <button class="bd-tab" data-tab="history">
+              <i class="fa-solid fa-clock-rotate-left"></i> History
+              <span class="bd-tab__count" id="cnt-history">—</span>
+            </button>
+          </div>
 
-<div id="badge-sections">
-            <div class="badge-loading">
+          <!-- ============ CONTENT ============ -->
+          <div id="content">
+            <div class="bd-empty">
               <i class="fa-solid fa-spinner fa-spin"></i>
-              Loading your achievements…
+              <p class="bd-empty__title">Loading your achievements…</p>
             </div>
           </div>
 
@@ -688,187 +414,308 @@
 (function () {
   'use strict';
 
-  /* ============================================================
-     Badge page
-     ============================================================ */
-
-  var SECTIONS = [
-    { key: 'first',     title: 'Getting started',  match: ['first_chat','first_quiz','first_flashcard','first_theory','first_exam','first_note'] },
-    { key: 'streaks',   title: 'Streaks',          match: ['streak_3','streak_7','streak_30'] },
-    { key: 'volume',    title: 'Milestones',       match: ['quiz_10','quiz_50','flashcard_100','knowledge_seeker'] },
-    { key: 'achieve',   title: 'Achievements',     match: ['perfect_quiz','early_bird','night_owl'] },
-    { key: 'identity',  title: 'Identity',         match: ['verified'] },
+  var CATEGORY_ORDER = [
+    { key: 'start',     title: 'Getting started',        icon: 'fa-seedling' },
+    { key: 'streak',    title: 'Streaks',                icon: 'fa-fire' },
+    { key: 'quiz',      title: 'Quizzes',                icon: 'fa-circle-question' },
+    { key: 'flashcard', title: 'Flashcards',             icon: 'fa-clone' },
+    { key: 'volume',    title: 'Question volume',        icon: 'fa-comment-dots' },
+    { key: 'time',      title: 'Time invested',          icon: 'fa-clock' },
+    { key: 'explore',   title: 'Exploration',            icon: 'fa-compass' },
+    { key: 'subject',   title: 'Subject masters',        icon: 'fa-shapes' },
+    { key: 'identity',  title: 'Identity',               icon: 'fa-circle-check' },
+    { key: 'other',     title: 'More',                   icon: 'fa-star' },
   ];
 
-  function esc(s) {
-    return String(s == null ? '' : s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-  }
+  var data = {
+    catalog: [],
+    user: null,
+    earned: {},
+    progress: {},
+    history: [],
+  };
+  var activeTab = 'all';
+  var currentUser = null;
 
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function toast(msg, kind) {
+    var t = document.createElement('div');
+    t.className = 'bd-toast' + (kind ? ' bd-toast--' + kind : '');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2600);
+  }
+  function humanDuration(sec) {
+    if (sec == null) return '';
+    sec = Math.max(0, Math.round(sec));
+    if (sec < 60) return sec + 's';
+    var m = Math.floor(sec / 60);
+    if (m < 60) return m + 'm';
+    var h = Math.floor(m / 60);
+    m = m % 60;
+    if (h < 24) return h + 'h ' + m + 'm';
+    var d = Math.floor(h / 24);
+    h = h % 24;
+    return d + 'd ' + h + 'h';
+  }
   function fmtDate(iso) {
-    if (!iso) return '';
     try {
-      return new Date(iso).toLocaleDateString(undefined, {
-        month: 'short', day: 'numeric', year: 'numeric',
-      });
+      return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     } catch (_) { return ''; }
   }
 
   async function guard() {
     var res = await fetch('/api/auth/me', { credentials: 'include' });
     if (res.status === 401) { window.location.href = 'index.html'; return false; }
+    var d = await res.json();
+    currentUser = d.user;
     return true;
-  }
-
-  function paintStats(streak, earnedCount, totalCount) {
-    var cur = document.getElementById('stat-streak');
-    cur.innerHTML = (streak.current || 0) + '<small>day' + (streak.current === 1 ? '' : 's') + '</small>';
-    document.getElementById('stat-longest').innerHTML = (streak.longest || 0) + '<small>days</small>';
-    document.getElementById('stat-active').innerHTML = (streak.total || 0) + '<small>days</small>';
-    document.getElementById('stat-badges').innerHTML =
-      earnedCount + '<small>/ ' + totalCount + '</small>';
-  }
-
-  function renderBadge(badge, isEarned, isNew, index) {
-    var cls = 'badge-card reveal' +
-      (isEarned ? '' : ' badge-card--locked') +
-      (isNew ? ' badge-card--new' : '');
-    var colorClass = isEarned ? (badge.color || 'navy') : 'navy';
-    var footer = isEarned
-      ? '<span class="badge-card__earned"><i class="fa-solid fa-circle-check"></i> Earned</span>' +
-        '<span class="badge-card__date">' + esc(fmtDate(badge.earned_at)) + '</span>'
-      : '<span class="badge-card__locked"><i class="fa-solid fa-lock"></i> Locked</span>' +
-        '<span class="badge-card__date">Keep going</span>';
-
-    return '<article class="' + cls + '" style="--i:' + index + '">' +
-      '<div class="badge-card__icon badge-card__icon--' + colorClass + '">' +
-        '<i class="fa-solid ' + esc(badge.icon || 'fa-medal') + '"></i>' +
-      '</div>' +
-      '<div class="badge-card__body">' +
-        '<h3 class="badge-card__name">' + esc(badge.name) + '</h3>' +
-        '<p class="badge-card__desc">' + esc(badge.desc) + '</p>' +
-      '</div>' +
-      '<div class="badge-card__footer">' + footer + '</div>' +
-    '</article>';
-  }
-
-  function observeReveals() {
-    var els = document.querySelectorAll('.reveal');
-    if (!('IntersectionObserver' in window)) {
-      els.forEach(function (el) { el.classList.add('is-visible'); });
-      return;
-    }
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          io.unobserve(entry.target);
-        }
-      });
-    }, { rootMargin: '0px 0px -40px 0px', threshold: 0.05 });
-    els.forEach(function (el) { io.observe(el); });
   }
 
   async function load() {
     try {
-      // Fetch both in parallel: user's badges + full catalog
-      var [userRes, catalogRes] = await Promise.all([
+      var [meRes, catRes, histRes] = await Promise.all([
         fetch('/api/badges/me', { credentials: 'include' }),
         fetch('/api/badges/catalog', { credentials: 'include' }),
+        fetch('/api/badges/history?limit=50', { credentials: 'include' }),
       ]);
+      if (!meRes.ok) throw new Error('me failed');
+      var meData = await meRes.json();
+      var catData = catRes.ok ? await catRes.json() : { badges: [] };
+      var histData = histRes.ok ? await histRes.json() : { history: [] };
 
-      if (!userRes.ok) throw new Error('Could not load your badges.');
+      data.user = meData.user || {};
+      data.catalog = catData.badges || [];
+      data.history = histData.history || [];
 
-      var userData = await userRes.json();
-      var catalog = [];
-      if (catalogRes.ok) {
-        var c = await catalogRes.json();
-        catalog = c.badges || [];
-      }
-
-      // If catalog is empty for some reason, fall back to what the user has
-      if (!catalog.length) catalog = userData.badges || [];
-
-      var earnedMap = {};
-      (userData.badges || []).forEach(function (b) { earnedMap[b.key] = b; });
-
-      var newlySet = {};
-      (userData.newly_awarded || []).forEach(function (k) { newlySet[k] = true; });
-
-      paintStats(userData.streak || {}, (userData.badges || []).length, catalog.length);
-
-      // Build sections
-      var usedKeys = {};
-      var html = '';
-      SECTIONS.forEach(function (section, sIdx) {
-        var sectionBadges = catalog.filter(function (b) {
-          return section.match.indexOf(b.key) !== -1;
-        });
-        if (!sectionBadges.length) return;
-
-        var earnedCount = sectionBadges.filter(function (b) { return earnedMap[b.key]; }).length;
-
-        html += '<section class="badge-section">' +
-          '<div class="badge-section__head reveal" style="--i:0">' +
-            '<h2 class="badge-section__title">' + esc(section.title) + '</h2>' +
-            '<span class="badge-section__count">' + earnedCount + ' / ' + sectionBadges.length + '</span>' +
-          '</div>' +
-          '<div class="badge-grid">';
-
-        sectionBadges.forEach(function (b, i) {
-          usedKeys[b.key] = true;
-          var earned = earnedMap[b.key] || null;
-          html += renderBadge(
-            earned ? Object.assign({}, b, earned) : b,
-            !!earned,
-            !!newlySet[b.key],
-            i
-          );
-        });
-        html += '</div></section>';
+      // Build earned map from user's badges
+      data.earned = {};
+      (meData.badges || []).forEach(function (b) {
+        if (b.earned) data.earned[b.key] = b;
       });
+      data.progress = meData.progress || {};
 
-      // Any catalog items not covered by a section (safety net)
-      var leftovers = catalog.filter(function (b) { return !usedKeys[b.key]; });
-      if (leftovers.length) {
-        var earnedCount = leftovers.filter(function (b) { return earnedMap[b.key]; }).length;
-        html += '<section class="badge-section">' +
-          '<div class="badge-section__head reveal" style="--i:0">' +
-            '<h2 class="badge-section__title">More</h2>' +
-            '<span class="badge-section__count">' + earnedCount + ' / ' + leftovers.length + '</span>' +
-          '</div>' +
-          '<div class="badge-grid">';
-        leftovers.forEach(function (b, i) {
-          var earned = earnedMap[b.key] || null;
-          html += renderBadge(
-            earned ? Object.assign({}, b, earned) : b,
-            !!earned,
-            !!newlySet[b.key],
-            i
-          );
-        });
-        html += '</div></section>';
+      // Stats
+      var s = meData.streak || {};
+      document.getElementById('stat-streak').innerHTML = (s.current || 0) + '<small>day' + (s.current === 1 ? '' : 's') + '</small>';
+      document.getElementById('stat-longest').innerHTML = (s.longest || 0) + '<small>days</small>';
+
+      var earnedCount = Object.keys(data.earned).length;
+      document.getElementById('stat-earned').innerHTML = earnedCount + '<small>/ ' + data.catalog.length + '</small>';
+
+      // Average duration of earned badges that have it
+      var durations = Object.values(data.earned).filter(function (b) { return b.duration_seconds; }).map(function (b) { return b.duration_seconds; });
+      if (durations.length) {
+        var avg = durations.reduce(function (a, b) { return a + b; }, 0) / durations.length;
+        document.getElementById('stat-duration').innerHTML = humanDuration(avg);
+      } else {
+        document.getElementById('stat-duration').innerHTML = '—';
       }
 
-      if (!html) {
-        html = '<div class="badge-loading"><i class="fa-solid fa-trophy"></i>' +
-          'No badges available yet. Keep using the platform and come back soon!' +
-          '</div>';
-      }
+      // Counts
+      document.getElementById('cnt-all').textContent = data.catalog.length;
+      document.getElementById('cnt-earned').textContent = earnedCount;
+      document.getElementById('cnt-progress').textContent = Object.keys(data.progress).length;
+      document.getElementById('cnt-history').textContent = data.history.length;
 
-      document.getElementById('badge-sections').innerHTML = html;
-
-      // Small delay so DOM is painted before observing
-      setTimeout(observeReveals, 60);
+      render();
     } catch (err) {
-      document.getElementById('badge-sections').innerHTML =
-        '<div class="badge-loading">' +
-          '<i class="fa-solid fa-triangle-exclamation"></i>' +
-          'Could not load your achievements. Please refresh the page.' +
-        '</div>';
+      console.error('[badges] load error:', err);
+      document.getElementById('content').innerHTML =
+        '<div class="bd-empty"><i class="fa-solid fa-triangle-exclamation"></i>' +
+        '<p class="bd-empty__title">Could not load your achievements</p>' +
+        '<p style="margin:6px 0 0;font-size:0.85rem">Please refresh the page.</p></div>';
     }
   }
+
+  function renderCard(badge, earned, progress, idx) {
+    var isEarned = !!earned;
+    var prog = progress || null;
+    var cls = 'bd-card bd-reveal' +
+      (isEarned ? ' bd-card--earned' : ' bd-card--locked');
+
+    var footer = '';
+    if (isEarned) {
+      var earnedDate = fmtDate(earned.earned_at);
+      var duration = earned.duration_seconds ? humanDuration(earned.duration_seconds) : null;
+      footer =
+        '<div class="bd-card__footer">' +
+          '<span class="bd-card__badge bd-card__badge--earned"><i class="fa-solid fa-circle-check"></i> Earned</span>' +
+          '<span style="opacity:0.7">' + esc(earnedDate) + '</span>' +
+          (duration ? '<span style="opacity:0.7">· ' + esc(duration) + '</span>' : '') +
+          (earned.reset_count > 0 ? '<span class="bd-card__badge bd-card__badge--reset">×' + earned.reset_count + '</span>' : '') +
+          '<button type="button" class="bd-reset-btn" data-reset="' + esc(badge.key) + '" title="Reset and try again">' +
+            '<i class="fa-solid fa-rotate"></i> Retry' +
+          '</button>' +
+        '</div>';
+    } else if (prog) {
+      var pct = Math.min(100, Math.round((prog.current / prog.target) * 100));
+      footer =
+        '<div class="bd-card__progress">' +
+          '<div class="bd-card__progress-bar"><div class="bd-card__progress-fill" style="width:' + pct + '%"></div></div>' +
+          '<span class="bd-card__progress-text">' + prog.current + ' / ' + prog.target + '</span>' +
+        '</div>' +
+        '<div class="bd-card__footer" style="border-top:none;padding-top:4px">' +
+          '<span class="bd-card__badge bd-card__badge--reset"><i class="fa-solid fa-hourglass-half"></i> In progress</span>' +
+        '</div>';
+    } else {
+      footer =
+        '<div class="bd-card__footer">' +
+          '<span class="bd-card__badge bd-card__badge--reset"><i class="fa-solid fa-lock"></i> Locked</span>' +
+          '<span style="opacity:0.7">Keep going</span>' +
+        '</div>';
+    }
+
+    return '<article class="' + cls + '" style="--i:' + idx + '">' +
+      '<div class="bd-card__icon bd-card__icon--' + esc(badge.color || 'navy') + '">' +
+        '<i class="fa-solid ' + esc(badge.icon || 'fa-medal') + '"></i>' +
+      '</div>' +
+      '<div class="bd-card__body">' +
+        '<h3 class="bd-card__name">' + esc(badge.name) + '</h3>' +
+        '<p class="bd-card__desc">' + esc(badge.desc) + '</p>' +
+      '</div>' +
+      footer +
+    '</article>';
+  }
+
+  function groupByCategory(badges) {
+    var groups = {};
+    CATEGORY_ORDER.forEach(function (c) { groups[c.key] = []; });
+    badges.forEach(function (b) {
+      var cat = b.category || 'other';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(b);
+    });
+    return groups;
+  }
+
+  function render() {
+    var el = document.getElementById('content');
+
+    if (activeTab === 'history') {
+      renderHistory(el);
+      return;
+    }
+
+    var toShow = data.catalog.filter(function (b) {
+      if (b.secret && !data.earned[b.key]) return false;
+      if (activeTab === 'earned') return !!data.earned[b.key];
+      if (activeTab === 'progress') return !data.earned[b.key] && data.progress[b.key];
+      return true;
+    });
+
+    if (!toShow.length) {
+      var msg = activeTab === 'earned'
+        ? 'No badges earned yet. Start studying and they\'ll show up here.'
+        : activeTab === 'progress'
+          ? 'No badges in progress right now. Try a quiz, chat, or review some flashcards.'
+          : 'No badges available yet.';
+      el.innerHTML =
+        '<div class="bd-empty"><i class="fa-solid fa-trophy"></i>' +
+        '<p class="bd-empty__title">' + esc(msg) + '</p></div>';
+      return;
+    }
+
+    // Group
+    var grouped = groupByCategory(toShow);
+    var html = '';
+    CATEGORY_ORDER.forEach(function (cat) {
+      var list = grouped[cat.key] || [];
+      if (!list.length) return;
+
+      var earnedInCat = list.filter(function (b) { return data.earned[b.key]; }).length;
+      html += '<section class="bd-section">' +
+        '<div class="bd-section__head">' +
+          '<h2 class="bd-section__title"><i class="fa-solid ' + cat.icon + '" style="color:var(--gold);margin-right:6px"></i>' + esc(cat.title) + '</h2>' +
+          '<span class="bd-section__count">' + earnedInCat + ' / ' + list.length + '</span>' +
+        '</div>' +
+        '<div class="bd-grid">' +
+          list.map(function (b, i) {
+            return renderCard(b, data.earned[b.key], data.progress[b.key], i);
+          }).join('') +
+        '</div>' +
+      '</section>';
+    });
+
+    el.innerHTML = html;
+
+    // Reset buttons
+    el.querySelectorAll('[data-reset]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var key = btn.getAttribute('data-reset');
+        confirmReset(key);
+      });
+    });
+
+    // Reveal animation
+    requestAnimationFrame(function () {
+      el.querySelectorAll('.bd-reveal').forEach(function (node) {
+        node.classList.add('is-visible');
+      });
+    });
+  }
+
+  async function confirmReset(badgeKey) {
+    var badge = data.catalog.find(function (b) { return b.key === badgeKey; });
+    if (!badge) return;
+    var label = badge.name;
+    if (!confirm('Reset "' + label + '"?\n\nYou will start from zero. Your completion history is kept — this only resets the current badge.')) return;
+
+    try {
+      var res = await fetch('/api/badges/' + encodeURIComponent(badgeKey) + '/reset', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      var body = await res.json().catch(function () { return {}; });
+      if (!res.ok) {
+        toast(body.error || 'Could not reset badge.', 'error');
+        return;
+      }
+      toast('Reset. Start earning it again!', 'success');
+      await load();
+    } catch (err) {
+      toast('Network error.', 'error');
+    }
+  }
+
+  function renderHistory(el) {
+    if (!data.history.length) {
+      el.innerHTML =
+        '<div class="bd-empty"><i class="fa-solid fa-clock-rotate-left"></i>' +
+        '<p class="bd-empty__title">No completions yet</p>' +
+        '<p style="margin:6px 0 0;font-size:0.85rem">Every time you earn a badge, it appears here forever.</p></div>';
+      return;
+    }
+
+    var rows = data.history.map(function (h) {
+      return '<div class="bd-history__row">' +
+        '<div class="bd-history__icon"><i class="fa-solid ' + esc(h.icon || 'fa-medal') + '"></i></div>' +
+        '<div class="bd-history__name">' + esc(h.name) + '</div>' +
+        '<div class="bd-history__time">' + fmtDate(h.completed_at) + '</div>' +
+        '<div class="bd-history__duration">' + (h.duration_seconds ? humanDuration(h.duration_seconds) : '—') + '</div>' +
+      '</div>';
+    }).join('');
+
+    el.innerHTML =
+      '<div class="bd-history">' +
+        '<div class="bd-history__row bd-history__row--head">' +
+          '<div></div><div>Badge</div><div>Completed</div><div>Took</div>' +
+        '</div>' +
+        rows +
+      '</div>';
+  }
+
+  // Tabs
+  document.querySelectorAll('.bd-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.bd-tab').forEach(function (t) { t.classList.remove('is-active'); });
+      tab.classList.add('is-active');
+      activeTab = tab.getAttribute('data-tab');
+      render();
+    });
+  });
 
   (async function init() {
     if (!(await guard())) return;
@@ -876,155 +723,5 @@
   })();
 })();
 </script>
-
-<script>
-(function () {
-  'use strict';
-  var frame = document.getElementById('featured-video');
-  if (!frame) return;
-
-  function videoExt(u) {
-    var m = u.match(/\.(mp4|webm|ogg|mov)(\?|$)/i);
-    return m ? m[1].toLowerCase() : null;
-  }
-
-  async function loadVideo() {
-    try {
-      var res = await fetch('/api/platform/info', { credentials: 'include' });
-      if (!res.ok) return;
-      var data = await res.json();
-      var url = data.demoVideoUrl;
-      if (!url) return;
-
-      var ext = videoExt(url);
-      if (ext) {
-        frame.innerHTML =
-          '<video controls autoplay muted loop playsinline preload="metadata">' +
-            '<source src="' + url.replace(/"/g, '&quot;') + '" type="video/' + ext + '">' +
-          '</video>';
-      } else {
-        frame.innerHTML =
-          '<iframe src="' + url.replace(/"/g, '&quot;') + '" ' +
-                  'allow="autoplay; encrypted-media; picture-in-picture; fullscreen" ' +
-                  'allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>';
-      }
-    } catch (_) {}
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadVideo);
-  } else {
-    loadVideo();
-  }
-})();
-</script>
-
-<!-- GIF-LOADER-START -->
-<script>
-(function () {
-  'use strict';
-  var frame = document.getElementById('featured-video');
-  if (!frame) return;
-
-  function showLoading() {
-    frame.innerHTML =
-      '<div class="video-frame__placeholder">' +
-        '<div class="video-frame__orb video-frame__orb--1" aria-hidden="true"></div>' +
-        '<div class="video-frame__orb video-frame__orb--2" aria-hidden="true"></div>' +
-        '<div class="video-frame__orb video-frame__orb--3" aria-hidden="true"></div>' +
-        '<div class="video-frame__grid" aria-hidden="true"></div>' +
-        '<div class="video-frame__play">' +
-          '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>' +
-        '</div>' +
-        '<div class="video-frame__caption">Loading animation…</div>' +
-        '<div class="video-frame__note">Powered by Giphy</div>' +
-      '</div>';
-  }
-
-  function showGif(gif) {
-    var img = document.createElement('img');
-    img.alt = gif.title || 'Animated illustration';
-    img.loading = 'lazy';
-    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;background:#11104A;';
-    img.onerror = function () {
-      frame.innerHTML = '<div class="video-frame__placeholder">' +
-        '<div class="video-frame__orb video-frame__orb--1" aria-hidden="true"></div>' +
-        '<div class="video-frame__orb video-frame__orb--2" aria-hidden="true"></div>' +
-        '<div class="video-frame__play"><i class="fa-solid fa-play"></i></div>' +
-        '<div class="video-frame__caption">Animation unavailable</div>' +
-      '</div>';
-    };
-    img.src = gif.url;
-    frame.innerHTML = '';
-    frame.appendChild(img);
-    if (gif.webUrl) {
-      frame.style.cursor = 'pointer';
-      frame.onclick = function () {
-        window.open(gif.webUrl, '_blank', 'noopener');
-      };
-    }
-  }
-
-  function showFallback() {
-    frame.innerHTML = '<div class="video-frame__placeholder">' +
-      '<div class="video-frame__orb video-frame__orb--1" aria-hidden="true"></div>' +
-      '<div class="video-frame__orb video-frame__orb--2" aria-hidden="true"></div>' +
-      '<div class="video-frame__orb video-frame__orb--3" aria-hidden="true"></div>' +
-      '<div class="video-frame__grid" aria-hidden="true"></div>' +
-      '<div class="video-frame__play"><i class="fa-solid fa-play" aria-hidden="true"></i></div>' +
-      '<div class="video-frame__caption">Animation coming soon</div>' +
-      '<div class="video-frame__note">Add GIPHY_API_KEY in Render to enable live animations</div>' +
-    '</div>';
-  }
-
-  async function loadGif() {
-    showLoading();
-    try {
-      var res = await fetch('/api/platform/gif', { credentials: 'include' });
-      if (!res.ok) { showFallback(); return; }
-      var data = await res.json();
-      if (!data.gif || !data.gif.url) { showFallback(); return; }
-      showGif(data.gif);
-    } catch (_) { showFallback(); }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadGif);
-  } else {
-    loadGif();
-  }
-})();
-</script>
-<!-- GIF-LOADER-END -->
-
-
-  <!-- Hero background video (loaded dynamically from Giphy) -->
-  <script>
-  (function () {
-    'use strict';
-    var video = document.querySelector('.hero-bg-video');
-    if (!video) return;
-
-    // Ask the backend for one random video
-    fetch('/api/theme/hero-video', { credentials: 'same-origin' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (data) {
-        if (!data || !data.url) return;
-        var source = video.querySelector('source');
-        if (source) source.src = data.url;
-        else {
-          source = document.createElement('source');
-          source.src = data.url;
-          source.type = 'video/mp4';
-          video.appendChild(source);
-        }
-        video.load();
-        var playPromise = video.play();
-        if (playPromise && playPromise.catch) playPromise.catch(function () {});
-      })
-      .catch(function () { /* fallback URL still plays */ });
-  })();
-  </script>
-
 </body>
 </html>

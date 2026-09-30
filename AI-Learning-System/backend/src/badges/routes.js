@@ -1,19 +1,9 @@
+// ============================================================
+// badges/routes.js
+// ============================================================
 const express = require('express');
 const router = express.Router();
 const service = require('./service');
-
-// Safe query: never throws, returns [] on any error
-async function safeQuery(sql, params) {
-  try {
-    const db = require('../db');
-    const res = await db.pool.query(sql, params);
-    return res.rows || [];
-  } catch (err) {
-    const logger = require('../core/logger');
-    logger.warn('[badges/progress] safeQuery failed: ' + err.message);
-    return [];
-  }
-}
 const { BADGES } = require('./definitions');
 
 function requireLogin(req, res, next) {
@@ -21,9 +11,22 @@ function requireLogin(req, res, next) {
   next();
 }
 
+/* Reusable safe SQL helper */
+async function safeQuery(sql, params) {
+  try {
+    const db = require('../db');
+    const res = await db.pool.query(sql, params);
+    return res.rows || [];
+  } catch (err) {
+    const logger = require('../core/logger');
+    logger.warn('[badges] safeQuery failed: ' + err.message);
+    return [];
+  }
+}
+
+/* GET /api/badges/me — user's badges, streak, and progress */
 router.get('/me', requireLogin, async (req, res, next) => {
   try {
-    // Record today's activity (idempotent) and check for new badges
     await service.recordActivity(req.user.id, 'session');
     const awarded = await service.checkAndAward(req.user.id);
     const overview = await service.getOverview(req.user.id);
@@ -31,6 +34,7 @@ router.get('/me', requireLogin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+/* GET /api/badges/catalog */
 router.get('/catalog', requireLogin, async (req, res, next) => {
   try {
     const catalog = Object.keys(BADGES).map(function (key) {
@@ -40,19 +44,39 @@ router.get('/catalog', requireLogin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+/* GET /api/badges/history — permanent completion log */
+router.get('/history', requireLogin, async (req, res, next) => {
+  try {
+    const history = await service.getBadgeHistory(req.user.id, req.query.limit);
+    res.json({ history });
+  } catch (err) { next(err); }
+});
 
+/* POST /api/badges/:key/reset — reset a badge so it can be earned again */
+router.post('/:key/reset', requireLogin, async (req, res, next) => {
+  try {
+    const result = await service.resetBadge(req.user.id, req.params.key);
+    if (!result.ok) {
+      const status = result.code === 'NOT_EARNED' ? 400 : 404;
+      return res.status(status).json({ error: result.code });
+    }
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+/* ============================================================
+   Progress page endpoint (kept from previous work)
+   ============================================================ */
 router.get('/progress', requireLogin, async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    // ---- Streak ----
     const streakRows = await safeQuery(
       'SELECT current_streak, longest_streak, total_active_days, last_active_date FROM user_streaks WHERE user_id = $1',
       [userId]
     );
     const streak = streakRows[0] || { current_streak: 0, longest_streak: 0, total_active_days: 0 };
 
-    // ---- Weekly message activity ----
     const messageWeeks = await safeQuery(
       `SELECT to_char(date_trunc('week', m.created_at), 'YYYY-MM-DD') AS week_start,
               COUNT(*)::int AS count
@@ -63,8 +87,6 @@ router.get('/progress', requireLogin, async (req, res, next) => {
         GROUP BY 1 ORDER BY 1 ASC`,
       [userId]
     );
-
-    // ---- Weekly quizzes ----
     const quizWeeks = await safeQuery(
       `SELECT to_char(date_trunc('week', created_at), 'YYYY-MM-DD') AS week_start,
               COUNT(*)::int AS count,
@@ -74,8 +96,6 @@ router.get('/progress', requireLogin, async (req, res, next) => {
         GROUP BY 1 ORDER BY 1 ASC`,
       [userId]
     );
-
-    // ---- Weekly flashcards ----
     const flashWeeks = await safeQuery(
       `SELECT to_char(date_trunc('week', fr.reviewed_at), 'YYYY-MM-DD') AS week_start,
               COUNT(*)::int AS count
@@ -86,8 +106,6 @@ router.get('/progress', requireLogin, async (req, res, next) => {
         GROUP BY 1 ORDER BY 1 ASC`,
       [userId]
     );
-
-    // ---- Topics ----
     const topics = await safeQuery(
       `SELECT q.topic, COUNT(*)::int AS count
          FROM quizzes q
@@ -95,37 +113,30 @@ router.get('/progress', requireLogin, async (req, res, next) => {
         GROUP BY 1 ORDER BY count DESC LIMIT 10`,
       [userId]
     );
-
-    // ---- Badges this month ----
     const badgesThisMonth = await safeQuery(
       `SELECT badge_key, earned_at FROM user_badges
         WHERE user_id = $1 AND earned_at > now() - interval '30 days'
         ORDER BY earned_at DESC`,
       [userId]
     );
-
-    // ---- All-time totals ----
-    const msgTotal     = await safeQuery(
+    const msgTotal   = await safeQuery(
       `SELECT COUNT(*)::int AS n FROM messages m
          JOIN conversations c ON c.id = m.conversation_id
         WHERE c.user_id = $1 AND m.role = 'user'`, [userId]);
-    const quizTotal    = await safeQuery('SELECT COUNT(*)::int AS n FROM quizzes WHERE user_id = $1', [userId]);
-    const flashTotal   = await safeQuery(
+    const quizTotal  = await safeQuery('SELECT COUNT(*)::int AS n FROM quizzes WHERE user_id = $1', [userId]);
+    const flashTotal = await safeQuery(
       `SELECT COUNT(*)::int AS n FROM flashcard_reviews fr
          JOIN flashcards f ON f.id = fr.card_id
          JOIN flashcard_decks d ON d.id = f.deck_id
         WHERE d.user_id = $1`, [userId]);
-    const noteTotal    = await safeQuery('SELECT COUNT(*)::int AS n FROM notes WHERE user_id = $1', [userId]);
-
-    // ---- Hour distribution ----
-    const hourDist = await safeQuery(
+    const noteTotal  = await safeQuery('SELECT COUNT(*)::int AS n FROM notes WHERE user_id = $1', [userId]);
+    const hourDist   = await safeQuery(
       `SELECT EXTRACT(HOUR FROM m.created_at)::int AS hour, COUNT(*)::int AS count
          FROM messages m
          JOIN conversations c ON c.id = m.conversation_id
         WHERE c.user_id = $1 AND m.created_at > now() - interval '30 days'
         GROUP BY 1 ORDER BY 1`, [userId]);
 
-    // ---- Build 8-week timeline ----
     const weeks = [];
     const now = new Date();
     const day = now.getDay();
@@ -163,11 +174,7 @@ router.get('/progress', requireLogin, async (req, res, next) => {
       },
       hourDist: hourDist,
     });
-  } catch (err) {
-    const logger = require('../core/logger');
-    logger.error('[badges/progress] fatal: ' + err.message);
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 module.exports = router;
