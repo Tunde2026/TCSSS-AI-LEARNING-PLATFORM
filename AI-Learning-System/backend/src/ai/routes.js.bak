@@ -418,9 +418,10 @@ router.post('/chat', requireLogin, async (req, res, next) => {
 
     const decision = await route({ user: req.user, messages: messages, agentId: agentId || null });
 
-
+    // Regex-based tool detection runs first — always.
     const toolResult = await runToolDetection({ user: req.user, userText: lastUser.content });
-        let gatewayMessages = messages.slice();
+
+    let gatewayMessages = messages.slice();
     const injectedSystemBlocks = [];
 
     if (decision.agent && decision.agent.system_prompt) {
@@ -446,43 +447,86 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       gatewayMessages = [{ role: 'system', content: combined }].concat(gatewayMessages);
     }
 
-    // ---- Vision path: if any attachment is an image, use OpenAI vision ----
+    // Outer-scope vars — vision and native-tools branches BOTH assign
+    // to these; nothing gets redeclared inside any nested block.
+    let result = null;
+    let nativeTools = [];
+    let usedNative = false;
     let visionHandled = false;
+
+    // ---- Vision path: if any attachment is an image, use OpenAI vision ----
+    /* duplicate removed */
     if (Array.isArray(attachmentIds) && attachmentIds.length) {
       try {
         const attRows = await db.pool.query(
-          `SELECT id, original_name, mime_type, storage_path
-             FROM chat_attachments
-            WHERE id = ANY($1::uuid[]) AND user_id = $2`,
+          'SELECT * FROM chat_attachments WHERE id = ANY($1::uuid[]) AND user_id = $2',
           [attachmentIds, req.user.id]
         );
+
+        if (attRows.rows.length) {
+          logger.info('[ai/chat] attachment columns: ' + Object.keys(attRows.rows[0]).join(','));
+        } else {
+          logger.warn('[ai/chat] no attachment rows for ids: ' + JSON.stringify(attachmentIds));
+        }
+
+        // Tolerant accessors for whatever column names the schema uses
+        function mimeOf(a) {
+          return a.mime_type || a.mimetype || a.mimeType || a.content_type || '';
+        }
+        function pathOf(a) {
+          return a.storage_path || a.file_path || a.filepath || a.path || a.absolute_path || '';
+        }
+
         const imageAtts = attRows.rows.filter(function (a) {
-          return a.mime_type && a.mime_type.indexOf('image/') === 0 && a.storage_path;
+          return String(mimeOf(a)).indexOf('image/') === 0;
         });
+
+        logger.info('[ai/chat] vision: ' + imageAtts.length + ' of ' +
+                    attRows.rows.length + ' attachment(s) are images');
+
         if (imageAtts.length) {
           const images = [];
           for (const a of imageAtts) {
+            const mime = mimeOf(a) || 'image/jpeg';
+            const filePath = pathOf(a);
+            if (!filePath) {
+              logger.warn('[ai/chat] vision: no path field on attachment ' + a.id);
+              continue;
+            }
             try {
-              const buf = fsx.readFileSync(a.storage_path);
-              images.push({ mimetype: a.mime_type, base64: buf.toString('base64') });
+              const buf = fsx.readFileSync(filePath);
+              images.push({ mimetype: mime, base64: buf.toString('base64') });
+              logger.info('[ai/chat] vision: loaded image ' + filePath + ' (' + buf.length + ' bytes)');
             } catch (e) {
-              logger.warn('[ai/chat] could not read image ' + a.storage_path + ': ' + e.message);
+              logger.warn('[ai/chat] vision: cannot read ' + filePath + ' — ' + e.message);
             }
           }
+
           if (images.length) {
             const v = await vision.describeImages({
-              userText: lastUser.content,
+              userText: lastUser.content || 'Look at this image and explain what it shows.',
               images: images,
             });
             if (v.ok) {
               result = { text: v.text, provider: 'openai-vision', attempts: [] };
-              nativeTools = [];
-              usedNative = false;
-              toolResult = { tools: [], injectedContext: [] };
+              toolResult.tools = [];
+              toolResult.injectedContext = [];
               visionHandled = true;
+              logger.info('[ai/chat] answered by vision (' + v.model + ')');
             } else {
-              logger.warn('[ai/chat] vision failed (' + v.code + ') — using text gateway');
+              logger.warn('[ai/chat] vision failed code=' + v.code + ' detail=' + (v.detail || '(none)'));
+              // IMPORTANT: don't let the AI hallucinate — return a direct message.
+              result = {
+                text: "I could not read that image just now. Please try uploading it again, or describe it in text and I'll help.",
+                provider: 'vision-fallback',
+                attempts: [],
+              };
+              toolResult.tools = [];
+              toolResult.injectedContext = [];
+              visionHandled = true;
             }
+          } else {
+            logger.warn('[ai/chat] vision: could not read any images off disk');
           }
         }
       } catch (err) {
@@ -490,33 +534,28 @@ router.post('/chat', requireLogin, async (req, res, next) => {
       }
     }
 
-    // ---- Try native tool-calling first ----
+    // ---- Native tool-calling (only if vision did not handle it) ----
     if (!visionHandled) {
-    let result;
-    let nativeTools = [];
-    let usedNative = false;
-    try {
-      const exec = await runWithTools({
-        messages: gatewayMessages,
-        user: req.user,
-        temperature: 0.7,
-        maxTokens: 4096,
-      });
-      result = { text: exec.text, provider: exec.provider, attempts: exec.attempts };
-      nativeTools = exec.toolObjects || [];
-      usedNative  = !!exec.usedNativeTools;
-    } catch (err) {
-      logger.warn('[ai/chat] tool executor failed (' + err.message + ') — falling back to text');
-      result = await chat({ messages: gatewayMessages });
-    }
+      try {
+        const exec = await runWithTools({
+          messages: gatewayMessages,
+          user: req.user,
+          temperature: 0.7,
+          maxTokens: 4096,
+        });
+        result = { text: exec.text, provider: exec.provider, attempts: exec.attempts };
+        nativeTools = exec.toolObjects || [];
+        usedNative  = !!exec.usedNativeTools;
+      } catch (err) {
+        logger.warn('[ai/chat] tool executor failed (' + err.message + ') — falling back to text');
+        result = await chat({ messages: gatewayMessages });
+      }
 
-    // If the model used native tools, prefer those; otherwise
-    // keep whatever the regex detection already produced.
-    if (usedNative || nativeTools.length) {
-      toolResult.tools = nativeTools;
-      toolResult.injectedContext = [];
+      if (usedNative || nativeTools.length) {
+        toolResult.tools = nativeTools;
+        toolResult.injectedContext = [];
+      }
     }
-    }  // ---- end of native-tools block ----
 
     const renderableTools = toolResult.tools.filter(function (t) {
       return t.type !== 'websearch' && t.type !== 'image' && t.type !== 'photos';
