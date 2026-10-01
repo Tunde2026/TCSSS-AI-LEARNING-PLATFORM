@@ -63,54 +63,55 @@ async function recordActivity(userId, type) {
    ============================================================ */
 async function award(userId, badgeKey, metadata) {
   try {
-    const r = await db.pool.query(
-      `INSERT INTO user_badges (user_id, badge_key, earned_at, completed_at, started_at)
-       VALUES ($1, $2, now(), now(), COALESCE(
+    // 1. Ensure a row exists with started_at
+    await db.pool.query(
+      `INSERT INTO user_badges (user_id, badge_key, earned_at, started_at, times_completed)
+       VALUES ($1, $2, now(), COALESCE(
          (SELECT MIN(created_at) FROM user_activity_log WHERE user_id = $1),
          now()
-       ))
-       ON CONFLICT (user_id, badge_key) DO UPDATE
-         SET earned_at   = CASE
-               WHEN user_badges.earned_at IS NULL THEN now()
-               ELSE user_badges.earned_at
-             END,
-             completed_at = CASE
-               WHEN user_badges.earned_at IS NULL THEN now()
-               ELSE user_badges.completed_at
-             END,
-             duration_seconds = CASE
-               WHEN user_badges.earned_at IS NULL AND user_badges.started_at IS NOT NULL
-                 THEN EXTRACT(EPOCH FROM (now() - user_badges.started_at))::int
-               WHEN user_badges.earned_at IS NULL
-                 THEN EXTRACT(EPOCH FROM (now() - COALESCE(
-                   (SELECT MIN(created_at) FROM user_activity_log WHERE user_id = $1),
-                   now()
-                 )))::int
-               ELSE user_badges.duration_seconds
-             END,
-             progress_data = COALESCE($3::jsonb, user_badges.progress_data)
-       WHERE user_badges.earned_at IS NULL
-       RETURNING id, earned_at`,
-      [userId, badgeKey, metadata ? JSON.stringify(metadata) : null]
+       ), 0)
+       ON CONFLICT (user_id, badge_key) DO NOTHING`,
+      [userId, badgeKey]
     );
 
-    // rowCount > 0 means we either inserted OR successfully re-earned
-    const newlyEarned = r.rowCount > 0;
+    // 2. Only award if earned_at is currently set (in-progress state)
+    const row = (await db.pool.query(
+      `SELECT id, earned_at, started_at FROM user_badges
+        WHERE user_id = $1 AND badge_key = $2`,
+      [userId, badgeKey]
+    )).rows[0];
 
-    if (newlyEarned && r.rows[0] && r.rows[0].earned_at) {
-      // Log to history
-      try {
-        await db.pool.query(
-          `INSERT INTO user_badge_history (user_id, badge_key, duration_seconds, metadata)
-           VALUES ($1, $2,
-             (SELECT duration_seconds FROM user_badges WHERE user_id=$1 AND badge_key=$2),
-             $3)`,
-          [userId, badgeKey, metadata ? JSON.stringify(metadata) : null]
-        );
-      } catch (_) { /* history is best-effort */ }
-    }
+    if (!row) return false;
+    if (!row.earned_at) return false; // already in-progress, nothing to award
 
-    return newlyEarned;
+    // 3. Compute duration
+    const duration = row.started_at
+      ? Math.round((Date.now() - new Date(row.started_at).getTime()) / 1000)
+      : null;
+
+    // 4. Log to history
+    try {
+      await db.pool.query(
+        `INSERT INTO user_badge_history (user_id, badge_key, duration_seconds, metadata)
+         VALUES ($1, $2, $3, $4)`,
+        [userId, badgeKey, duration, metadata ? JSON.stringify(metadata) : null]
+      );
+    } catch (_) {}
+
+    // 5. Auto-reset: clear earned_at, restart the round
+    await db.pool.query(
+      `UPDATE user_badges
+          SET earned_at         = NULL,
+              completed_at      = NULL,
+              duration_seconds  = NULL,
+              started_at        = now(),
+              times_completed   = times_completed + 1,
+              progress_data     = '{}'::jsonb
+        WHERE user_id = $1 AND badge_key = $2`,
+      [userId, badgeKey]
+    );
+
+    return true;
   } catch (err) {
     logger.warn('[badges] award failed for ' + badgeKey + ': ' + err.message);
     return false;
@@ -337,7 +338,7 @@ async function resetBadge(userId, badgeKey) {
 async function getUserBadges(userId) {
   const r = await db.pool.query(
     `SELECT badge_key, earned_at, completed_at, duration_seconds,
-            reset_count, started_at, progress_data
+            reset_count, started_at, progress_data, times_completed
        FROM user_badges
       WHERE user_id = $1
       ORDER BY earned_at DESC NULLS LAST`,
@@ -357,6 +358,7 @@ async function getUserBadges(userId) {
       completed_at: row.completed_at,
       duration_seconds: row.duration_seconds,
       reset_count: row.reset_count,
+      times_completed: row.times_completed || 0,
       progress_data: row.progress_data,
     };
   });

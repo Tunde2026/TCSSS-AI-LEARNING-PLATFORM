@@ -1,0 +1,2 @@
+ALTER TABLE user_badges
+  ADD COLUMN IF NOT EXISTS times_completed INTEGER NOT NULL DEFAULT 0;

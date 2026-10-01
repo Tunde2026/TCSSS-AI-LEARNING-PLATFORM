@@ -27,6 +27,7 @@ const sketches         = require('./queries/sketches');
 const support          = require('./queries/support');
 const announcements = require('./queries/announcements');
 const announcementReplies = require('./queries/announcementReplies');
+const directMessages = require('./queries/directMessages');
 
 module.exports = {
   pool, ping,
@@ -34,5 +35,5 @@ module.exports = {
   flashcards, library, documentChunks, settings,
   knowledge, analytics, providerKeys, auditLog,
   notes, practice, studyPlans, chatAttachments, spark, theory,
-  sketches, support, announcements, announcementReplies,
+  sketches, support, announcements, announcementReplies, directMessages,
 };

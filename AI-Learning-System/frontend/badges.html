@@ -493,7 +493,7 @@
       // Build earned map from user's badges
       data.earned = {};
       (meData.badges || []).forEach(function (b) {
-        if (b.earned) data.earned[b.key] = b;
+        if (b.earned) ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null) = b;
       });
       data.progress = meData.progress || {};
 
@@ -545,7 +545,8 @@
           '<span class="bd-card__badge bd-card__badge--earned"><i class="fa-solid fa-circle-check"></i> Earned</span>' +
           '<span style="opacity:0.7">' + esc(earnedDate) + '</span>' +
           (duration ? '<span style="opacity:0.7">· ' + esc(duration) + '</span>' : '') +
-          (earned.reset_count > 0 ? '<span class="bd-card__badge bd-card__badge--reset">×' + earned.reset_count + '</span>' : '') +
+          (earned.reset_count > 0 ? '<span class="bd-card__badge bd-card__badge--reset">×' + earned.reset_count + '</span>' : '' +
+          (earned.times_completed > 1 ? '<span class="bd-card__badge bd-card__badge--earned">' + earned.times_completed + '×</span>' : '')) +
           '<button type="button" class="bd-reset-btn" data-reset="' + esc(badge.key) + '" title="Reset and try again">' +
             '<i class="fa-solid fa-rotate"></i> Retry' +
           '</button>' +
@@ -600,9 +601,9 @@
     }
 
     var toShow = data.catalog.filter(function (b) {
-      if (b.secret && !data.earned[b.key]) return false;
-      if (activeTab === 'earned') return !!data.earned[b.key];
-      if (activeTab === 'progress') return !data.earned[b.key] && data.progress[b.key];
+      if (b.secret && !((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null)) return false;
+      if (activeTab === 'earned') return ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null) && ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null).times_completed > 0;
+      if (activeTab === 'progress') return !((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null) && data.progress[b.key];
       return true;
     });
 
@@ -625,7 +626,7 @@
       var list = grouped[cat.key] || [];
       if (!list.length) return;
 
-      var earnedInCat = list.filter(function (b) { return data.earned[b.key]; }).length;
+      var earnedInCat = list.filter(function (b) { return ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null); }).length;
       html += '<section class="bd-section">' +
         '<div class="bd-section__head">' +
           '<h2 class="bd-section__title"><i class="fa-solid ' + cat.icon + '" style="color:var(--gold);margin-right:6px"></i>' + esc(cat.title) + '</h2>' +
@@ -633,7 +634,7 @@
         '</div>' +
         '<div class="bd-grid">' +
           list.map(function (b, i) {
-            return renderCard(b, data.earned[b.key], data.progress[b.key], i);
+            return renderCard(b, ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null), data.progress[b.key], i);
           }).join('') +
         '</div>' +
       '</section>';

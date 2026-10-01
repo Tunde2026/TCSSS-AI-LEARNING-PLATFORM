@@ -128,6 +128,7 @@ app.use('/api/library',       require('./src/library').router);
 app.use('/api/voice',         require('./src/voice').router);
 app.use('/api/badges',              require('./src/badges').router);
 app.use('/api/theme',           require('./src/theme').router);
+app.use('/api/dm',              require('./src/dm').router);
 app.use('/api/announcements',       require('./src/announcements').router);
 app.use('/api/admin/announcements', require('./src/announcements').adminRouter);
 app.use('/api/admin',         require('./src/admin').router);
