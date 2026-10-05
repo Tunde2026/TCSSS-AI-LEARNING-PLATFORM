@@ -188,7 +188,6 @@
           '<h2 class="ann-popup__title">' + esc(ann.title) + '</h2>' +
           '<div class="ann-popup__text md-content"></div>' +
         '</div>' +
-        '<div class="ann-popup__reply-slot" data-role="reply-slot"></div>' +
         replyBoxHtml(ann) +
         '\n' +
         '<div class="ann-popup__foot">' +
@@ -261,12 +260,8 @@
         '<div class="ann-bar__content">' +
           '<div class="ann-bar__title">' + esc(ann.title) + '</div>' +
           '<div class="ann-bar__text md-content"></div>' +
-          '<div class="ann-bar__reply-slot" data-role="reply-slot" style="display:none;margin-top:12px;"></div>' +
         '</div>' +
         '<div class="ann-bar__actions">' +
-          '<button type="button" class="ann-btn ann-btn--sm ann-btn--ghost" data-role="reply-toggle" title="Reply">' +
-            '<i class="fa-solid fa-reply"></i>' +
-          '</button>' +
           (ann.action_url && ann.action_label
             ? '<a class="ann-btn ann-btn--sm ann-btn--' + esc(ann.action_style || 'primary') +
               '" href="' + esc(ann.action_url) + '"' +
@@ -281,25 +276,6 @@
       '</div>';
     document.body.appendChild(el);
     renderBody(ann.body, el.querySelector('.ann-bar__text'));
-
-    // Reply toggle
-    var replyToggle = el.querySelector('[data-role="reply-toggle"]');
-    var replySlot = el.querySelector('[data-role="reply-slot"]');
-    if (replyToggle && replySlot) {
-      var replyBuilt = false;
-      replyToggle.addEventListener('click', function () {
-        if (!replyBuilt) {
-          replySlot.appendChild(buildReplySection(ann, currentUser));
-          replyBuilt = true;
-        }
-        var showing = replySlot.style.display !== 'none';
-        replySlot.style.display = showing ? 'none' : 'block';
-        if (!showing) {
-          var ta = replySlot.querySelector('.ann-reply__input');
-          if (ta) setTimeout(function () { ta.focus(); }, 80);
-        }
-      });
-    }
 
     recordView(ann);
 

@@ -179,3 +179,37 @@ module.exports = {
   listActiveForUser, dismiss,
   recordView, listViewers, clearViews,
 };
+
+/* ---------- Announcement replies (appended) ---------- */
+async function replyToAnnouncement(announcementId, userId, body) {
+  const clean = String(body || '').trim().slice(0, 4000);
+  if (!clean) return { ok: false, code: 'EMPTY' };
+  const ann = await db.announcements.findById(announcementId);
+  if (!ann) return { ok: false, code: 'NOT_FOUND' };
+  const row = await db.announcements.createReply(announcementId, userId, clean);
+  return { ok: true, reply: row };
+}
+
+async function listReplies(announcementId) {
+  const ann = await db.announcements.findById(announcementId);
+  if (!ann) return { ok: false, code: 'NOT_FOUND' };
+  const replies = await db.announcements.listRepliesForAnnouncement(announcementId);
+  return { ok: true, announcement: ann, replies };
+}
+
+async function deleteReply(announcementId, replyId, userId, isAdmin) {
+  // Only the original author or an admin may delete a reply.
+  const r = await db.pool.query(
+    `SELECT user_id FROM announcement_replies WHERE id = $1 AND announcement_id = $2`,
+    [replyId, announcementId]
+  );
+  if (!r.rowCount) return { ok: false, code: 'NOT_FOUND' };
+  const owner = r.rows[0].user_id;
+  if (owner !== userId && !isAdmin) return { ok: false, code: 'FORBIDDEN' };
+  await db.pool.query('DELETE FROM announcement_replies WHERE id = $1', [replyId]);
+  return { ok: true };
+}
+
+module.exports.replyToAnnouncement = replyToAnnouncement;
+module.exports.listReplies = listReplies;
+module.exports.deleteReply = deleteReply;

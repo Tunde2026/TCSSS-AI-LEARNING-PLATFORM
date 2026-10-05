@@ -141,6 +141,17 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
 }));
 
 // ---- Static frontend ----
+// ---- Explicit robots.txt + sitemap.xml with correct content-type ----
+app.get('/robots.txt', function (req, res) {
+  res.type('text/plain');
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'robots.txt'));
+});
+
+app.get('/sitemap.xml', function (req, res) {
+  res.type('application/xml');
+  res.sendFile(path.join(__dirname, '..', 'frontend', 'sitemap.xml'));
+});
+
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // ---- 404 for unknown API routes ----

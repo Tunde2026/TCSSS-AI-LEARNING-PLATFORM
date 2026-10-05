@@ -161,6 +161,34 @@ router.get('/:id/views', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+/* ---------- Replies (admin) ---------- */
+router.get('/:id/replies', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await service.listReplies(req.params.id);
+    if (!result.ok) return res.status(404).json({ error: 'Not found' });
+    await audit.log({
+      req, action: 'announcement.view_replies', targetType: 'announcement',
+      targetId: req.params.id, details: { count: result.replies.length },
+    });
+    res.json({ replies: result.replies, announcement: result.announcement });
+  } catch (err) { next(err); }
+});
+
+router.delete('/:id/replies/:replyId', requireAdmin, async (req, res, next) => {
+  try {
+    const result = await service.deleteReply(req.params.id, req.params.replyId, req.user.id, true);
+    if (!result.ok) {
+      if (result.code === 'NOT_FOUND') return res.status(404).json({ error: 'Not found' });
+      return res.status(400).json({ error: 'Could not delete.' });
+    }
+    await audit.log({
+      req, action: 'announcement.delete_reply', targetType: 'announcement_reply',
+      targetId: req.params.replyId,
+    });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 router.delete('/:id/views', requireAdmin, async (req, res, next) => {
   try {
     const result = await service.clearViews(req.params.id);

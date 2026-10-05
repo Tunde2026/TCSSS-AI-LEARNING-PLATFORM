@@ -1,42 +1,27 @@
+# robots.txt — TCSSS AI Learning Platform
+# Allow crawling of all public content. Only block admin paths.
+
 User-agent: *
 Allow: /
-Allow: /about.html
-Allow: /index.html
-Allow: /assets/
-Allow: /uploads/
 Disallow: /admin/
 Disallow: /lab/
 Disallow: /api/
-Disallow: /chat.html
-Disallow: /lab.html
-Disallow: /library.html
-Disallow: /settings.html
-Disallow: /support.html
-Disallow: /spark.html
+Disallow: /uploads/branding/
 
-# AI crawlers — explicitly welcome
-User-agent: GPTBot
+# Common search-engine bots — explicit allow
+User-agent: Googlebot
 Allow: /
-Allow: /about.html
 
-User-agent: ChatGPT-User
+User-agent: Googlebot-Image
 Allow: /
-Allow: /about.html
 
-User-agent: PerplexityBot
+User-agent: Bingbot
 Allow: /
-Allow: /about.html
 
-User-agent: ClaudeBot
+User-agent: Twitterbot
 Allow: /
-Allow: /about.html
 
-User-agent: Google-Extended
+User-agent: facebookexternalhit
 Allow: /
-Allow: /about.html
-
-User-agent: CCBot
-Allow: /
-Allow: /about.html
 
 Sitemap: https://tcsss-ai-learning-platform.onrender.com/sitemap.xml

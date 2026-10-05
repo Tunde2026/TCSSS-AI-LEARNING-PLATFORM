@@ -9,7 +9,9 @@ async function listAll() {
             (SELECT COUNT(*)::int FROM announcement_views v
               WHERE v.announcement_id = a.id) AS view_count,
             (SELECT COUNT(*)::int FROM announcement_dismissals d
-              WHERE d.announcement_id = a.id) AS dismissed_count
+              WHERE d.announcement_id = a.id) AS dismissed_count,
+            (SELECT COUNT(*)::int FROM announcement_replies rp
+              WHERE rp.announcement_id = a.id) AS reply_count
        FROM announcements a
        LEFT JOIN users u ON u.id = a.created_by
       WHERE a.deleted_at IS NULL
@@ -164,3 +166,54 @@ module.exports = {
   listActiveForUser, recordDismissal,
   recordView, listViewers, clearViews,
 };
+
+/* ---------- Announcement replies ---------- */
+async function createReply(announcementId, userId, body) {
+  const r = await pool.query(
+    `INSERT INTO announcement_replies (announcement_id, user_id, body)
+     VALUES ($1, $2, $3)
+     RETURNING *`,
+    [announcementId, userId, body]
+  );
+  return r.rows[0];
+}
+
+async function listRepliesForAnnouncement(announcementId, { limit = 200 } = {}) {
+  const r = await pool.query(
+    `SELECT r.id, r.announcement_id, r.user_id, r.body, r.created_at, r.updated_at,
+            u.name AS user_name, u.email AS user_email, u.role AS user_role
+       FROM announcement_replies r
+       JOIN users u ON u.id = r.user_id
+      WHERE r.announcement_id = $1
+      ORDER BY r.created_at ASC
+      LIMIT $2`,
+    [announcementId, limit]
+  );
+  return r.rows;
+}
+
+async function countRepliesByAnnouncement() {
+  const r = await pool.query(
+    `SELECT announcement_id, COUNT(*)::int AS count
+       FROM announcement_replies
+      GROUP BY announcement_id`
+  );
+  const out = {};
+  r.rows.forEach(function (row) { out[row.announcement_id] = row.count; });
+  return out;
+}
+
+async function deleteReply(replyId, userId) {
+  const r = await pool.query(
+    `DELETE FROM announcement_replies
+      WHERE id = $1 AND user_id = $2
+      RETURNING id`,
+    [replyId, userId]
+  );
+  return r.rowCount > 0;
+}
+
+module.exports.createReply = createReply;
+module.exports.listRepliesForAnnouncement = listRepliesForAnnouncement;
+module.exports.countRepliesByAnnouncement = countRepliesByAnnouncement;
+module.exports.deleteReply = deleteReply;

@@ -36,6 +36,39 @@ router.post('/:id/dismiss', requireLogin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ---------- Replies ----------
+router.get('/:id/replies', requireLogin, async (req, res, next) => {
+  try {
+    const result = await service.listReplies(req.params.id);
+    if (!result.ok) return res.status(404).json({ error: 'Not found' });
+    res.json({ replies: result.replies, announcement: { id: result.announcement.id, title: result.announcement.title } });
+  } catch (err) { next(err); }
+});
+
+router.post('/:id/replies', requireLogin, async (req, res, next) => {
+  try {
+    const result = await service.replyToAnnouncement(req.params.id, req.user.id, req.body && req.body.body);
+    if (!result.ok) {
+      if (result.code === 'NOT_FOUND') return res.status(404).json({ error: 'Not found' });
+      if (result.code === 'EMPTY') return res.status(400).json({ error: 'Reply cannot be empty.' });
+      return res.status(400).json({ error: 'Invalid reply.' });
+    }
+    res.status(201).json({ reply: result.reply });
+  } catch (err) { next(err); }
+});
+
+router.delete('/:id/replies/:replyId', requireLogin, async (req, res, next) => {
+  try {
+    const result = await service.deleteReply(req.params.id, req.params.replyId, req.user.id, false);
+    if (!result.ok) {
+      if (result.code === 'NOT_FOUND') return res.status(404).json({ error: 'Not found' });
+      if (result.code === 'FORBIDDEN') return res.status(403).json({ error: 'Not allowed.' });
+      return res.status(400).json({ error: 'Could not delete.' });
+    }
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
 
 // Student submits a reply to an announcement
 router.post('/:id/reply', requireLogin, async (req, res, next) => {
