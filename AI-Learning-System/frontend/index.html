@@ -26,14 +26,14 @@
 <meta name="twitter:description" content="Free AI tutor for Nigerian secondary school students. Practice WAEC and NECO with quizzes, flashcards, and exam mode.">
 <meta name="twitter:image" content="https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png">
 
-<link rel="stylesheet" href="assets/shell.css?v=20261005f">
+<link rel="stylesheet" href="assets/shell.css?v=20261005g">
 <style>
   /* ============================================================
      Landing page — index.html
      ============================================================ */
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; scroll-padding-top: 72px; }
-  body { margin: 0; font-family: var(--font-body); background: var(--blush); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.65; }
+  body { margin: 0; font-family: var(--font-body); background: var(--blush); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.65; overflow-x: hidden; }
   a { color: var(--red); text-decoration: none; }
   a:hover { text-decoration: underline; }
   img { max-width: 100%; display: block; }
@@ -46,7 +46,9 @@
     -webkit-backdrop-filter: saturate(180%) blur(14px);
     border-bottom: 1px solid rgba(255,255,255,0.08);
     padding: 0 20px;
+    transition: box-shadow 320ms ease;
   }
+  .site-head.is-scrolled { box-shadow: 0 8px 30px rgba(17,16,74,0.32); }
   .site-head__row {
     max-width: 1240px; margin: 0 auto;
     height: 64px;
@@ -58,16 +60,19 @@
     color: #fff; text-decoration: none;
     font-family: var(--font-head); font-weight: 600; font-size: 0.98rem;
     min-width: 0;
+    transition: transform 300ms cubic-bezier(0.16,1,0.3,1);
   }
-  .site-head__brand:hover { text-decoration: none; }
+  .site-head__brand:hover { text-decoration: none; transform: translateX(2px); }
   .site-head__logo {
     width: 38px; height: 38px; border-radius: 10px;
     background: rgba(255,255,255,0.08);
     display: grid; place-items: center;
     overflow: hidden; flex-shrink: 0;
     font-family: var(--font-ui); font-size: 0.62rem; color: rgba(255,255,255,0.5);
+    transition: transform 400ms cubic-bezier(0.16,1,0.3,1), box-shadow 400ms ease;
   }
   .site-head__logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; background: #fff; }
+  .site-head__brand:hover .site-head__logo { transform: rotate(-6deg) scale(1.06); box-shadow: 0 6px 18px rgba(201,149,46,0.32); }
   .site-head__title { line-height: 1.15; }
   .site-head__title small {
     display: block; font-family: var(--font-ui); font-size: 0.56rem;
@@ -89,12 +94,12 @@
     color: #fff;
     box-shadow: 0 4px 12px rgba(230,17,30,0.32);
   }
-  .head-btn--primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(230,17,30,0.42); text-decoration: none; color: #fff; }
+  .head-btn--primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(230,17,30,0.48); text-decoration: none; color: #fff; }
   .head-btn--ghost {
     background: rgba(255,255,255,0.10); color: #fff;
     border: 1px solid rgba(255,255,255,0.16);
   }
-  .head-btn--ghost:hover { background: rgba(255,255,255,0.18); text-decoration: none; color: #fff; }
+  .head-btn--ghost:hover { background: rgba(255,255,255,0.18); text-decoration: none; color: #fff; transform: translateY(-2px); }
   @media (max-width: 520px) {
     .site-head__title small { display: none; }
     .site-head__title { font-size: 0.88rem; }
@@ -111,7 +116,7 @@
   .section--navy { background: linear-gradient(135deg, #11104A, #201F6B); color: #fff; }
   @media (max-width: 640px) { .section { padding: 44px 0; } }
 
-  /* ---------- Hero ---------- */
+  /* ---------- Hero (with animated background) ---------- */
   .hero {
     position: relative; overflow: hidden;
     padding: 72px 0 80px;
@@ -124,9 +129,14 @@
   .hero::before, .hero::after {
     content: ''; position: absolute; border-radius: 50%;
     filter: blur(70px); pointer-events: none;
+    animation: orbFloat 14s ease-in-out infinite;
   }
-  .hero::before { width: 320px; height: 320px; background: #C9952E; top: -90px; left: -60px; opacity: 0.32; }
-  .hero::after  { width: 260px; height: 260px; background: #E6111E; bottom: -80px; right: -40px; opacity: 0.22; }
+  .hero::before { width: 320px; height: 320px; background: #C9952E; top: -90px; left: -60px; opacity: 0.32; animation-delay: 0s; }
+  .hero::after  { width: 260px; height: 260px; background: #E6111E; bottom: -80px; right: -40px; opacity: 0.22; animation-delay: -7s; }
+  @keyframes orbFloat {
+    0%,100% { transform: translate(0,0) scale(1); }
+    50%     { transform: translate(30px,-20px) scale(1.15); }
+  }
   .hero__inner { position: relative; z-index: 2; max-width: 940px; margin: 0 auto; text-align: center; }
   .hero__eyebrow {
     display: inline-flex; align-items: center; gap: 8px;
@@ -136,6 +146,7 @@
     font-family: var(--font-ui); font-size: 0.62rem;
     letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700;
     color: #fff; margin-bottom: 22px;
+    animation: fadeUp 900ms 200ms cubic-bezier(0.16,1,0.3,1) both;
   }
   .hero__eyebrow i { color: #FFD97D; }
   .hero__title {
@@ -143,6 +154,7 @@
     font-size: clamp(2rem, 5.5vw, 3.4rem);
     line-height: 1.1; letter-spacing: -0.025em;
     color: #fff; margin: 0 0 18px;
+    animation: fadeUp 900ms 320ms cubic-bezier(0.16,1,0.3,1) both;
   }
   .hero__title em {
     font-style: normal; color: #FFD97D;
@@ -154,10 +166,12 @@
     font-size: clamp(1rem, 1.6vw, 1.15rem);
     color: rgba(255,255,255,0.88);
     max-width: 720px; margin: 0 auto 32px; line-height: 1.65;
+    animation: fadeUp 900ms 440ms cubic-bezier(0.16,1,0.3,1) both;
   }
   .hero__cta-row {
     display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
     margin-bottom: 36px;
+    animation: fadeUp 900ms 560ms cubic-bezier(0.16,1,0.3,1) both;
   }
   .hero-cta {
     display: inline-flex; align-items: center; gap: 9px;
@@ -165,12 +179,20 @@
     font-size: 0.98rem; font-weight: 700; text-decoration: none;
     transition: transform 220ms cubic-bezier(0.16,1,0.3,1), box-shadow 220ms ease;
     -webkit-tap-highlight-color: transparent;
+    position: relative; overflow: hidden;
   }
   .hero-cta--primary {
     background: linear-gradient(135deg, #E6111E, #B80F1A);
     color: #fff; box-shadow: 0 10px 26px rgba(230,17,30,0.42);
   }
   .hero-cta--primary:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(230,17,30,0.55); color: #fff; text-decoration: none; }
+  .hero-cta--primary::after {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.24), transparent);
+    transition: left 600ms ease;
+  }
+  .hero-cta--primary:hover::after { left: 100%; }
   .hero-cta--ghost {
     background: rgba(255,255,255,0.10); color: #fff;
     border: 1.5px solid rgba(255,255,255,0.22);
@@ -181,9 +203,29 @@
     font-family: var(--font-ui); font-size: 0.66rem;
     letter-spacing: 0.10em; text-transform: uppercase;
     color: rgba(255,255,255,0.7);
+    animation: fadeUp 900ms 680ms cubic-bezier(0.16,1,0.3,1) both;
   }
   .hero__trust span { display: inline-flex; align-items: center; gap: 8px; }
   .hero__trust i { color: #FFD97D; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Floating particles */
+  .hero__particle {
+    position: absolute;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    pointer-events: none;
+    animation: particleFloat 12s ease-in-out infinite;
+  }
+  @keyframes particleFloat {
+    0%,100% { transform: translateY(0); opacity: 0.3; }
+    50%     { transform: translateY(-24px); opacity: 0.9; }
+  }
 
   /* ---------- Section headings ---------- */
   .sec-head { max-width: 720px; margin: 0 auto 40px; text-align: center; }
@@ -214,13 +256,17 @@
     background: var(--white); border: 1.5px solid var(--border);
     border-radius: 22px; padding: 32px 28px;
     box-shadow: 0 10px 32px rgba(17,16,74,0.06);
+    transition: transform 400ms cubic-bezier(0.16,1,0.3,1), box-shadow 400ms ease;
   }
+  .split__panel:hover { transform: translateY(-4px); box-shadow: 0 20px 48px rgba(17,16,74,0.12); }
   .split__panel-list { list-style: none; padding: 0; margin: 0; }
   .split__panel-list li {
     display: flex; gap: 12px; padding: 12px 0;
     border-bottom: 1px solid var(--border-soft);
     font-size: 0.94rem; color: var(--ink); line-height: 1.55;
+    transition: transform 240ms ease, background 240ms ease;
   }
+  .split__panel-list li:hover { transform: translateX(4px); }
   .split__panel-list li:last-child { border-bottom: none; padding-bottom: 0; }
   .split__panel-list li:first-child { padding-top: 0; }
   .split__panel-list i {
@@ -228,7 +274,9 @@
     background: #EAF7EE; color: #2F8F4A;
     display: grid; place-items: center; flex-shrink: 0;
     font-size: 0.72rem; margin-top: 1px;
+    transition: transform 240ms cubic-bezier(0.16,1,0.3,1);
   }
+  .split__panel-list li:hover i { transform: scale(1.15) rotate(-8deg); }
 
   /* ---------- Features grid ---------- */
   .features {
@@ -246,19 +294,27 @@
                 border-color 240ms ease, box-shadow 320ms ease;
   }
   .feature:hover {
-    transform: translateY(-4px);
+    transform: translateY(-6px);
     border-color: var(--gold);
-    box-shadow: 0 16px 36px rgba(17,16,74,0.10);
+    box-shadow: 0 20px 44px rgba(17,16,74,0.12);
   }
+  .feature::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at top right, rgba(201,149,46,0.10), transparent 65%);
+    opacity: 0; transition: opacity 320ms ease; pointer-events: none;
+  }
+  .feature:hover::before { opacity: 1; }
   .feature__icon {
     width: 46px; height: 46px; border-radius: 13px;
     background: var(--blush); color: var(--red);
     display: grid; place-items: center;
     font-size: 1.1rem; margin-bottom: 14px;
-    transition: transform 320ms ease, background 240ms ease, color 240ms ease;
+    transition: transform 400ms cubic-bezier(0.16,1,0.3,1),
+                background 300ms ease, color 300ms ease;
+    position: relative; z-index: 1;
   }
   .feature:hover .feature__icon {
-    transform: scale(1.08) rotate(-4deg);
+    transform: scale(1.12) rotate(-6deg);
     background: linear-gradient(135deg, var(--red), var(--deep-red));
     color: #fff;
   }
@@ -266,10 +322,12 @@
     font-family: var(--font-head); font-weight: 600;
     font-size: 1.05rem; color: var(--navy);
     margin: 0 0 6px;
+    position: relative; z-index: 1;
   }
   .feature p {
     font-size: 0.88rem; color: var(--slate);
     line-height: 1.55; margin: 0;
+    position: relative; z-index: 1;
   }
 
   /* ---------- Benefits (navy section) ---------- */
@@ -283,13 +341,22 @@
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 18px;
+    transition: transform 380ms cubic-bezier(0.16,1,0.3,1),
+                background 300ms ease, border-color 300ms ease;
+  }
+  .benefit:hover {
+    transform: translateY(-6px) scale(1.02);
+    background: rgba(255,255,255,0.10);
+    border-color: rgba(201,149,46,0.4);
   }
   .benefit__icon {
     width: 42px; height: 42px; border-radius: 12px;
     background: rgba(201,149,46,0.22); color: #FFD97D;
     display: grid; place-items: center;
     font-size: 1.05rem; margin-bottom: 14px;
+    transition: transform 380ms cubic-bezier(0.16,1,0.3,1);
   }
+  .benefit:hover .benefit__icon { transform: scale(1.12) rotate(8deg); }
   .benefit h3 {
     font-family: var(--font-head); font-weight: 600;
     font-size: 1.02rem; color: #fff; margin: 0 0 8px;
@@ -308,16 +375,31 @@
     padding: 22px 18px; text-align: center;
     background: var(--white); border: 1.5px solid var(--border);
     border-radius: 18px;
-    transition: transform 320ms cubic-bezier(0.16,1,0.3,1), border-color 240ms ease;
+    transition: transform 380ms cubic-bezier(0.16,1,0.3,1),
+                border-color 260ms ease, box-shadow 380ms ease;
+    position: relative; overflow: hidden;
   }
-  .cycle-step:hover { transform: translateY(-4px); border-color: var(--gold); }
+  .cycle-step:hover {
+    transform: translateY(-6px);
+    border-color: var(--gold);
+    box-shadow: 0 16px 36px rgba(17,16,74,0.12);
+  }
+  .cycle-step::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; background: linear-gradient(90deg, var(--gold), var(--red));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 500ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .cycle-step:hover::after { transform: scaleX(1); }
   .cycle-step__num {
     width: 42px; height: 42px; border-radius: 12px;
     background: linear-gradient(155deg, var(--navy), var(--soft-navy));
     color: #fff; display: grid; place-items: center;
     font-family: var(--font-head); font-weight: 700;
     font-size: 1rem; margin: 0 auto 12px;
+    transition: transform 400ms cubic-bezier(0.16,1,0.3,1);
   }
+  .cycle-step:hover .cycle-step__num { transform: scale(1.12) rotate(-6deg); }
   .cycle-step:nth-child(2) .cycle-step__num { background: linear-gradient(155deg, #C9952E, #9E7524); }
   .cycle-step:nth-child(3) .cycle-step__num { background: linear-gradient(155deg, #E6111E, #B80F1A); }
   .cycle-step:nth-child(4) .cycle-step__num { background: linear-gradient(155deg, #2F8F4A, #1F6B35); }
@@ -327,6 +409,57 @@
     font-size: 1rem; color: var(--navy); margin: 0 0 6px;
   }
   .cycle-step p { font-size: 0.82rem; color: var(--slate); line-height: 1.5; margin: 0; }
+
+  /* ---------- Story / competition section ---------- */
+  .story {
+    background: linear-gradient(135deg, #FBF3E1, #F8EAC7);
+    border-radius: 24px; padding: 44px 40px;
+    border: 1px solid rgba(201,149,46,0.24);
+    position: relative; overflow: hidden;
+  }
+  @media (max-width: 640px) { .story { padding: 32px 24px; border-radius: 20px; } }
+  .story__badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px;
+    background: #11104A; color: #FFD97D;
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .story__title {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: clamp(1.35rem, 3vw, 1.85rem);
+    color: var(--navy); margin: 0 0 16px; line-height: 1.25;
+    letter-spacing: -0.02em;
+  }
+  .story__body p {
+    font-size: 0.98rem; color: #4A3B10; line-height: 1.75; margin: 0 0 14px;
+  }
+  .story__body strong { color: #6A4F13; font-weight: 700; }
+  .story__stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; margin-top: 28px;
+  }
+  @media (max-width: 640px) { .story__stats { grid-template-columns: 1fr; gap: 12px; } }
+  .story__stat {
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(201,149,46,0.24);
+    border-radius: 14px; padding: 18px 16px;
+    text-align: center;
+    transition: transform 320ms cubic-bezier(0.16,1,0.3,1), background 260ms ease;
+  }
+  .story__stat:hover { transform: translateY(-4px); background: rgba(255,255,255,0.9); }
+  .story__stat-num {
+    font-family: var(--font-head); font-size: 1.65rem; font-weight: 700;
+    color: #6A4F13; line-height: 1;
+    margin-bottom: 6px; letter-spacing: -0.02em;
+  }
+  .story__stat-num small { font-size: 0.85rem; opacity: 0.7; margin-left: 3px; }
+  .story__stat-label {
+    font-family: var(--font-ui); font-size: 0.6rem;
+    letter-spacing: 0.09em; text-transform: uppercase;
+    color: #6A4F13; font-weight: 700; opacity: 0.75;
+  }
 
   /* ---------- Team ---------- */
   .team-grid {
@@ -339,22 +472,40 @@
     background: var(--white); border: 1.5px solid var(--border);
     border-radius: 16px; padding: 14px 12px 14px;
     text-align: center;
-    transition: transform 320ms cubic-bezier(0.16,1,0.3,1), border-color 240ms ease, box-shadow 320ms ease;
+    transition: transform 380ms cubic-bezier(0.16,1,0.3,1),
+                border-color 260ms ease, box-shadow 380ms ease;
+    position: relative; overflow: hidden;
   }
-  .team-card:hover { transform: translateY(-4px); border-color: var(--gold); box-shadow: 0 12px 28px rgba(17,16,74,0.10); }
+  .team-card::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; background: linear-gradient(90deg, var(--gold), var(--red));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 500ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .team-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--gold);
+    box-shadow: 0 18px 40px rgba(17,16,74,0.14);
+  }
+  .team-card:hover::after { transform: scaleX(1); }
   .team-card__photo {
     aspect-ratio: 1 / 1;
     border-radius: 12px;
     background: linear-gradient(155deg, var(--navy), var(--soft-navy));
     display: grid; place-items: center;
     margin-bottom: 10px; overflow: hidden;
+    transition: transform 500ms cubic-bezier(0.16,1,0.3,1), box-shadow 400ms ease;
+  }
+  .team-card:hover .team-card__photo {
+    box-shadow: 0 10px 26px rgba(17,16,74,0.24);
   }
   .team-card__photo span {
     font-family: var(--font-head); font-weight: 700;
     font-size: 1.7rem; color: rgba(255,255,255,0.88);
     letter-spacing: 0.04em;
   }
-  .team-card__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .team-card__photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 500ms cubic-bezier(0.16,1,0.3,1); }
+  .team-card:hover .team-card__photo img { transform: scale(1.08); }
   .team-card h3 {
     font-family: var(--font-head); font-weight: 600;
     font-size: 0.88rem; color: var(--navy); margin: 0 0 3px;
@@ -367,15 +518,19 @@
   }
   .team-card--lead .team-card__photo { background: linear-gradient(155deg, #C9952E, #9E7524); }
   .team-card--lead p { color: var(--gold); font-weight: 700; }
+  .team-card--lead::before {
+    content: '★'; position: absolute; top: 8px; right: 10px;
+    color: var(--gold); font-size: 0.85rem; z-index: 2;
+  }
 
   /* ---------- FAQ ---------- */
   .faq { max-width: 860px; margin: 0 auto; }
   .faq details {
     background: var(--white); border: 1.5px solid var(--border);
     border-radius: 14px; margin-bottom: 10px; overflow: hidden;
-    transition: border-color 240ms ease, box-shadow 240ms ease;
+    transition: border-color 240ms ease, box-shadow 240ms ease, transform 280ms ease;
   }
-  .faq details:hover { border-color: rgba(17,16,74,0.24); }
+  .faq details:hover { border-color: rgba(17,16,74,0.24); transform: translateX(4px); }
   .faq details[open] { border-color: var(--gold); box-shadow: 0 6px 20px rgba(201,149,46,0.10); }
   .faq summary {
     padding: 16px 22px; cursor: pointer;
@@ -414,7 +569,9 @@
     padding: 32px 28px;
     box-shadow: 0 20px 48px rgba(17,16,74,0.14);
     border: 1.5px solid var(--border);
+    transition: box-shadow 400ms ease;
   }
+  .login-card:hover { box-shadow: 0 24px 60px rgba(17,16,74,0.20); }
   .login-card__brand { text-align: center; margin-bottom: 22px; }
   .login-card__mark {
     width: 62px; height: 62px; border-radius: 18px;
@@ -423,7 +580,9 @@
     margin: 0 auto 14px; overflow: hidden;
     font-family: var(--font-ui); font-size: 0.62rem; color: rgba(255,255,255,0.55);
     box-shadow: 0 8px 22px rgba(17,16,74,0.18);
+    transition: transform 400ms cubic-bezier(0.16,1,0.3,1);
   }
+  .login-card:hover .login-card__mark { transform: rotate(-4deg) scale(1.05); }
   .login-card__mark img { width: 100%; height: 100%; object-fit: contain; padding: 8px; background: #fff; }
   .login-card__title {
     font-family: var(--font-head); font-size: 1.4rem;
@@ -513,6 +672,12 @@
     color: #fff; display: grid; place-items: center;
     font-family: var(--font-head); font-weight: 700; font-size: 1.6rem;
     margin: 0 auto 16px;
+    animation: avatarPop 600ms cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes avatarPop {
+    0%   { transform: scale(0.6); opacity: 0; }
+    60%  { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
   }
   .signed-in-card h3 {
     font-family: var(--font-head); font-size: 1.15rem;
@@ -540,8 +705,8 @@
   }
   .site-foot ul { list-style: none; padding: 0; margin: 0; }
   .site-foot ul li { margin-bottom: 8px; }
-  .site-foot a { color: rgba(255,255,255,0.72); text-decoration: none; }
-  .site-foot a:hover { color: #fff; text-decoration: underline; }
+  .site-foot a { color: rgba(255,255,255,0.72); text-decoration: none; transition: color 200ms ease, transform 200ms ease; display: inline-block; }
+  .site-foot a:hover { color: #fff; text-decoration: underline; transform: translateX(4px); }
   .site-foot__bottom {
     padding-top: 24px;
     border-top: 1px solid rgba(255,255,255,0.10);
@@ -551,13 +716,15 @@
 
   /* Reveal on scroll */
   .reveal {
-    opacity: 0; transform: translateY(20px);
-    transition: opacity 640ms cubic-bezier(0.16,1,0.3,1), transform 640ms cubic-bezier(0.16,1,0.3,1);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 720ms cubic-bezier(0.16,1,0.3,1), transform 720ms cubic-bezier(0.16,1,0.3,1);
+    transition-delay: calc(var(--i, 0) * 60ms);
   }
   .reveal.is-visible { opacity: 1; transform: translateY(0); }
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
     .hero { animation: none; }
+    * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
 </style>
 </head>
@@ -566,7 +733,7 @@
 <!-- ============================================================
      STICKY HEADER
      ============================================================ -->
-<header class="site-head">
+<header class="site-head" id="siteHead">
   <div class="site-head__row">
     <a class="site-head__brand" href="/" aria-label="AI Learning Platform home">
       <div class="site-head__logo" id="headLogo">TC</div>
@@ -650,7 +817,7 @@
           at a level students from JSS 1 to SSS 3 can follow.
         </p>
       </div>
-      <div class="split__panel reveal">
+      <div class="split__panel reveal" style="--i:1">
         <h3 style="font-family:var(--font-head);font-size:1.05rem;color:var(--navy);margin:0 0 16px;">
           At a glance
         </h3>
@@ -669,9 +836,61 @@
 </section>
 
 <!-- ============================================================
+     STORY — Inter-District AI Competition
+     ============================================================ -->
+<section class="section section--blush">
+  <div class="wrap">
+    <div class="story reveal">
+      <div class="story__badge">
+        <i class="fa-solid fa-trophy"></i>
+        Built for the TechUp Boys Inter-District AI Competition
+      </div>
+      <h2 class="story__title">
+        From a school project to a competition entry — this platform was built to win
+      </h2>
+      <div class="story__body">
+        <p>
+          This platform was created for the <strong>Inter-District AI Competition</strong> organised
+          by <strong>Learntor Foundation</strong> through the <strong>TechUp Boys initiative</strong> — a programme
+          that has trained over <strong>13,000 SS2 boys</strong> across <strong>39 public secondary schools</strong> in
+          Lagos State. The competition brings together government schools from across the district
+          to compete in AI innovation projects, digital footprint challenges, and school-to-school
+          competitions.
+        </p>
+        <p>
+          The TCSSS AI Learning Platform is our school's entry — a fully functional AI-powered
+          study tool built by students, for students. It showcases what's possible when young
+          Nigerians are given access to technology, mentorship, and the freedom to build.
+        </p>
+        <p>
+          <strong>Our team</strong> — a group of SS2 students, now in SSS3 from Tomia Community Senior Secondary
+          School — participated in the TechUp Boys programme, learned AI concepts, leadership,
+          and digital skills, and then applied everything to build this platform. If we win,
+          the prize will help us expand the platform to serve more students across Lagos State.
+        </p>
+      </div>
+      <div class="story__stats">
+        <div class="story__stat">
+          <div class="story__stat-num">13,000<small>+</small></div>
+          <div class="story__stat-label">Boys Trained</div>
+        </div>
+        <div class="story__stat">
+          <div class="story__stat-num">39</div>
+          <div class="story__stat-label">Government Schools Reached</div>
+        </div>
+        <div class="story__stat">
+          <div class="story__stat-num">4.0</div>
+          <div class="story__stat-label">TechUp Boys Cohort</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
      FEATURES (9 tools)
      ============================================================ -->
-<section class="section section--blush" id="features">
+<section class="section section--white" id="features">
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="sec-head__eyebrow">
@@ -687,55 +906,55 @@
 
     <div class="features">
 
-      <div class="feature reveal">
+      <div class="feature reveal" style="--i:0">
         <div class="feature__icon"><i class="fa-solid fa-comment-dots"></i></div>
         <h3>AI Chat Tutor</h3>
         <p>Ask any question in plain English. Get step-by-step explanations with real examples from Nigerian life. Available 24/7, patient, and never makes you feel bad for asking.</p>
       </div>
 
-      <div class="feature reveal">
+      <div class="feature reveal" style="--i:1">
         <div class="feature__icon"><i class="fa-solid fa-circle-question"></i></div>
         <h3>Quizzes</h3>
         <p>Generate auto-marked multiple-choice quizzes on any topic. Every answer comes with an explanation of why it's right or wrong. Take them in Chat or in the Lab.</p>
       </div>
 
-      <div class="feature reveal">
+      <div class="feature reveal" style="--i:2">
         <div class="feature__icon"><i class="fa-solid fa-clone"></i></div>
         <h3>Flashcards</h3>
         <p>Review key terms with spaced repetition. Cards you struggle with come back sooner, cards you know are spaced further apart — the fastest way to memorise definitions.</p>
       </div>
 
-      <div class="feature reveal">
+      <div class="feature reveal" style="--i:3">
         <div class="feature__icon"><i class="fa-solid fa-spell-check"></i></div>
         <h3>Theory Practice</h3>
         <p>Fill-in-the-gap questions that test recall exactly the way WAEC and NECO ask them. Every blank is graded instantly and shows the accepted answer.</p>
       </div>
 
-      <div class="feature reveal">
+      <div class="feature reveal" style="--i:4">
         <div class="feature__icon"><i class="fa-solid fa-stopwatch"></i></div>
         <h3>Exam Mode</h3>
         <p>Take timed exams under real conditions — no hints, no second chances. Automatically submitted when time runs out, just like the real thing.</p>
       </div>
 
-      <div class="feature reveal">
+      <div class="feature reveal" style="--i:5">
         <div class="feature__icon"><i class="fa-solid fa-diagram-project"></i></div>
         <h3>Visualizations</h3>
         <p>Turn any topic into a flowchart, mind map, or diagram you can actually see and remember. Especially useful for Biology cycles, Geography processes, and Physics concepts.</p>
       </div>
 
-      <div class="feature reveal">
+      <div class="feature reveal" style="--i:6">
         <div class="feature__icon"><i class="fa-solid fa-pen-ruler"></i></div>
         <h3>Sketch &amp; Formula Studio</h3>
         <p>Write chemistry formulas and physics equations correctly. H₂SO₄, not H2SO4. CO₂, Ca(OH)₂, and every mathematical expression renders beautifully.</p>
       </div>
 
-      <div class="feature reveal">
+      <div class="feature reveal" style="--i:7">
         <div class="feature__icon"><i class="fa-solid fa-calendar-days"></i></div>
         <h3>Study Plans</h3>
         <p>Generate a structured multi-day revision plan for any topic or exam. Tick off tasks as you complete them and watch your progress grow.</p>
       </div>
 
-      <div class="feature reveal">
+      <div class="feature reveal" style="--i:8">
         <div class="feature__icon"><i class="fa-solid fa-clipboard-list"></i></div>
         <h3>Mistake Bank</h3>
         <p>Every question you get wrong is collected automatically, grouped by topic, with the correct answer and an explanation. Revise only what you actually need to.</p>
@@ -748,7 +967,7 @@
 <!-- ============================================================
      WHO IT'S FOR
      ============================================================ -->
-<section class="section section--white" id="who">
+<section class="section section--blush" id="who">
   <div class="wrap">
     <div class="sec-head reveal">
       <div class="sec-head__eyebrow">
@@ -769,13 +988,13 @@
         <p>Build strong foundations in Mathematics, English, Basic Science, and Social Studies. The AI tutor explains concepts slowly and checks that you understand before moving on.</p>
       </div>
 
-      <div class="feature reveal" style="text-align:left;">
+      <div class="feature reveal" style="text-align:left; --i:1">
         <div class="feature__icon"><i class="fa-solid fa-book-open"></i></div>
         <h3>Senior Secondary (SSS 1–2)</h3>
         <p>Learn new topics ahead of class, revise after lessons, and build a personal library of notes and flashcards that follow you all the way to your final exams.</p>
       </div>
 
-      <div class="feature reveal" style="text-align:left;">
+      <div class="feature reveal" style="text-align:left; --i:2">
         <div class="feature__icon"><i class="fa-solid fa-trophy"></i></div>
         <h3>SSS 3 — WAEC &amp; NECO candidates</h3>
         <p>Timed exam practice, past-question style quizzes, a mistake bank that tracks your weak topics, and a study plan you can follow day by day until the exam.</p>
@@ -803,37 +1022,37 @@
 
     <div class="benefits">
 
-      <div class="benefit reveal">
+      <div class="benefit reveal" style="--i:0">
         <div class="benefit__icon"><i class="fa-solid fa-ban"></i></div>
         <h3>Completely free</h3>
         <p>No subscriptions, no ads, no hidden charges. Built and maintained by the school's team as a free resource for TCSSS students.</p>
       </div>
 
-      <div class="benefit reveal">
+      <div class="benefit reveal" style="--i:1">
         <div class="benefit__icon"><i class="fa-solid fa-shield-halved"></i></div>
         <h3>Private by default</h3>
         <p>Your conversations, notes, quizzes, and mistakes belong to you. Only you can see them. Admin access is audit-logged.</p>
       </div>
 
-      <div class="benefit reveal">
+      <div class="benefit reveal" style="--i:2">
         <div class="benefit__icon"><i class="fa-solid fa-mobile-screen"></i></div>
         <h3>Works on any device</h3>
         <p>No app to install. Open the site in Chrome, Safari, or Firefox on any phone, tablet, or laptop. Everything is mobile-first.</p>
       </div>
 
-      <div class="benefit reveal">
+      <div class="benefit reveal" style="--i:3">
         <div class="benefit__icon"><i class="fa-solid fa-lightbulb"></i></div>
         <h3>Explains, doesn't just answer</h3>
         <p>The AI tutor walks through reasoning step by step. It shows working, offers analogies, and checks that you understood — it never just hands over answers.</p>
       </div>
 
-      <div class="benefit reveal">
+      <div class="benefit reveal" style="--i:4">
         <div class="benefit__icon"><i class="fa-solid fa-medal"></i></div>
         <h3>Earn as you learn</h3>
         <p>Badges and streaks reward consistent study. Watch your streak grow, unlock achievements, and see your progress over weeks.</p>
       </div>
 
-      <div class="benefit reveal">
+      <div class="benefit reveal" style="--i:5">
         <div class="benefit__icon"><i class="fa-solid fa-graduation-cap"></i></div>
         <h3>Built for Nigerian exams</h3>
         <p>Content follows the Nigerian senior secondary curriculum. Practice questions match the style and difficulty of WAEC, NECO, and JAMB exams.</p>
@@ -860,27 +1079,27 @@
     </div>
 
     <div class="cycle">
-      <div class="cycle-step reveal">
+      <div class="cycle-step reveal" style="--i:0">
         <div class="cycle-step__num">1</div>
         <h3>Learn</h3>
         <p>Ask the AI tutor any question and get a clear, patient explanation.</p>
       </div>
-      <div class="cycle-step reveal">
+      <div class="cycle-step reveal" style="--i:1">
         <div class="cycle-step__num">2</div>
         <h3>Visualize</h3>
         <p>Turn ideas into diagrams, flowcharts, and formula sketches.</p>
       </div>
-      <div class="cycle-step reveal">
+      <div class="cycle-step reveal" style="--i:2">
         <div class="cycle-step__num">3</div>
         <h3>Practice</h3>
         <p>Reinforce with quizzes, flashcards, theory, and timed exams.</p>
       </div>
-      <div class="cycle-step reveal">
+      <div class="cycle-step reveal" style="--i:3">
         <div class="cycle-step__num">4</div>
         <h3>Analyze</h3>
         <p>Review scores, mistakes, and topic breakdowns after every session.</p>
       </div>
-      <div class="cycle-step reveal">
+      <div class="cycle-step reveal" style="--i:4">
         <div class="cycle-step__num">5</div>
         <h3>Adapt</h3>
         <p>Get recommendations for what to study next based on your progress.</p>
@@ -901,62 +1120,62 @@
       <h2 class="sec-head__title">Students building for students</h2>
       <p class="sec-head__sub">
         The TCSSS AI Learning Platform is built and maintained by students from Tomia
-        Community Senior Secondary School. It is a school project, made with care.
+        Community Senior Secondary School, all participants in the TechUp Boys programme.
       </p>
     </div>
 
     <div class="team-grid">
-      <div class="team-card team-card--lead reveal">
+      <div class="team-card team-card--lead reveal" style="--i:0">
         <div class="team-card__photo" data-slug="emmanuel-ajibade"><span>EA</span></div>
         <h3>Emmanuel Ajibade</h3>
         <p>Project Lead</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:1">
         <div class="team-card__photo" data-slug="akinola-daniel"><span>AD</span></div>
         <h3>Akinola Daniel</h3>
         <p>Team</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:2">
         <div class="team-card__photo" data-slug="matthias-olatunde"><span>MO</span></div>
         <h3>Matthias Olatunde</h3>
         <p>Team</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:3">
         <div class="team-card__photo" data-slug="ikobayo-victor"><span>IV</span></div>
         <h3>Ikobayo Victor</h3>
         <p>Team</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:4">
         <div class="team-card__photo" data-slug="adebowale-elijah"><span>AE</span></div>
         <h3>Adebowale Elijah</h3>
         <p>Team</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:5">
         <div class="team-card__photo" data-slug="emmanuel-excel"><span>EE</span></div>
         <h3>Emmanuel Excel</h3>
         <p>Team</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:6">
         <div class="team-card__photo" data-slug="oyedele-david"><span>OD</span></div>
         <h3>Oyedele David</h3>
         <p>Team</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:7">
         <div class="team-card__photo" data-slug="kehinde-joshua"><span>JO</span></div>
         <h3>Kehinde Joshua Oladipupo</h3>
         <p>Team</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:8">
         <div class="team-card__photo" data-slug="abdulkabir-isiaka"><span>AI</span></div>
         <h3>Abdulkabir Isiaka</h3>
         <p>Team</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:9">
         <div class="team-card__photo" data-slug="timilehin-olatunji"><span>TO</span></div>
         <h3>Timilehin Olatunji</h3>
         <p>Team</p>
       </div>
-      <div class="team-card reveal">
+      <div class="team-card reveal" style="--i:10">
         <div class="team-card__photo" data-slug="al-arashi-al-amin"><span>AA</span></div>
         <h3>Al Arashi Al Amin Olanrewaju</h3>
         <p>Team</p>
@@ -1054,30 +1273,9 @@
       </details>
 
       <details>
-        <summary>Which AI providers power the answers?</summary>
-        <div class="faq-body">
-          <p>The platform uses a chain of top AI providers with automatic fallback so answers keep coming even if one provider is unavailable. The system picks the best available model for each request.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>Can I use the platform offline?</summary>
-        <div class="faq-body">
-          <p>The platform needs an internet connection to talk to the AI. However, you can download books and PDFs from the Library to read offline. Quizzes you've already generated may remain accessible offline for a while.</p>
-        </div>
-      </details>
-
-      <details>
         <summary>Who built the platform?</summary>
         <div class="faq-body">
-          <p>The platform was built by a team of students and contributors from Tomia Community Senior Secondary School, led by Emmanuel Ajibade. See the Team section above for everyone who contributed.</p>
-        </div>
-      </details>
-
-      <details>
-        <summary>How often is the platform updated?</summary>
-        <div class="faq-body">
-          <p>The team actively develops the platform. New tools, fixes, and improvements are deployed regularly. Features are added based on student feedback collected through the Contact Us page.</p>
+          <p>The platform was built by a team of students and contributors from Tomia Community Senior Secondary School, led by Emmanuel Ajibade, as part of the TechUp Boys Inter-District AI Competition organised by Learntor Foundation. See the Team section above for everyone who contributed.</p>
         </div>
       </details>
 
@@ -1213,7 +1411,8 @@
         <h4>AI Learning Platform</h4>
         <p style="line-height:1.65;max-width:340px;margin:0 0 12px;">
           A free AI-powered learning environment for students of Tomia Community Senior
-          Secondary School. Built by students, for students.
+          Secondary School. Built by students, for students. Proud entry in the
+          TechUp Boys Inter-District AI Competition.
         </p>
       </div>
       <div>
@@ -1357,7 +1556,7 @@
         {
           "@type": "Question",
           "name": "Who built the platform?",
-          "acceptedAnswer": { "@type": "Answer", "text": "The platform was built by students from Tomia Community Senior Secondary School, led by Emmanuel Ajibade." }
+          "acceptedAnswer": { "@type": "Answer", "text": "The platform was built by students from Tomia Community Senior Secondary School, led by Emmanuel Ajibade, as part of the TechUp Boys Inter-District AI Competition organised by Learntor Foundation." }
         }
       ]
     },
@@ -1393,6 +1592,14 @@
      ============================================================ */
   var yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  /* ============================================================
+     Header shadow on scroll
+     ============================================================ */
+  var head = document.getElementById('siteHead');
+  window.addEventListener('scroll', function () {
+    if (head) head.classList.toggle('is-scrolled', window.scrollY > 20);
+  }, { passive: true });
 
   /* ============================================================
      Scroll reveal
@@ -1709,6 +1916,32 @@
         card.appendChild(img);
       };
       probe.src = src;
+    });
+  })();
+
+  /* ============================================================
+     Floating particles in hero
+     ============================================================ */
+  (function addParticles() {
+    var hero = document.querySelector('.hero');
+    if (!hero) return;
+    var positions = [
+      { top: '18%', left: '12%', delay: '0s' },
+      { top: '32%', right: '18%', delay: '2s' },
+      { bottom: '22%', left: '28%', delay: '4s' },
+      { top: '60%', right: '8%', delay: '6s' },
+      { bottom: '35%', right: '42%', delay: '8s' },
+    ];
+    positions.forEach(function (p) {
+      var el = document.createElement('div');
+      el.className = 'hero__particle';
+      el.style.top = p.top || 'auto';
+      el.style.bottom = p.bottom || 'auto';
+      el.style.left = p.left || 'auto';
+      el.style.right = p.right || 'auto';
+      el.style.animationDelay = p.delay;
+      el.setAttribute('aria-hidden', 'true');
+      hero.appendChild(el);
     });
   })();
 
