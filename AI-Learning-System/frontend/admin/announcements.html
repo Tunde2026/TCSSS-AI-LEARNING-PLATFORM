@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Announcements — Admin</title>
-<link rel="stylesheet" href="../assets/shell.css">
+<link rel="stylesheet" href="../assets/shell.css?v=20261005e">
 <style>
   /* ============================================================
      Announcements admin — responsive cards + popup form
@@ -456,7 +456,7 @@
           </div>
 
           <div class="ann-field">
-            <label for="f-cooldown">Cooldown before it can reappear (hours)</label>
+            <label for="f-cooldown">Cooldown hours — how long before it can show again (0 = show again right away)</label>
             <p class="ann-field__desc">
               After a user dismisses the message, this is how long before it can show again.
               <strong>0</strong> = never show again to that user.
@@ -632,7 +632,7 @@
     </div>
   </div>
 
-<script src="../assets/shell.js"></script>
+<script src="../assets/shell.js?v=20261005e"></script>
 <script>
 (function () {
   'use strict';

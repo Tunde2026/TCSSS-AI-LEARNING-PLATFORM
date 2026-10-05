@@ -32,16 +32,16 @@ async function create(data) {
        title, body, category, priority, display_mode,
        modal_delay_seconds, inline_delay_seconds, cooldown_hours,
        action_label, action_url, action_style, action_new_tab,
-       starts_at, expires_at, is_active, target_role, created_by
+       starts_at, expires_at, is_active, target_role, sticky, created_by
      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
-               COALESCE($13, now()), $14, $15, $16, $17)
+               COALESCE($13, now()), $14, $15, $16, $17, $18)
      RETURNING *`,
     [
       data.title, data.body, data.category, data.priority, data.display_mode,
       data.modal_delay_seconds, data.inline_delay_seconds, data.cooldown_hours,
       data.action_label, data.action_url, data.action_style, data.action_new_tab,
       data.starts_at || null, data.expires_at || null,
-      data.is_active, data.target_role, data.created_by,
+      data.is_active, data.target_role, !!data.sticky, data.created_by,
     ]
   );
   return r.rows[0];
@@ -51,7 +51,7 @@ async function update(id, fields) {
   const allowed = ['title','body','category','priority','display_mode',
     'modal_delay_seconds','inline_delay_seconds','cooldown_hours',
     'action_label','action_url','action_style','action_new_tab',
-    'starts_at','expires_at','is_active','target_role'];
+    'starts_at','expires_at','is_active','target_role','sticky'];
   const sets = [], values = [];
   let i = 1;
   for (const k of allowed) {
@@ -89,11 +89,13 @@ async function listActiveForUser(userId, role) {
         AND (a.expires_at IS NULL OR a.expires_at > now())
         AND (a.target_role = 'all' OR a.target_role = $2)
         AND (
-          d.dismissed_at IS NULL
+          a.sticky = TRUE
+          OR d.dismissed_at IS NULL
           OR (a.cooldown_hours > 0
               AND d.dismissed_at + (a.cooldown_hours * interval '1 hour') < now())
         )
       ORDER BY
+        a.sticky DESC,
         CASE a.priority WHEN 'urgent' THEN 1 WHEN 'important' THEN 2 ELSE 3 END,
         a.created_at DESC`,
     [userId, role]

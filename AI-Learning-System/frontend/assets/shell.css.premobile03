@@ -2973,14 +2973,3 @@ main.page .page-header--lg,
     right: 24px !important;
   }
 }
-
-/* ============================================================
-   MOBILE POLISH v3 — 2026-10-05
-   Hide the mobile-bar hamburger (navigation lives in bottom nav
-   and the More sheet now)
-   ============================================================ */
-@media (max-width: 860px) {
-  .mobile-bar__toggle { display: none !important; }
-  .mobile-bar { padding-left: 18px !important; gap: 0 !important; }
-  .mobile-bar__title { padding-left: 0 !important; }
-}

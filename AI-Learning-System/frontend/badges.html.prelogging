@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Achievements — AI Learning Platform</title>
 <link rel="icon" type="image/png" href="/uploads/branding/logo.png">
-<link rel="stylesheet" href="assets/shell.css?v=20261005e">
+<link rel="stylesheet" href="assets/shell.css?v=20261005b">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css">
 <style>
   main.page .page-scroll { padding: 14px 18px 40px !important; }
@@ -409,7 +409,7 @@
     </main>
   </div>
 
-<script src="assets/shell.js?v=20261005e"></script>
+<script src="assets/shell.js?v=20261005a"></script>
 <script>
 (function () {
   'use strict';
@@ -493,7 +493,7 @@
       // Build earned map from user's badges
       data.earned = {};
       (meData.badges || []).forEach(function (b) {
-        if (b.earned) data.earned[b.key] = b;
+        if (b.earned) ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null) = b;
       });
       data.progress = meData.progress || {};
 
@@ -601,9 +601,9 @@
     }
 
     var toShow = data.catalog.filter(function (b) {
-      if (b.secret && !data.earned[b.key]) return false;
-      if (activeTab === 'earned') return data.earned[b.key] && data.earned[b.key].times_completed > 0;
-      if (activeTab === 'progress') return !data.earned[b.key] && data.progress[b.key];
+      if (b.secret && !((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null)) return false;
+      if (activeTab === 'earned') return ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null) && ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null).times_completed > 0;
+      if (activeTab === 'progress') return !((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null) && data.progress[b.key];
       return true;
     });
 
@@ -626,7 +626,7 @@
       var list = grouped[cat.key] || [];
       if (!list.length) return;
 
-      var earnedInCat = list.filter(function (b) { return data.earned[b.key]; }).length;
+      var earnedInCat = list.filter(function (b) { return ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null); }).length;
       html += '<section class="bd-section">' +
         '<div class="bd-section__head">' +
           '<h2 class="bd-section__title"><i class="fa-solid ' + cat.icon + '" style="color:var(--gold);margin-right:6px"></i>' + esc(cat.title) + '</h2>' +
@@ -634,7 +634,7 @@
         '</div>' +
         '<div class="bd-grid">' +
           list.map(function (b, i) {
-            return renderCard(b, data.earned[b.key], data.progress[b.key], i);
+            return renderCard(b, ((data.earned[b.key] && data.earned[b.key].times_completed > 0) ? data.earned[b.key] : null), data.progress[b.key], i);
           }).join('') +
         '</div>' +
       '</section>';

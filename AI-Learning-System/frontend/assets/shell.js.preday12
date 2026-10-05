@@ -770,7 +770,7 @@
     base = src.replace(/shell\.js.*$/, '');
   }
   var el = document.createElement('script');
-  el.src = base + 'announcements.js?v=20261005e';
+  el.src = base + 'announcements.js';
   el.async = true;
   document.head.appendChild(el);
 })();
@@ -789,7 +789,7 @@
     base = src.replace(/shell\.js.*$/, '');
   }
   var el = document.createElement('script');
-  el.src = base + 'badges.js?v=20261005e';
+  el.src = base + 'badges.js';
   el.async = true;
   document.head.appendChild(el);
 })();
@@ -850,138 +850,3 @@
   }, true);
 })();
 /* ---- END HARD FIX ---- */
-
-/* ------------------------------------------------------------------
-   Bottom navigation + More sheet (mobile)
-   Injected on every non-admin page. Hidden above 860px via CSS.
-   ------------------------------------------------------------------ */
-(function () {
-  'use strict';
-  if (window.__bottomNavInit) return;
-  window.__bottomNavInit = true;
-
-  var path = location.pathname;
-  if (path.indexOf('/admin/') !== -1) return;
-
-  // Compute BASE from the shell.js script tag (own scope)
-  var scripts = document.querySelectorAll('script[src*="shell.js"]');
-  var BASE = '';
-  if (scripts.length) {
-    var src = scripts[scripts.length - 1].getAttribute('src') || '';
-    BASE = src.replace(/assets\/shell\.js.*$/, '');
-  }
-
-  // Add .has-bottom-nav class to <body> so CSS can reserve space
-  function markBody() {
-    if (document.body && !document.body.classList.contains('has-bottom-nav')) {
-      document.body.classList.add('has-bottom-nav');
-    }
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', markBody);
-  } else {
-    markBody();
-  }
-
-  // Determine active tab
-  function isActive(href) {
-    var current = (path.split('/').pop() || 'index.html').toLowerCase();
-    var target  = href.toLowerCase();
-    if (current === target) return true;
-    if (target === 'lab.html' && path.indexOf('/lab/') !== -1) return true;
-    if (target === 'library.html' && current.indexOf('library') === 0) return true;
-    return false;
-  }
-
-  function buildNav() {
-    var nav = document.createElement('nav');
-    nav.className = 'bottom-nav';
-    nav.setAttribute('aria-label', 'Primary navigation');
-    nav.innerHTML =
-      '<div class="bottom-nav__inner">' +
-        '<a class="bottom-nav__item' + (isActive('chat.html') ? ' is-active' : '') + '" href="' + BASE + 'chat.html">' +
-          '<i class="fa-solid fa-comment-dots" aria-hidden="true"></i>' +
-          '<span>Chat</span>' +
-        '</a>' +
-        '<a class="bottom-nav__item' + (isActive('lab.html') ? ' is-active' : '') + '" href="' + BASE + 'lab.html">' +
-          '<i class="fa-solid fa-flask" aria-hidden="true"></i>' +
-          '<span>Lab</span>' +
-        '</a>' +
-        '<a class="bottom-nav__item' + (isActive('library.html') ? ' is-active' : '') + '" href="' + BASE + 'library.html">' +
-          '<i class="fa-solid fa-book-open" aria-hidden="true"></i>' +
-          '<span>Library</span>' +
-        '</a>' +
-        '<button type="button" class="bottom-nav__item" id="bottom-nav-more">' +
-          '<i class="fa-solid fa-ellipsis" aria-hidden="true"></i>' +
-          '<span>More</span>' +
-        '</button>' +
-      '</div>';
-    document.body.appendChild(nav);
-
-    document.getElementById('bottom-nav-more').addEventListener('click', openMoreSheet);
-  }
-
-  async function openMoreSheet() {
-    if (document.querySelector('.more-sheet-overlay')) return;
-
-    // Make sure we know who the user is before rendering the sheet
-    if (!window.__currentUser) {
-      try {
-        var me = await fetch('/api/auth/me', { credentials: 'include' });
-        if (me.ok) {
-          var d = await me.json();
-          window.__currentUser = d.user || null;
-        }
-      } catch (_) {}
-    }
-
-    var overlay = document.createElement('div');
-    overlay.className = 'more-sheet-overlay';
-    overlay.innerHTML =
-      '<div class="more-sheet">' +
-        '<div class="more-sheet__handle"></div>' +
-        '<div class="more-sheet__title">Menu</div>' +
-        '<div class="more-sheet__list">' +
-          '<a class="more-sheet__item" href="' + BASE + 'badges.html"><i class="fa-solid fa-trophy"></i> My achievements</a>' +
-          '<a class="more-sheet__item" href="' + BASE + 'spark.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Spark</a>' +
-          '<a class="more-sheet__item" href="' + BASE + 'settings.html"><i class="fa-solid fa-gear"></i> Settings</a>' +
-          '<a class="more-sheet__item" href="' + BASE + 'support-us.html"><i class="fa-solid fa-mug-hot"></i> Support us</a>' +
-          '<a class="more-sheet__item" href="' + BASE + 'support.html"><i class="fa-solid fa-headset"></i> Contact us</a>' +
-          '<a class="more-sheet__item" href="' + BASE + 'about.html"><i class="fa-solid fa-circle-info"></i> About</a>' +
-          (window.__currentUser && window.__currentUser.role === 'admin'
-            ? '<a class="more-sheet__item" href="' + BASE + 'admin/dashboard.html"><i class="fa-solid fa-shield-halved"></i> Admin panel</a>'
-            : '') +
-          '<button type="button" class="more-sheet__item is-danger" id="more-logout"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>' +
-        '</div>' +
-      '</div>';
-
-    document.body.appendChild(overlay);
-    requestAnimationFrame(function () { overlay.classList.add('is-open'); });
-
-    function close() {
-      overlay.classList.remove('is-open');
-      setTimeout(function () { overlay.remove(); }, 280);
-    }
-
-    overlay.addEventListener('click', function (e) {
-      if (e.target === overlay) close();
-    });
-
-    overlay.querySelectorAll('a.more-sheet__item').forEach(function (a) {
-      a.addEventListener('click', function () { setTimeout(close, 60); });
-    });
-
-    overlay.querySelector('#more-logout').addEventListener('click', async function () {
-      try {
-        await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-      } catch (_) {}
-      window.location.href = BASE + 'index.html';
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', buildNav);
-  } else {
-    buildNav();
-  }
-})();

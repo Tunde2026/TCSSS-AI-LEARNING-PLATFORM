@@ -50,6 +50,7 @@ function normalize(payload) {
     expires_at: payload.expires_at || null,
     is_active: payload.is_active !== false,
     target_role: payload.target_role || 'all',
+    sticky: payload.sticky !== false,  // default TRUE — new announcements always show
   };
 }
 
@@ -86,6 +87,7 @@ async function update(id, payload) {
   if (payload.expires_at !== undefined)          fields.expires_at = payload.expires_at || null;
   if (payload.is_active !== undefined)           fields.is_active = payload.is_active !== false;
   if (payload.target_role !== undefined)         fields.target_role = payload.target_role;
+  if (payload.sticky !== undefined)             fields.sticky = payload.sticky === true;
 
   const row = await db.announcements.update(id, fields);
   if (!row) return { ok: false, code: 'NOT_FOUND' };
@@ -116,6 +118,7 @@ async function listActiveForUser(user) {
       action_new_tab: r.action_new_tab,
       dismissed_at: r.dismissed_at,
       created_at: r.created_at,
+      sticky: r.sticky === true,
     };
   });
 }

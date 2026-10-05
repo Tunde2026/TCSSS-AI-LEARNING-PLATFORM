@@ -140,10 +140,17 @@
   async function fetchActive() {
     try {
       var res = await fetch('/api/announcements/active', { credentials: 'include' });
-      if (!res.ok) return [];
+      if (!res.ok) { console.log('[announcements] fetch failed:', res.status); return []; }
       var d = await res.json();
-      return d.announcements || [];
-    } catch (_) { return []; }
+      var list = d.announcements || [];
+      console.log('[announcements] fetched ' + list.length + ' active announcement(s)');
+      if (list.length) {
+        list.forEach(function (ann) {
+          console.log('[announcements]  • "' + ann.title + '" mode=' + ann.display_mode + ' sticky=' + ann.sticky + ' priority=' + ann.priority);
+        });
+      }
+      return list;
+    } catch (e) { console.log('[announcements] network error:', e.message); return []; }
   }
   async function dismiss(id) {
     try {
@@ -301,6 +308,7 @@
 
   /* ---------- Queue ---------- */
   var queue = [];
+  var pendingSticky = [];
   function next() {
     if (!queue.length) return;
     var ann = queue.shift();
@@ -309,9 +317,25 @@
   }
 
   async function init() {
-    await new Promise(function (r) { setTimeout(r, 900); });
+    // Announcements show once per browser session.
+    var SESSION_KEY = 'announcements-shown-this-session';
+    try {
+      if (sessionStorage.getItem(SESSION_KEY) === '1') {
+        console.log('[announcements] already shown this session — skipping');
+        return;
+      }
+    } catch (_) {}
+
+    await new Promise(function (r) { setTimeout(r, 300); });
     var list = await fetchActive();
-    if (!list.length) return;
+    if (!list.length) {
+      console.log('[announcements] no active announcements');
+      return;
+    }
+
+    // Mark this session as shown so navigating pages does not repeat them
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (_) {}
+
     queue = list;
     next();
   }

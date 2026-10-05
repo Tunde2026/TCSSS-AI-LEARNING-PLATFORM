@@ -770,7 +770,7 @@
     base = src.replace(/shell\.js.*$/, '');
   }
   var el = document.createElement('script');
-  el.src = base + 'announcements.js?v=20261005e';
+  el.src = base + 'announcements.js?v=20261005b';
   el.async = true;
   document.head.appendChild(el);
 })();
@@ -789,7 +789,7 @@
     base = src.replace(/shell\.js.*$/, '');
   }
   var el = document.createElement('script');
-  el.src = base + 'badges.js?v=20261005e';
+  el.src = base + 'badges.js?v=20261005b';
   el.async = true;
   document.head.appendChild(el);
 })();
@@ -921,19 +921,8 @@
     document.getElementById('bottom-nav-more').addEventListener('click', openMoreSheet);
   }
 
-  async function openMoreSheet() {
+  function openMoreSheet() {
     if (document.querySelector('.more-sheet-overlay')) return;
-
-    // Make sure we know who the user is before rendering the sheet
-    if (!window.__currentUser) {
-      try {
-        var me = await fetch('/api/auth/me', { credentials: 'include' });
-        if (me.ok) {
-          var d = await me.json();
-          window.__currentUser = d.user || null;
-        }
-      } catch (_) {}
-    }
 
     var overlay = document.createElement('div');
     overlay.className = 'more-sheet-overlay';
@@ -948,9 +937,6 @@
           '<a class="more-sheet__item" href="' + BASE + 'support-us.html"><i class="fa-solid fa-mug-hot"></i> Support us</a>' +
           '<a class="more-sheet__item" href="' + BASE + 'support.html"><i class="fa-solid fa-headset"></i> Contact us</a>' +
           '<a class="more-sheet__item" href="' + BASE + 'about.html"><i class="fa-solid fa-circle-info"></i> About</a>' +
-          (window.__currentUser && window.__currentUser.role === 'admin'
-            ? '<a class="more-sheet__item" href="' + BASE + 'admin/dashboard.html"><i class="fa-solid fa-shield-halved"></i> Admin panel</a>'
-            : '') +
           '<button type="button" class="more-sheet__item is-danger" id="more-logout"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>' +
         '</div>' +
       '</div>';
