@@ -943,11 +943,14 @@
         '<div class="more-sheet__title">Menu</div>' +
         '<div class="more-sheet__list">' +
           '<a class="more-sheet__item" href="' + BASE + 'badges.html"><i class="fa-solid fa-trophy"></i> My achievements</a>' +
+          '<a class="more-sheet__item" href="' + BASE + 'messages.html"><i class="fa-solid fa-comments"></i> Message</a>' +
+          '<a class="more-sheet__item" href="' + BASE + 'progress.html"><i class="fa-solid fa-chart-line"></i> Progress</a>' +
           '<a class="more-sheet__item" href="' + BASE + 'spark.html"><i class="fa-solid fa-wand-magic-sparkles"></i> Spark</a>' +
           '<a class="more-sheet__item" href="' + BASE + 'settings.html"><i class="fa-solid fa-gear"></i> Settings</a>' +
           '<a class="more-sheet__item" href="' + BASE + 'support-us.html"><i class="fa-solid fa-mug-hot"></i> Support us</a>' +
           '<a class="more-sheet__item" href="' + BASE + 'support.html"><i class="fa-solid fa-headset"></i> Contact us</a>' +
           '<a class="more-sheet__item" href="' + BASE + 'about.html"><i class="fa-solid fa-circle-info"></i> About</a>' +
+          '<a class="more-sheet__item" href="https://gideon-olukanni.github.io/TCSSS/' + BASE + '"><i class="fa-solid fa-arrow-up-right-from-square"></i> Official Website</a>' +
           (window.__currentUser && window.__currentUser.role === 'admin'
             ? '<a class="more-sheet__item" href="' + BASE + 'admin/dashboard.html"><i class="fa-solid fa-shield-halved"></i> Admin panel</a>'
             : '') +

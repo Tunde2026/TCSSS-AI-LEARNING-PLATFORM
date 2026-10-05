@@ -933,7 +933,7 @@
 
   async function ensureLoggedIn() {
     var res = await fetch('/api/auth/me', { credentials: 'include' });
-    if (res.status === 401) { window.location.href = 'index.html'; return false; }
+    if (res.status === 401) { window.location.href = 'index.html#login'; return false; }
     var data = await res.json();
     currentUser = data.user;
     return true;

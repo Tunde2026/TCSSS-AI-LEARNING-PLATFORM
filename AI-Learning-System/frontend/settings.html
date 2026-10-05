@@ -345,10 +345,10 @@
     // ---------- Profile ----------
     async function loadProfile() {
       var res = await fetch('/api/auth/me', { credentials: 'include' });
-      if (res.status === 401) { window.location.href = 'index.html'; return; }
+      if (res.status === 401) { window.location.href = 'index.html#login'; return; }
       var data = await res.json();
       var user = data.user;
-      if (!user) { window.location.href = 'index.html'; return; }
+      if (!user) { window.location.href = 'index.html#login'; return; }
 
       var initial = (user.name || user.email || '?').trim().charAt(0).toUpperCase();
       document.getElementById('profile-avatar').textContent = initial;
@@ -562,7 +562,7 @@
     document.getElementById('logout-btn').addEventListener('click', async function () {
       this.disabled = true;
       try { await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }); } catch (_) {}
-      window.location.href = 'index.html';
+      window.location.href = 'index.html#login';
     });
 
     // ---------- Boot ----------

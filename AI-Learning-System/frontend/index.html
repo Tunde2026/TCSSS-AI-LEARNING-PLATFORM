@@ -2,271 +2,1158 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<link rel="icon" href="/uploads/branding/logo.png" type="image/x-icon">
-<title>AI Learning Platform — Tomia Community Senior Secondary School</title>
-<meta name="description" content="Free AI-powered learning environment for TCSSS students. Chat with AI tutors, take quizzes, review flashcards, and prepare for WAEC and NECO exams.">
-<meta name="robots" content="index, follow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Learning Platform for TCSSS Students — Free AI Tutor for WAEC &amp; NECO</title>
+<meta name="description" content="Free AI learning platform for Tomia Community Senior Secondary School (TCSSS) students. Chat with an AI tutor, practice WAEC and NECO exams, take quizzes, use flashcards, and study smarter.">
+<meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="https://tcsss-ai-learning-platform.onrender.com/">
 <link rel="icon" type="image/png" href="/uploads/branding/logo.png">
+<meta name="google-site-verification" content="YfNHqnX7LWVIJSkYt_4S5_UgFQrca6dzZFQ92ssfZgQ">
+<meta name="theme-color" content="#11104A">
 
+<!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="AI Learning Platform — TCSSS">
-<meta property="og:description" content="Free AI-powered study tools for TCSSS students.">
+<meta property="og:title" content="AI Learning Platform for TCSSS Students">
+<meta property="og:description" content="Free AI tutor, quizzes, flashcards, and WAEC &amp; NECO exam practice for Tomia Community Senior Secondary School students.">
 <meta property="og:url" content="https://tcsss-ai-learning-platform.onrender.com/">
 <meta property="og:image" content="https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png">
 <meta property="og:site_name" content="TCSSS AI Learning Platform">
+<meta property="og:locale" content="en_NG">
 
+<!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="AI Learning Platform — TCSSS">
-<meta name="twitter:description" content="Free AI-powered study tools for TCSSS students.">
+<meta name="twitter:title" content="AI Learning Platform for TCSSS Students">
+<meta name="twitter:description" content="Free AI tutor for Nigerian secondary school students. Practice WAEC and NECO with quizzes, flashcards, and exam mode.">
 <meta name="twitter:image" content="https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png">
-<meta property="og:image" content="/uploads/branding/logo.png">
-<!-- <link rel="canonical" href="https://tcsss-ai-learning-platform.onrender.com/"> -->
-<meta name="google-site-verification" content="YfNHqnX7LWVIJSkYt_4S5_UgFQrca6dzZFQ92ssfZgQ" />
 
-<!-- <title>Sign in — AI Learning Platform</title> -->
-<link rel="stylesheet" href="assets/shell.css?v=20261005e">
+<link rel="stylesheet" href="assets/shell.css?v=20261005f">
 <style>
-  .auth-wrap {
-    min-height: 100vh;
-    display: grid;
-    place-items: center;
-    padding: 24px;
-    background:
-      radial-gradient(circle at 20% 0%, rgba(201,149,46,0.10), transparent 55%),
-      var(--blush);
-  }
-  .auth-card { width: 100%; max-width: 440px; }
-  .auth-brand { text-align: center; margin-bottom: 22px; }
+  /* ============================================================
+     Landing page — index.html
+     ============================================================ */
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  body { margin: 0; font-family: var(--font-body); background: var(--blush); color: var(--ink); -webkit-font-smoothing: antialiased; line-height: 1.65; }
+  a { color: var(--red); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  img { max-width: 100%; display: block; }
 
-  /* ---------- Centered circular profile image ---------- */
-  .auth-brand__mark {
-    width: 88px;
-    height: 88px;
-    margin: 0 auto 14px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--navy), var(--soft-navy));
-    color: rgba(255, 255, 255, 0.55);
+  /* ---------- Sticky header ---------- */
+  .site-head {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(17,16,74,0.97);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 0 20px;
+  }
+  .site-head__row {
+    max-width: 1240px; margin: 0 auto;
+    height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+  }
+  .site-head__brand {
+    display: inline-flex; align-items: center; gap: 12px;
+    color: #fff; text-decoration: none;
+    font-family: var(--font-head); font-weight: 600; font-size: 0.98rem;
+    min-width: 0;
+  }
+  .site-head__brand:hover { text-decoration: none; }
+  .site-head__logo {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    display: grid; place-items: center;
+    overflow: hidden; flex-shrink: 0;
+    font-family: var(--font-ui); font-size: 0.62rem; color: rgba(255,255,255,0.5);
+  }
+  .site-head__logo img { width: 100%; height: 100%; object-fit: contain; padding: 4px; background: #fff; }
+  .site-head__title { line-height: 1.15; }
+  .site-head__title small {
+    display: block; font-family: var(--font-ui); font-size: 0.56rem;
+    letter-spacing: 0.09em; text-transform: uppercase; opacity: 0.65;
+    font-weight: 500; margin-top: 2px;
+  }
+  .site-head__actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .head-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: 999px;
+    font-family: var(--font-body); font-size: 0.86rem; font-weight: 600;
+    cursor: pointer; border: none; text-decoration: none;
+    transition: transform 140ms ease, background 180ms ease, box-shadow 180ms ease;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 40px;
+  }
+  .head-btn--primary {
+    background: linear-gradient(135deg, var(--red), var(--deep-red));
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(230,17,30,0.32);
+  }
+  .head-btn--primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(230,17,30,0.42); text-decoration: none; color: #fff; }
+  .head-btn--ghost {
+    background: rgba(255,255,255,0.10); color: #fff;
+    border: 1px solid rgba(255,255,255,0.16);
+  }
+  .head-btn--ghost:hover { background: rgba(255,255,255,0.18); text-decoration: none; color: #fff; }
+  @media (max-width: 520px) {
+    .site-head__title small { display: none; }
+    .site-head__title { font-size: 0.88rem; }
+    .head-btn { padding: 8px 14px; font-size: 0.8rem; }
+  }
+
+  /* ---------- Layout helpers ---------- */
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 640px) { .wrap { padding: 0 16px; } }
+  .section { padding: 64px 0; }
+  .section--tight { padding: 44px 0; }
+  .section--white { background: var(--white); }
+  .section--blush { background: var(--blush); }
+  .section--navy { background: linear-gradient(135deg, #11104A, #201F6B); color: #fff; }
+  @media (max-width: 640px) { .section { padding: 44px 0; } }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative; overflow: hidden;
+    padding: 72px 0 80px;
+    background: linear-gradient(140deg, #11104A 0%, #201F6B 40%, #3D1F5C 70%, #11104A 100%);
+    background-size: 300% 300%;
+    animation: heroGradient 20s ease infinite;
+    color: #fff;
+  }
+  @keyframes heroGradient { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .hero::before, .hero::after {
+    content: ''; position: absolute; border-radius: 50%;
+    filter: blur(70px); pointer-events: none;
+  }
+  .hero::before { width: 320px; height: 320px; background: #C9952E; top: -90px; left: -60px; opacity: 0.32; }
+  .hero::after  { width: 260px; height: 260px; background: #E6111E; bottom: -80px; right: -40px; opacity: 0.22; }
+  .hero__inner { position: relative; z-index: 2; max-width: 940px; margin: 0 auto; text-align: center; }
+  .hero__eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 999px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700;
+    color: #fff; margin-bottom: 22px;
+  }
+  .hero__eyebrow i { color: #FFD97D; }
+  .hero__title {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: clamp(2rem, 5.5vw, 3.4rem);
+    line-height: 1.1; letter-spacing: -0.025em;
+    color: #fff; margin: 0 0 18px;
+  }
+  .hero__title em {
+    font-style: normal; color: #FFD97D;
+    background: linear-gradient(120deg, #C9952E 0%, #FFD97D 50%, #C9952E 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero__sub {
+    font-size: clamp(1rem, 1.6vw, 1.15rem);
+    color: rgba(255,255,255,0.88);
+    max-width: 720px; margin: 0 auto 32px; line-height: 1.65;
+  }
+  .hero__cta-row {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 15px 30px; border-radius: 999px;
+    font-size: 0.98rem; font-weight: 700; text-decoration: none;
+    transition: transform 220ms cubic-bezier(0.16,1,0.3,1), box-shadow 220ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hero-cta--primary {
+    background: linear-gradient(135deg, #E6111E, #B80F1A);
+    color: #fff; box-shadow: 0 10px 26px rgba(230,17,30,0.42);
+  }
+  .hero-cta--primary:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(230,17,30,0.55); color: #fff; text-decoration: none; }
+  .hero-cta--ghost {
+    background: rgba(255,255,255,0.10); color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.22);
+  }
+  .hero-cta--ghost:hover { background: rgba(255,255,255,0.18); color: #fff; transform: translateY(-3px); text-decoration: none; }
+  .hero__trust {
+    display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+    font-family: var(--font-ui); font-size: 0.66rem;
+    letter-spacing: 0.10em; text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+  .hero__trust span { display: inline-flex; align-items: center; gap: 8px; }
+  .hero__trust i { color: #FFD97D; }
+
+  /* ---------- Section headings ---------- */
+  .sec-head { max-width: 720px; margin: 0 auto 40px; text-align: center; }
+  .sec-head__eyebrow {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--font-ui); font-size: 0.62rem;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; margin-bottom: 12px;
+  }
+  .sec-head__title {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: clamp(1.55rem, 3.4vw, 2.15rem);
+    color: var(--navy); margin: 0 0 10px;
+    letter-spacing: -0.02em; line-height: 1.2;
+  }
+  .sec-head__sub { color: var(--slate); font-size: 1rem; margin: 0; line-height: 1.65; }
+  .sec-head--left { text-align: left; margin-left: 0; max-width: 720px; }
+
+  /* ---------- Two-column content block ---------- */
+  .split {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center;
+  }
+  @media (max-width: 860px) { .split { grid-template-columns: 1fr; gap: 28px; } }
+  .split__body p { font-size: 1rem; color: var(--ink); line-height: 1.75; margin: 0 0 16px; }
+  .split__body p:last-child { margin-bottom: 0; }
+  .split__body strong { color: var(--navy); font-weight: 700; }
+  .split__panel {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 22px; padding: 32px 28px;
+    box-shadow: 0 10px 32px rgba(17,16,74,0.06);
+  }
+  .split__panel-list { list-style: none; padding: 0; margin: 0; }
+  .split__panel-list li {
+    display: flex; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 0.94rem; color: var(--ink); line-height: 1.55;
+  }
+  .split__panel-list li:last-child { border-bottom: none; padding-bottom: 0; }
+  .split__panel-list li:first-child { padding-top: 0; }
+  .split__panel-list i {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: #EAF7EE; color: #2F8F4A;
+    display: grid; place-items: center; flex-shrink: 0;
+    font-size: 0.72rem; margin-top: 1px;
+  }
+
+  /* ---------- Features grid ---------- */
+  .features {
     display: grid;
-    place-items: center;
-    overflow: hidden;
-    position: relative;
-    box-shadow:
-      0 0 0 4px var(--white),
-      0 0 0 6px var(--gold),
-      0 10px 28px rgba(17, 16, 74, 0.22);
-    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 260ms ease;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
   }
-  .auth-brand__mark:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 0 0 4px var(--white),
-      0 0 0 6px var(--gold),
-      0 14px 34px rgba(17, 16, 74, 0.3);
-  }
-  .auth-brand__mark img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+  @media (max-width: 640px) { .features { grid-template-columns: 1fr; gap: 12px; } }
+  .feature {
     background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 18px; padding: 24px 22px;
+    position: relative; overflow: hidden;
+    transition: transform 320ms cubic-bezier(0.16,1,0.3,1),
+                border-color 240ms ease, box-shadow 320ms ease;
   }
-  .auth-brand__mark.is-fallback {
-    background: linear-gradient(135deg, var(--blush), var(--blush-deep));
+  .feature:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+    box-shadow: 0 16px 36px rgba(17,16,74,0.10);
   }
-  .auth-brand__mark.is-fallback img {
-    object-fit: contain;
-    padding: 22px;
-    background: transparent;
+  .feature__icon {
+    width: 46px; height: 46px; border-radius: 13px;
+    background: var(--blush); color: var(--red);
+    display: grid; place-items: center;
+    font-size: 1.1rem; margin-bottom: 14px;
+    transition: transform 320ms ease, background 240ms ease, color 240ms ease;
+  }
+  .feature:hover .feature__icon {
+    transform: scale(1.08) rotate(-4deg);
+    background: linear-gradient(135deg, var(--red), var(--deep-red));
+    color: #fff;
+  }
+  .feature h3 {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: 1.05rem; color: var(--navy);
+    margin: 0 0 6px;
+  }
+  .feature p {
+    font-size: 0.88rem; color: var(--slate);
+    line-height: 1.55; margin: 0;
   }
 
-  .auth-brand__title {
-    font-family: var(--font-head);
-    font-size: 1.35rem;
-    color: var(--navy);
-    margin: 0;
-    letter-spacing: -0.01em;
+  /* ---------- Benefits (navy section) ---------- */
+  .benefits {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
   }
-  .auth-brand__sub {
-    font-size: 0.85rem;
-    color: var(--slate);
-    margin-top: 4px;
+  .benefit {
+    padding: 24px 22px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
   }
+  .benefit__icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: rgba(201,149,46,0.22); color: #FFD97D;
+    display: grid; place-items: center;
+    font-size: 1.05rem; margin-bottom: 14px;
+  }
+  .benefit h3 {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: 1.02rem; color: #fff; margin: 0 0 8px;
+  }
+  .benefit p { font-size: 0.88rem; color: rgba(255,255,255,0.82); line-height: 1.6; margin: 0; }
+  .section--navy .sec-head__title { color: #fff; }
+  .section--navy .sec-head__sub { color: rgba(255,255,255,0.82); }
+
+  /* ---------- Learning cycle ---------- */
+  .cycle {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+  }
+  @media (max-width: 900px) { .cycle { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { .cycle { grid-template-columns: 1fr; } }
+  .cycle-step {
+    padding: 22px 18px; text-align: center;
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 18px;
+    transition: transform 320ms cubic-bezier(0.16,1,0.3,1), border-color 240ms ease;
+  }
+  .cycle-step:hover { transform: translateY(-4px); border-color: var(--gold); }
+  .cycle-step__num {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(155deg, var(--navy), var(--soft-navy));
+    color: #fff; display: grid; place-items: center;
+    font-family: var(--font-head); font-weight: 700;
+    font-size: 1rem; margin: 0 auto 12px;
+  }
+  .cycle-step:nth-child(2) .cycle-step__num { background: linear-gradient(155deg, #C9952E, #9E7524); }
+  .cycle-step:nth-child(3) .cycle-step__num { background: linear-gradient(155deg, #E6111E, #B80F1A); }
+  .cycle-step:nth-child(4) .cycle-step__num { background: linear-gradient(155deg, #2F8F4A, #1F6B35); }
+  .cycle-step:nth-child(5) .cycle-step__num { background: linear-gradient(155deg, #6E6BE5, #4A47A3); }
+  .cycle-step h3 {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: 1rem; color: var(--navy); margin: 0 0 6px;
+  }
+  .cycle-step p { font-size: 0.82rem; color: var(--slate); line-height: 1.5; margin: 0; }
+
+  /* ---------- Team ---------- */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  @media (max-width: 520px) { .team-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; } }
+  .team-card {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 16px; padding: 14px 12px 14px;
+    text-align: center;
+    transition: transform 320ms cubic-bezier(0.16,1,0.3,1), border-color 240ms ease, box-shadow 320ms ease;
+  }
+  .team-card:hover { transform: translateY(-4px); border-color: var(--gold); box-shadow: 0 12px 28px rgba(17,16,74,0.10); }
+  .team-card__photo {
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    background: linear-gradient(155deg, var(--navy), var(--soft-navy));
+    display: grid; place-items: center;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .team-card__photo span {
+    font-family: var(--font-head); font-weight: 700;
+    font-size: 1.7rem; color: rgba(255,255,255,0.88);
+    letter-spacing: 0.04em;
+  }
+  .team-card__photo img { width: 100%; height: 100%; object-fit: cover; }
+  .team-card h3 {
+    font-family: var(--font-head); font-weight: 600;
+    font-size: 0.88rem; color: var(--navy); margin: 0 0 3px;
+    line-height: 1.3; word-wrap: break-word;
+  }
+  .team-card p {
+    font-family: var(--font-ui); font-size: 0.56rem;
+    letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--slate); margin: 0;
+  }
+  .team-card--lead .team-card__photo { background: linear-gradient(155deg, #C9952E, #9E7524); }
+  .team-card--lead p { color: var(--gold); font-weight: 700; }
+
+  /* ---------- FAQ ---------- */
+  .faq { max-width: 860px; margin: 0 auto; }
+  .faq details {
+    background: var(--white); border: 1.5px solid var(--border);
+    border-radius: 14px; margin-bottom: 10px; overflow: hidden;
+    transition: border-color 240ms ease, box-shadow 240ms ease;
+  }
+  .faq details:hover { border-color: rgba(17,16,74,0.24); }
+  .faq details[open] { border-color: var(--gold); box-shadow: 0 6px 20px rgba(201,149,46,0.10); }
+  .faq summary {
+    padding: 16px 22px; cursor: pointer;
+    font-family: var(--font-head); font-size: 1rem; font-weight: 600;
+    color: var(--navy); list-style: none;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; user-select: none;
+    transition: background 180ms ease;
+  }
+  .faq summary:hover { background: var(--blush); }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free'; font-weight: 900;
+    font-size: 0.72rem; color: var(--slate);
+    transition: transform 280ms cubic-bezier(0.16,1,0.3,1), color 240ms ease;
+    flex-shrink: 0;
+  }
+  .faq details[open] summary::after { transform: rotate(180deg); color: var(--gold); }
+  .faq .faq-body {
+    padding: 0 22px 18px;
+    font-size: 0.94rem; line-height: 1.7; color: var(--ink);
+    animation: faqOpen 320ms cubic-bezier(0.16,1,0.3,1);
+  }
+  .faq .faq-body p { margin: 0 0 10px; }
+  .faq .faq-body p:last-child { margin-bottom: 0; }
+  .faq .faq-body a { color: var(--red); font-weight: 600; }
+  @keyframes faqOpen { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ---------- Login section ---------- */
+  .login-section { scroll-margin-top: 80px; }
+  .login-card {
+    max-width: 440px; margin: 0 auto;
+    background: var(--white);
+    border-radius: 20px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 48px rgba(17,16,74,0.14);
+    border: 1.5px solid var(--border);
+  }
+  .login-card__brand { text-align: center; margin-bottom: 22px; }
+  .login-card__mark {
+    width: 62px; height: 62px; border-radius: 18px;
+    background: linear-gradient(155deg, var(--navy), var(--soft-navy));
+    display: grid; place-items: center;
+    margin: 0 auto 14px; overflow: hidden;
+    font-family: var(--font-ui); font-size: 0.62rem; color: rgba(255,255,255,0.55);
+    box-shadow: 0 8px 22px rgba(17,16,74,0.18);
+  }
+  .login-card__mark img { width: 100%; height: 100%; object-fit: contain; padding: 8px; background: #fff; }
+  .login-card__title {
+    font-family: var(--font-head); font-size: 1.4rem;
+    color: var(--navy); margin: 0 0 4px;
+  }
+  .login-card__sub { font-size: 0.88rem; color: var(--slate); margin: 0; }
 
   .auth-tabs {
     display: flex; gap: 4px;
-    background: var(--blush-deep);
-    border-radius: 999px;
-    padding: 4px;
-    margin-bottom: 18px;
+    background: var(--blush-deep); border-radius: 999px;
+    padding: 4px; margin-bottom: 20px;
   }
   .auth-tab {
-    flex: 1;
-    font-family: var(--font-body);
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 999px;
-    background: transparent;
-    color: var(--slate);
+    flex: 1; padding: 9px 12px; border: none; border-radius: 999px;
+    background: transparent; color: var(--slate);
+    font-family: var(--font-body); font-weight: 600; font-size: 0.9rem;
     cursor: pointer;
     transition: background var(--transition), color var(--transition);
   }
-  .auth-tab.is-active {
-    background: var(--white);
-    color: var(--navy);
-    box-shadow: var(--shadow-sm);
-  }
+  .auth-tab.is-active { background: var(--white); color: var(--navy); box-shadow: 0 2px 6px rgba(17,16,74,0.06); }
 
   .field { margin-bottom: 14px; }
+  .field label {
+    display: block; font-family: var(--font-ui); font-size: 0.68rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--slate); margin-bottom: 6px; font-weight: 600;
+  }
+  .field .input {
+    width: 100%; padding: 12px 14px;
+    border: 1.5px solid var(--border); border-radius: 10px;
+    font-family: var(--font-body); font-size: 1rem; color: var(--ink);
+    background: var(--white); outline: none;
+    transition: border-color 160ms, box-shadow 160ms;
+  }
+  .field .input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,149,46,0.15); }
   .field-hint { font-size: 0.75rem; color: var(--slate); margin-top: 4px; }
 
-  /* ---------- Password field with show/hide toggle ---------- */
-  .input-wrap {
-    position: relative;
-    display: block;
-  }
-  .input-wrap .input {
-    padding-right: 46px;
-  }
+  .input-wrap { position: relative; }
+  .input-wrap .input { padding-right: 46px; }
   .input-toggle {
-    position: absolute;
-    top: 50%;
-    right: 6px;
-    transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
-    border: none;
-    background: transparent;
-    color: var(--slate);
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    border-radius: 9px;
-    padding: 0;
-    transition: background var(--transition), color var(--transition);
-    -webkit-tap-highlight-color: transparent;
+    position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+    width: 36px; height: 36px; border-radius: 9px;
+    border: none; background: transparent;
+    color: var(--slate); cursor: pointer;
+    display: grid; place-items: center;
+    transition: background 140ms, color 140ms;
   }
   .input-toggle:hover { background: var(--blush); color: var(--navy); }
-  .input-toggle:focus-visible {
-    outline: 2px solid var(--gold);
-    outline-offset: 1px;
-    color: var(--navy);
-  }
-  .input-toggle:active { transform: translateY(-50%) scale(0.94); }
-  .input-toggle svg { width: 18px; height: 18px; display: block; }
+  .input-toggle svg { width: 18px; height: 18px; }
   .input-toggle .icon-eye-off { display: none; }
-  .input-toggle.is-visible .icon-eye     { display: none; }
+  .input-toggle.is-visible .icon-eye { display: none; }
   .input-toggle.is-visible .icon-eye-off { display: block; }
 
-  .auth-actions {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 20px;
-  }
-  .auth-actions .forgot { font-size: 0.85rem; color: var(--slate); }
-
   .auth-alert {
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    font-size: 0.9rem;
-    margin-bottom: 14px;
-    display: none;
-    line-height: 1.5;
+    padding: 12px 14px; border-radius: 10px;
+    font-size: 0.9rem; line-height: 1.5;
+    margin-bottom: 14px; display: none;
   }
   .auth-alert.is-visible { display: block; }
   .auth-alert--error { background: #FDECEC; color: var(--deep-red); }
   .auth-alert--info  { background: #EEF3FB; color: var(--navy); }
   .auth-alert--warn  { background: #FBF3E1; color: #8A5A00; }
-
-  .auth-alert__title {
-    font-weight: 700;
-    display: block;
-    margin-bottom: 4px;
-    font-size: 0.95rem;
-  }
+  .auth-alert__title { display: block; font-weight: 700; margin-bottom: 4px; }
   .auth-alert__reason {
-    display: block;
-    margin-top: 8px;
-    padding: 8px 10px;
-    background: rgba(0,0,0,0.06);
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-style: italic;
+    display: block; margin-top: 8px; padding: 8px 10px;
+    background: rgba(0,0,0,0.06); border-radius: 6px;
+    font-size: 0.85rem; font-style: italic;
   }
   .auth-alert__action {
-    display: inline-block;
-    margin-top: 8px;
-    font-weight: 600;
-    color: var(--red);
-    cursor: pointer;
-    text-decoration: underline;
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
+    display: inline-block; margin-top: 8px;
+    font-weight: 600; color: var(--red);
+    cursor: pointer; text-decoration: underline;
+    background: none; border: none; padding: 0; font: inherit;
+  }
+  .auth-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 20px; gap: 12px;
+  }
+  .forgot { font-size: 0.85rem; color: var(--slate); }
+
+  .signed-in-card {
+    text-align: center; padding: 8px 0;
+  }
+  .signed-in-card__avatar {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(155deg, var(--navy), var(--soft-navy));
+    color: #fff; display: grid; place-items: center;
+    font-family: var(--font-head); font-weight: 700; font-size: 1.6rem;
+    margin: 0 auto 16px;
+  }
+  .signed-in-card h3 {
+    font-family: var(--font-head); font-size: 1.15rem;
+    color: var(--navy); margin: 0 0 4px;
+  }
+  .signed-in-card p { font-size: 0.9rem; color: var(--slate); margin: 0 0 22px; }
+  .signed-in-card__actions { display: flex; flex-direction: column; gap: 8px; }
+  .signed-in-card__actions .btn { width: 100%; justify-content: center; }
+
+  /* ---------- Footer ---------- */
+  .site-foot {
+    background: #11104A; color: rgba(255,255,255,0.7);
+    padding: 44px 0 24px; font-size: 0.86rem;
+  }
+  .site-foot__grid {
+    display: grid; grid-template-columns: 2fr 1fr 1fr;
+    gap: 32px; margin-bottom: 32px;
+  }
+  @media (max-width: 720px) { .site-foot__grid { grid-template-columns: 1fr 1fr; gap: 24px; } }
+  @media (max-width: 480px) { .site-foot__grid { grid-template-columns: 1fr; } }
+  .site-foot h4 {
+    font-family: var(--font-ui); font-size: 0.65rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: #fff; margin: 0 0 14px; font-weight: 700;
+  }
+  .site-foot ul { list-style: none; padding: 0; margin: 0; }
+  .site-foot ul li { margin-bottom: 8px; }
+  .site-foot a { color: rgba(255,255,255,0.72); text-decoration: none; }
+  .site-foot a:hover { color: #fff; text-decoration: underline; }
+  .site-foot__bottom {
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.10);
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    font-size: 0.8rem;
   }
 
-  .auth-foot {
-    text-align: center; margin-top: 22px;
-    font-size: 0.82rem; color: var(--slate);
+  /* Reveal on scroll */
+  .reveal {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 640ms cubic-bezier(0.16,1,0.3,1), transform 640ms cubic-bezier(0.16,1,0.3,1);
   }
-  .auth-foot a { color: var(--slate); }
-
-  .hidden { display: none !important; }
-
-  @media (max-width: 480px) {
-    .auth-brand__mark { width: 76px; height: 76px; }
-    .auth-brand__title { font-size: 1.2rem; }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .hero { animation: none; }
   }
 </style>
 </head>
 <body>
-  <main class="auth-wrap">
-    <div class="auth-card">
-      <div class="auth-brand">
-        <!-- Centered circular profile image — fixed for now, admin-managed later -->
-        <div class="auth-brand__mark" id="brand-mark">
-          <img id="brand-img"
-               src="/uploads/branding/logo.png"
-               alt="TCSSS profile"
-               onerror="window.__handleBrandFallback && window.__handleBrandFallback(this);">
-        </div>
-        <h1 class="auth-brand__title" id="brand-title">AI Learning Platform</h1>
-        <div class="auth-brand__sub" id="brand-sub">Sign in to continue</div>
+
+<!-- ============================================================
+     STICKY HEADER
+     ============================================================ -->
+<header class="site-head">
+  <div class="site-head__row">
+    <a class="site-head__brand" href="/" aria-label="AI Learning Platform home">
+      <div class="site-head__logo" id="headLogo">TC</div>
+      <div class="site-head__title">
+        AI Learning Platform
+        <small>Tomia Community Senior Secondary School</small>
+      </div>
+    </a>
+    <div class="site-head__actions" id="headActions">
+      <a class="head-btn head-btn--primary" href="#login" id="headLoginBtn">
+        <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+        <span>Sign in</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero">
+  <div class="wrap hero__inner">
+    <div class="hero__eyebrow">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      Free for TCSSS students
+    </div>
+    <h1 class="hero__title">
+      The AI Learning Platform for <em>TCSSS students</em> — free, on any device
+    </h1>
+    <p class="hero__sub">
+      A complete study environment for students of Tomia Community Senior Secondary School.
+      Chat with an AI tutor, practise WAEC and NECO exam questions, review flashcards,
+      take quizzes, and follow a study plan built around how you actually learn.
+    </p>
+    <div class="hero__cta-row">
+      <a class="hero-cta hero-cta--primary" href="#login">
+        <i class="fa-solid fa-arrow-right-to-bracket" aria-hidden="true"></i>
+        Sign in or create account
+      </a>
+      <a class="hero-cta hero-cta--ghost" href="#features">
+        <i class="fa-solid fa-compass" aria-hidden="true"></i>
+        See all features
+      </a>
+    </div>
+    <div class="hero__trust">
+      <span><i class="fa-solid fa-shield-halved"></i> Private &amp; safe</span>
+      <span><i class="fa-solid fa-mobile-screen"></i> Works on any phone</span>
+      <span><i class="fa-solid fa-ban"></i> No ads, no subscriptions</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     WHAT IT IS
+     ============================================================ -->
+<section class="section section--white" id="what">
+  <div class="wrap">
+    <div class="split">
+      <div class="split__body reveal">
+        <h2 class="sec-head__title sec-head--left" style="text-align:left;margin-bottom:16px;">
+          What is the TCSSS AI Learning Platform?
+        </h2>
+        <p>
+          The <strong>TCSSS AI Learning Platform</strong> is a free educational tool built for
+          students of Tomia Community Senior Secondary School. It brings together nine
+          interactive study tools — AI chat, quizzes, flashcards, theory practice, exam mode,
+          visualisation, formula writing, study plans, and a mistake bank — inside one
+          environment that works in any web browser.
+        </p>
+        <p>
+          The platform follows a simple learning cycle:
+          <strong>Learn → Visualize → Practice → Analyze → Adapt</strong>.
+          You start by asking the AI tutor a question, then visualise the concept with a
+          diagram, practise with quizzes and flashcards, review your mistakes, and adapt
+          what you study next based on how you did.
+        </p>
+        <p>
+          It is designed for Nigerian secondary school students preparing for
+          <strong>WAEC, NECO, and JAMB exams</strong>, and follows the Nigerian senior
+          secondary school curriculum. Every explanation is written in plain English,
+          at a level students from JSS 1 to SSS 3 can follow.
+        </p>
+      </div>
+      <div class="split__panel reveal">
+        <h3 style="font-family:var(--font-head);font-size:1.05rem;color:var(--navy);margin:0 0 16px;">
+          At a glance
+        </h3>
+        <ul class="split__panel-list">
+          <li><i class="fa-solid fa-check"></i> <span>Free for every TCSSS student, forever</span></li>
+          <li><i class="fa-solid fa-check"></i> <span>Nine study tools in one place</span></li>
+          <li><i class="fa-solid fa-check"></i> <span>Built for WAEC, NECO, and JAMB preparation</span></li>
+          <li><i class="fa-solid fa-check"></i> <span>Works on any phone, tablet, or computer</span></li>
+          <li><i class="fa-solid fa-check"></i> <span>No installation — opens in your browser</span></li>
+          <li><i class="fa-solid fa-check"></i> <span>Your conversations and progress are private</span></li>
+          <li><i class="fa-solid fa-check"></i> <span>Built by TCSSS students for TCSSS students</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FEATURES (9 tools)
+     ============================================================ -->
+<section class="section section--blush" id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__eyebrow">
+        <i class="fa-solid fa-toolbox"></i> What you can do
+      </div>
+      <h2 class="sec-head__title">Nine study tools built for Nigerian secondary school students</h2>
+      <p class="sec-head__sub">
+        Every tool is designed around the way students actually revise — short sessions,
+        lots of practice, and clear feedback. Each tool is also available directly inside
+        Chat, so you never have to leave a conversation to ask for a quiz or a diagram.
+      </p>
+    </div>
+
+    <div class="features">
+
+      <div class="feature reveal">
+        <div class="feature__icon"><i class="fa-solid fa-comment-dots"></i></div>
+        <h3>AI Chat Tutor</h3>
+        <p>Ask any question in plain English. Get step-by-step explanations with real examples from Nigerian life. Available 24/7, patient, and never makes you feel bad for asking.</p>
       </div>
 
-      <div class="card">
+      <div class="feature reveal">
+        <div class="feature__icon"><i class="fa-solid fa-circle-question"></i></div>
+        <h3>Quizzes</h3>
+        <p>Generate auto-marked multiple-choice quizzes on any topic. Every answer comes with an explanation of why it's right or wrong. Take them in Chat or in the Lab.</p>
+      </div>
+
+      <div class="feature reveal">
+        <div class="feature__icon"><i class="fa-solid fa-clone"></i></div>
+        <h3>Flashcards</h3>
+        <p>Review key terms with spaced repetition. Cards you struggle with come back sooner, cards you know are spaced further apart — the fastest way to memorise definitions.</p>
+      </div>
+
+      <div class="feature reveal">
+        <div class="feature__icon"><i class="fa-solid fa-spell-check"></i></div>
+        <h3>Theory Practice</h3>
+        <p>Fill-in-the-gap questions that test recall exactly the way WAEC and NECO ask them. Every blank is graded instantly and shows the accepted answer.</p>
+      </div>
+
+      <div class="feature reveal">
+        <div class="feature__icon"><i class="fa-solid fa-stopwatch"></i></div>
+        <h3>Exam Mode</h3>
+        <p>Take timed exams under real conditions — no hints, no second chances. Automatically submitted when time runs out, just like the real thing.</p>
+      </div>
+
+      <div class="feature reveal">
+        <div class="feature__icon"><i class="fa-solid fa-diagram-project"></i></div>
+        <h3>Visualizations</h3>
+        <p>Turn any topic into a flowchart, mind map, or diagram you can actually see and remember. Especially useful for Biology cycles, Geography processes, and Physics concepts.</p>
+      </div>
+
+      <div class="feature reveal">
+        <div class="feature__icon"><i class="fa-solid fa-pen-ruler"></i></div>
+        <h3>Sketch &amp; Formula Studio</h3>
+        <p>Write chemistry formulas and physics equations correctly. H₂SO₄, not H2SO4. CO₂, Ca(OH)₂, and every mathematical expression renders beautifully.</p>
+      </div>
+
+      <div class="feature reveal">
+        <div class="feature__icon"><i class="fa-solid fa-calendar-days"></i></div>
+        <h3>Study Plans</h3>
+        <p>Generate a structured multi-day revision plan for any topic or exam. Tick off tasks as you complete them and watch your progress grow.</p>
+      </div>
+
+      <div class="feature reveal">
+        <div class="feature__icon"><i class="fa-solid fa-clipboard-list"></i></div>
+        <h3>Mistake Bank</h3>
+        <p>Every question you get wrong is collected automatically, grouped by topic, with the correct answer and an explanation. Revise only what you actually need to.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     WHO IT'S FOR
+     ============================================================ -->
+<section class="section section--white" id="who">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__eyebrow">
+        <i class="fa-solid fa-users"></i> Who it's for
+      </div>
+      <h2 class="sec-head__title">Built for every TCSSS student, from JSS to SSS</h2>
+      <p class="sec-head__sub">
+        Whether you're just starting secondary school or preparing for your final WAEC and
+        NECO exams, the platform meets you where you are.
+      </p>
+    </div>
+
+    <div class="features" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+
+      <div class="feature reveal" style="text-align:left;">
+        <div class="feature__icon"><i class="fa-solid fa-graduation-cap"></i></div>
+        <h3>Junior Secondary (JSS 1–3)</h3>
+        <p>Build strong foundations in Mathematics, English, Basic Science, and Social Studies. The AI tutor explains concepts slowly and checks that you understand before moving on.</p>
+      </div>
+
+      <div class="feature reveal" style="text-align:left;">
+        <div class="feature__icon"><i class="fa-solid fa-book-open"></i></div>
+        <h3>Senior Secondary (SSS 1–2)</h3>
+        <p>Learn new topics ahead of class, revise after lessons, and build a personal library of notes and flashcards that follow you all the way to your final exams.</p>
+      </div>
+
+      <div class="feature reveal" style="text-align:left;">
+        <div class="feature__icon"><i class="fa-solid fa-trophy"></i></div>
+        <h3>SSS 3 — WAEC &amp; NECO candidates</h3>
+        <p>Timed exam practice, past-question style quizzes, a mistake bank that tracks your weak topics, and a study plan you can follow day by day until the exam.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     BENEFITS (navy)
+     ============================================================ -->
+<section class="section section--navy">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__eyebrow" style="color:#FFD97D;">
+        <i class="fa-solid fa-heart"></i> Why students use it
+      </div>
+      <h2 class="sec-head__title">Free, private, and built to actually help you learn</h2>
+      <p class="sec-head__sub">
+        The platform is not a chatbot with extra buttons — every part of it is designed
+        to move you through the learning cycle: <strong style="color:#FFD97D;">Learn, Visualize, Practice, Analyze, Adapt</strong>.
+      </p>
+    </div>
+
+    <div class="benefits">
+
+      <div class="benefit reveal">
+        <div class="benefit__icon"><i class="fa-solid fa-ban"></i></div>
+        <h3>Completely free</h3>
+        <p>No subscriptions, no ads, no hidden charges. Built and maintained by the school's team as a free resource for TCSSS students.</p>
+      </div>
+
+      <div class="benefit reveal">
+        <div class="benefit__icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3>Private by default</h3>
+        <p>Your conversations, notes, quizzes, and mistakes belong to you. Only you can see them. Admin access is audit-logged.</p>
+      </div>
+
+      <div class="benefit reveal">
+        <div class="benefit__icon"><i class="fa-solid fa-mobile-screen"></i></div>
+        <h3>Works on any device</h3>
+        <p>No app to install. Open the site in Chrome, Safari, or Firefox on any phone, tablet, or laptop. Everything is mobile-first.</p>
+      </div>
+
+      <div class="benefit reveal">
+        <div class="benefit__icon"><i class="fa-solid fa-lightbulb"></i></div>
+        <h3>Explains, doesn't just answer</h3>
+        <p>The AI tutor walks through reasoning step by step. It shows working, offers analogies, and checks that you understood — it never just hands over answers.</p>
+      </div>
+
+      <div class="benefit reveal">
+        <div class="benefit__icon"><i class="fa-solid fa-medal"></i></div>
+        <h3>Earn as you learn</h3>
+        <p>Badges and streaks reward consistent study. Watch your streak grow, unlock achievements, and see your progress over weeks.</p>
+      </div>
+
+      <div class="benefit reveal">
+        <div class="benefit__icon"><i class="fa-solid fa-graduation-cap"></i></div>
+        <h3>Built for Nigerian exams</h3>
+        <p>Content follows the Nigerian senior secondary curriculum. Practice questions match the style and difficulty of WAEC, NECO, and JAMB exams.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     LEARNING CYCLE
+     ============================================================ -->
+<section class="section section--blush">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__eyebrow">
+        <i class="fa-solid fa-rotate"></i> How it works
+      </div>
+      <h2 class="sec-head__title">The learning cycle</h2>
+      <p class="sec-head__sub">
+        Everything you do on the platform fits into one simple loop that mirrors how real
+        learning actually happens.
+      </p>
+    </div>
+
+    <div class="cycle">
+      <div class="cycle-step reveal">
+        <div class="cycle-step__num">1</div>
+        <h3>Learn</h3>
+        <p>Ask the AI tutor any question and get a clear, patient explanation.</p>
+      </div>
+      <div class="cycle-step reveal">
+        <div class="cycle-step__num">2</div>
+        <h3>Visualize</h3>
+        <p>Turn ideas into diagrams, flowcharts, and formula sketches.</p>
+      </div>
+      <div class="cycle-step reveal">
+        <div class="cycle-step__num">3</div>
+        <h3>Practice</h3>
+        <p>Reinforce with quizzes, flashcards, theory, and timed exams.</p>
+      </div>
+      <div class="cycle-step reveal">
+        <div class="cycle-step__num">4</div>
+        <h3>Analyze</h3>
+        <p>Review scores, mistakes, and topic breakdowns after every session.</p>
+      </div>
+      <div class="cycle-step reveal">
+        <div class="cycle-step__num">5</div>
+        <h3>Adapt</h3>
+        <p>Get recommendations for what to study next based on your progress.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     TEAM
+     ============================================================ -->
+<section class="section section--white" id="team">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__eyebrow">
+        <i class="fa-solid fa-users"></i> The team
+      </div>
+      <h2 class="sec-head__title">Students building for students</h2>
+      <p class="sec-head__sub">
+        The TCSSS AI Learning Platform is built and maintained by students from Tomia
+        Community Senior Secondary School. It is a school project, made with care.
+      </p>
+    </div>
+
+    <div class="team-grid">
+      <div class="team-card team-card--lead reveal">
+        <div class="team-card__photo" data-slug="emmanuel-ajibade"><span>EA</span></div>
+        <h3>Emmanuel Ajibade</h3>
+        <p>Project Lead</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="akinola-daniel"><span>AD</span></div>
+        <h3>Akinola Daniel</h3>
+        <p>Team</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="matthias-olatunde"><span>MO</span></div>
+        <h3>Matthias Olatunde</h3>
+        <p>Team</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="ikobayo-victor"><span>IV</span></div>
+        <h3>Ikobayo Victor</h3>
+        <p>Team</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="adebowale-elijah"><span>AE</span></div>
+        <h3>Adebowale Elijah</h3>
+        <p>Team</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="emmanuel-excel"><span>EE</span></div>
+        <h3>Emmanuel Excel</h3>
+        <p>Team</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="oyedele-david"><span>OD</span></div>
+        <h3>Oyedele David</h3>
+        <p>Team</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="kehinde-joshua"><span>JO</span></div>
+        <h3>Kehinde Joshua Oladipupo</h3>
+        <p>Team</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="abdulkabir-isiaka"><span>AI</span></div>
+        <h3>Abdulkabir Isiaka</h3>
+        <p>Team</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="timilehin-olatunji"><span>TO</span></div>
+        <h3>Timilehin Olatunji</h3>
+        <p>Team</p>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-card__photo" data-slug="al-arashi-al-amin"><span>AA</span></div>
+        <h3>Al Arashi Al Amin Olanrewaju</h3>
+        <p>Team</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FAQ
+     ============================================================ -->
+<section class="section section--blush" id="faq">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__eyebrow">
+        <i class="fa-solid fa-circle-question"></i> Common questions
+      </div>
+      <h2 class="sec-head__title">Frequently asked questions</h2>
+      <p class="sec-head__sub">
+        Everything students and parents ask before using the platform.
+      </p>
+    </div>
+
+    <div class="faq reveal">
+
+      <details>
+        <summary>What is the TCSSS AI Learning Platform?</summary>
+        <div class="faq-body">
+          <p>The TCSSS AI Learning Platform is a free educational tool built for students of Tomia Community Senior Secondary School. It combines an AI chat tutor, quizzes, flashcards, theory practice, timed exam mode, visualizations, formula writing, study plans, and a mistake bank in one place.</p>
+          <p>It works in any web browser — no app installation needed — and is designed for students preparing for WAEC, NECO, and JAMB exams.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Is the platform really free?</summary>
+        <div class="faq-body">
+          <p>Yes. The platform is completely free for every TCSSS student. There are no ads, no subscriptions, and no hidden charges. It is built and maintained by the school's team as a free learning resource.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Who can use the platform?</summary>
+        <div class="faq-body">
+          <p>All students of Tomia Community Senior Secondary School. Every student receives a personal account from the school. Accounts are private — each student sees only their own conversations, quizzes, flashcards, notes, and progress.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Do I need to install an app?</summary>
+        <div class="faq-body">
+          <p>No. The platform runs entirely in your web browser. You can open it from any device — phone, tablet, or computer — by visiting the site and logging in with your school account. Nothing needs to be downloaded or installed.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Does the platform work on my phone?</summary>
+        <div class="faq-body">
+          <p>Yes. The platform is designed mobile-first, meaning it works best on phones. Every page, quiz, flashcard, and chat works on small screens. You can also add the site to your home screen for one-tap access.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Is it useful for WAEC and NECO preparation?</summary>
+        <div class="faq-body">
+          <p>Yes — exam preparation is one of the main reasons the platform was built. The Exam Mode tool lets you take timed exams under real conditions. Quizzes and theory questions match the style and difficulty of WAEC and NECO exams. The Mistake Bank tracks your weak topics so you can revise smarter.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Can it help me with JAMB?</summary>
+        <div class="faq-body">
+          <p>Absolutely. JAMB uses multiple-choice questions across English, Mathematics, and your chosen subjects. The platform's quiz tool generates multiple-choice questions on any topic, and Exam Mode lets you practise under time pressure. Study Plans can be built around a JAMB timetable.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>How does the AI tutor work?</summary>
+        <div class="faq-body">
+          <p>The AI tutor answers questions, explains concepts, solves problems, and creates learning material on demand. It follows the same teaching style as a patient older student — simple language, clear steps, real examples. It is powered by a chain of AI providers that ensures reliable access 24/7.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Are my conversations private?</summary>
+        <div class="faq-body">
+          <p>Yes. Your conversations are private to your account. Other students cannot see them. Only the school's administrator can view conversations for safety and support purposes, and every access is recorded in an audit log.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>How do I report a problem or ask for help?</summary>
+        <div class="faq-body">
+          <p>Open the Contact Us page from the sidebar of the platform. You can report a bug, request a feature, ask a question, or report a serious issue. Bullying reports are escalated immediately. For urgent matters, the page lists phone numbers of team members you can call.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Which AI providers power the answers?</summary>
+        <div class="faq-body">
+          <p>The platform uses a chain of top AI providers with automatic fallback so answers keep coming even if one provider is unavailable. The system picks the best available model for each request.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Can I use the platform offline?</summary>
+        <div class="faq-body">
+          <p>The platform needs an internet connection to talk to the AI. However, you can download books and PDFs from the Library to read offline. Quizzes you've already generated may remain accessible offline for a while.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Who built the platform?</summary>
+        <div class="faq-body">
+          <p>The platform was built by a team of students and contributors from Tomia Community Senior Secondary School, led by Emmanuel Ajibade. See the Team section above for everyone who contributed.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>How often is the platform updated?</summary>
+        <div class="faq-body">
+          <p>The team actively develops the platform. New tools, fixes, and improvements are deployed regularly. Features are added based on student feedback collected through the Contact Us page.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Where can I find the school's official website?</summary>
+        <div class="faq-body">
+          <p>The official website of Tomia Community Senior Secondary School is maintained by the school community at <a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">gideon-olukanni.github.io/TCSSS</a>. The AI Learning Platform is a separate project, built by students for students.</p>
+        </div>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     LOGIN / SIGNUP
+     ============================================================ -->
+<section class="section section--white login-section" id="login">
+  <div class="wrap">
+    <div class="sec-head reveal" style="margin-bottom:28px;">
+      <div class="sec-head__eyebrow">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Get started
+      </div>
+      <h2 class="sec-head__title">Sign in or create your free account</h2>
+      <p class="sec-head__sub">
+        Use your school email address. Accounts are private and free.
+      </p>
+    </div>
+
+    <div class="login-card" id="loginCard">
+
+      <!-- Signed-in state (populated by JS if user is logged in) -->
+      <div id="signedInState" style="display:none">
+        <div class="signed-in-card">
+          <div class="signed-in-card__avatar" id="signedAvatar">?</div>
+          <h3>Welcome back, <span id="signedName">friend</span></h3>
+          <p id="signedEmail">—</p>
+          <div class="signed-in-card__actions">
+            <a class="btn btn-primary" href="chat.html">
+              <i class="fa-solid fa-comment-dots"></i> Continue to your dashboard
+            </a>
+            <button class="btn btn-ghost" type="button" id="signedLogout">
+              <i class="fa-solid fa-right-from-bracket"></i> Log out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guest state (login/signup form) -->
+      <div id="guestState">
+        <div class="login-card__brand">
+          <div class="login-card__mark" id="brandMark">TC</div>
+          <h2 class="login-card__title" id="brandTitle">Welcome back</h2>
+          <p class="login-card__sub" id="brandSub">Sign in to continue learning</p>
+        </div>
+
         <div class="auth-tabs" role="tablist">
-          <button class="auth-tab is-active" id="tab-login"  role="tab" aria-selected="true">Sign in</button>
-          <button class="auth-tab"           id="tab-signup" role="tab" aria-selected="false">Create account</button>
+          <button class="auth-tab is-active" id="tab-login" type="button" role="tab">Sign in</button>
+          <button class="auth-tab" id="tab-signup" type="button" role="tab">Create account</button>
         </div>
 
         <div class="auth-alert" id="alert" role="alert"></div>
 
+        <!-- LOGIN FORM -->
         <form id="login-form" novalidate>
           <div class="field">
-            <label class="label" for="login-email">Email</label>
+            <label for="login-email">Email</label>
             <input class="input" type="email" id="login-email" autocomplete="email" required>
           </div>
           <div class="field">
-            <label class="label" for="login-password">Password</label>
+            <label for="login-password">Password</label>
             <div class="input-wrap">
               <input class="input" type="password" id="login-password" autocomplete="current-password" required>
-              <button type="button" class="input-toggle" data-target="login-password"
-                      aria-label="Show password" aria-pressed="false" title="Show password">
-                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                  <line x1="1" y1="1" x2="23" y2="23"/>
-                </svg>
+              <button type="button" class="input-toggle" data-target="login-password" aria-label="Show password">
+                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
               </button>
             </div>
           </div>
@@ -276,52 +1163,34 @@
           </div>
         </form>
 
-        <form id="signup-form" class="hidden" novalidate>
+        <!-- SIGNUP FORM -->
+        <form id="signup-form" style="display:none" novalidate>
           <div class="field">
-            <label class="label" for="signup-name">Full name</label>
+            <label for="signup-name">Full name</label>
             <input class="input" type="text" id="signup-name" autocomplete="name" required>
           </div>
           <div class="field">
-            <label class="label" for="signup-email">Email</label>
+            <label for="signup-email">Email</label>
             <input class="input" type="email" id="signup-email" autocomplete="email" required>
           </div>
           <div class="field">
-            <label class="label" for="signup-password">Password</label>
+            <label for="signup-password">Password</label>
             <div class="input-wrap">
-              <input class="input" type="password" id="signup-password"
-                     autocomplete="new-password" minlength="8" required>
-              <button type="button" class="input-toggle" data-target="signup-password"
-                      aria-label="Show password" aria-pressed="false" title="Show password">
-                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                  <line x1="1" y1="1" x2="23" y2="23"/>
-                </svg>
+              <input class="input" type="password" id="signup-password" autocomplete="new-password" minlength="8" required>
+              <button type="button" class="input-toggle" data-target="signup-password" aria-label="Show password">
+                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
               </button>
             </div>
             <div class="field-hint">At least 8 characters.</div>
           </div>
           <div class="field">
-            <label class="label" for="signup-confirm">Confirm password</label>
+            <label for="signup-confirm">Confirm password</label>
             <div class="input-wrap">
               <input class="input" type="password" id="signup-confirm" autocomplete="new-password" required>
-              <button type="button" class="input-toggle" data-target="signup-confirm"
-                      aria-label="Show password" aria-pressed="false" title="Show password">
-                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                  <line x1="1" y1="1" x2="23" y2="23"/>
-                </svg>
+              <button type="button" class="input-toggle" data-target="signup-confirm" aria-label="Show password">
+                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
               </button>
             </div>
           </div>
@@ -330,288 +1199,544 @@
           </div>
         </form>
       </div>
+    </div>
+  </div>
+</section>
 
-      <div class="auth-foot">
-        <a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">
-          Official School Website &#8599;
-        </a>
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="site-foot">
+  <div class="wrap">
+    <div class="site-foot__grid">
+      <div>
+        <h4>AI Learning Platform</h4>
+        <p style="line-height:1.65;max-width:340px;margin:0 0 12px;">
+          A free AI-powered learning environment for students of Tomia Community Senior
+          Secondary School. Built by students, for students.
+        </p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="#team">Team</a></li>
+          <li><a href="about.html">About the platform</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Useful links</h4>
+        <ul>
+          <li><a href="#login">Sign in</a></li>
+          <li><a href="library.html">Library</a></li>
+          <li><a href="support.html">Contact us</a></li>
+          <li><a href="https://gideon-olukanni.github.io/TCSSS/" target="_blank" rel="noopener noreferrer">Official school website</a></li>
+        </ul>
       </div>
     </div>
-  </main>
+    <div class="site-foot__bottom">
+      <div>&copy; <span id="year"></span> AI Learning Platform — Tomia Community Senior Secondary School</div>
+      <div>Made in Nigeria 🇳🇬</div>
+    </div>
+  </div>
+</footer>
 
+<!-- ============================================================
+     JSON-LD SCHEMA
+     ============================================================ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://tcsss-ai-learning-platform.onrender.com/#website",
+      "url": "https://tcsss-ai-learning-platform.onrender.com/",
+      "name": "TCSSS AI Learning Platform",
+      "description": "Free AI learning platform for TCSSS students with AI tutor, quizzes, flashcards, WAEC and NECO exam practice.",
+      "inLanguage": "en-NG",
+      "publisher": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    },
+    {
+      "@type": "EducationalOrganization",
+      "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization",
+      "name": "Tomia Community Senior Secondary School",
+      "alternateName": "TCSSS",
+      "url": "https://gideon-olukanni.github.io/TCSSS/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://tcsss-ai-learning-platform.onrender.com/uploads/branding/logo.png"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Adebayo Close, off Lagos–Abeokuta Express Road",
+        "addressLocality": "Alagbado",
+        "addressRegion": "Lagos State",
+        "addressCountry": "NG"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://tcsss-ai-learning-platform.onrender.com/#app",
+      "name": "TCSSS AI Learning Platform",
+      "url": "https://tcsss-ai-learning-platform.onrender.com/",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web browser (any device)",
+      "description": "Free AI tutor and study tools for Nigerian secondary school students. Practice WAEC and NECO with quizzes, flashcards, timed exam mode, and a personal AI tutor.",
+      "inLanguage": "en-NG",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "NGN" },
+      "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": "student",
+        "audienceType": "Secondary school students in Nigeria"
+      },
+      "featureList": [
+        "AI Chat Tutor",
+        "Auto-generated quizzes",
+        "Spaced-repetition flashcards",
+        "Fill-in-the-gap theory practice",
+        "Timed WAEC and NECO exam mode",
+        "Concept visualization with diagrams",
+        "Chemical formula and equation editor",
+        "Multi-day study plans",
+        "Personal mistake bank",
+        "Progress tracking and achievements"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://tcsss-ai-learning-platform.onrender.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the TCSSS AI Learning Platform?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The TCSSS AI Learning Platform is a free educational tool for students of Tomia Community Senior Secondary School. It combines an AI chat tutor, quizzes, flashcards, theory practice, timed exam mode, visualizations, formula writing, study plans, and a mistake bank in one place." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is the platform free to use?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes, the platform is completely free for every TCSSS student. There are no ads, no subscriptions, and no hidden charges." }
+        },
+        {
+          "@type": "Question",
+          "name": "Who can use the platform?",
+          "acceptedAnswer": { "@type": "Answer", "text": "All students of Tomia Community Senior Secondary School. Every student receives a personal account from the school. Accounts are private to each student." }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to install an app?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No, the platform runs in your web browser. Open it on any phone, tablet, or computer and log in with your school account." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does the platform work on phones?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The platform is designed mobile-first and every tool works on small screens." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is it useful for WAEC and NECO preparation?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Exam Mode tool lets students take timed exams under real conditions. Quizzes and theory questions match the style and difficulty of WAEC and NECO exams." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can it help with JAMB?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The quiz tool generates multiple-choice questions on any topic, and Exam Mode lets students practise under time pressure." }
+        },
+        {
+          "@type": "Question",
+          "name": "Are my conversations private?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Conversations are private to each account. Only the school administrator can view conversations for safety purposes, and every access is recorded in an audit log." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I report a problem?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Open the Contact Us page from the sidebar of the platform. You can report a bug, request a feature, or report a serious issue." }
+        },
+        {
+          "@type": "Question",
+          "name": "Who built the platform?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The platform was built by students from Tomia Community Senior Secondary School, led by Emmanuel Ajibade." }
+        }
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://tcsss-ai-learning-platform.onrender.com/#lead",
+      "name": "Emmanuel Ajibade",
+      "jobTitle": "Project Lead",
+      "worksFor": { "@id": "https://tcsss-ai-learning-platform.onrender.com/#organization" }
+    }
+  ]
+}
+</script>
+
+<!-- ============================================================
+     PAGE SCRIPT
+     ============================================================ -->
 <script>
-  // ---- Element refs ----
-  const tabLogin   = document.getElementById('tab-login');
-  const tabSignup  = document.getElementById('tab-signup');
-  const loginForm  = document.getElementById('login-form');
-  const signupForm = document.getElementById('signup-form');
-  const brandSub   = document.getElementById('brand-sub');
-  const brandTitle = document.getElementById('brand-title');
-  const brandMark  = document.getElementById('brand-mark');
-  const brandImg   = document.getElementById('brand-img');
-  const alertEl    = document.getElementById('alert');
+(function () {
+  'use strict';
 
-  // ---- Fixed fallback profile image (inline SVG avatar) ----
-  // Used when /uploads/branding/logo.png is missing or fails to load.
-  // Admin page will replace this later with real profile management.
-  const FALLBACK_AVATAR =
-    "data:image/svg+xml;utf8," +
-    encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#5B5A6B">' +
-        '<path d="M12 12c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z"/>' +
-        '<path d="M12 14c-3.34 0-10 1.67-10 5v3h20v-3c0-3.33-6.66-5-10-5z"/>' +
-      '</svg>'
-    );
-
-  window.__handleBrandFallback = function (imgEl) {
-    // Prevent infinite loop if the fallback itself somehow fails.
-    if (imgEl.dataset.fallbackApplied === '1') return;
-    imgEl.dataset.fallbackApplied = '1';
-    imgEl.src = FALLBACK_AVATAR;
-    brandMark.classList.add('is-fallback');
-  };
-
-  // ---- Password show / hide toggles ----
-  function resetAllToggles() {
-    document.querySelectorAll('.input-toggle').forEach(function (btn) {
-      btn.classList.remove('is-visible');
-      btn.setAttribute('aria-pressed', 'false');
-      btn.setAttribute('aria-label', 'Show password');
-      btn.setAttribute('title', 'Show password');
-      var target = document.getElementById(btn.getAttribute('data-target'));
-      if (target) target.type = 'password';
-    });
+  /* ============================================================
+     Utilities
+     ============================================================ */
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
+  /* ============================================================
+     Year in footer
+     ============================================================ */
+  var yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  /* ============================================================
+     Scroll reveal
+     ============================================================ */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -60px 0px', threshold: 0.06 });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('is-visible'); });
+  }
+
+  /* ============================================================
+     Auto-scroll to #login on hash
+     ============================================================ */
+  function scrollToLogin() {
+    var el = document.getElementById('login');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  if (location.hash === '#login') {
+    setTimeout(scrollToLogin, 120);
+  }
+  window.addEventListener('hashchange', function () {
+    if (location.hash === '#login') scrollToLogin();
+  });
+
+  /* ============================================================
+     Password show/hide toggles
+     ============================================================ */
   document.querySelectorAll('.input-toggle').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var target = document.getElementById(btn.getAttribute('data-target'));
       if (!target) return;
-
       var showing = target.type === 'text';
       target.type = showing ? 'password' : 'text';
       btn.classList.toggle('is-visible', !showing);
-      btn.setAttribute('aria-pressed', String(!showing));
-      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
-      btn.setAttribute('title', showing ? 'Show password' : 'Hide password');
-
       target.focus();
       var len = target.value.length;
       try { target.setSelectionRange(len, len); } catch (_) {}
     });
-
-    // Keep input focus when clicking the toggle.
     btn.addEventListener('mousedown', function (e) { e.preventDefault(); });
   });
 
-  // ---- Load branding (platform name + profile image) ----
+  /* ============================================================
+     Load branding (name + logo)
+     ============================================================ */
   (async function loadBranding() {
     try {
-      const res = await fetch('/api/platform/info');
+      var res = await fetch('/api/platform/info');
       if (!res.ok) return;
-      const data = await res.json();
-
-      if (data.name) brandTitle.textContent = data.name;
-
-      // If the backend returns a URL, use it; otherwise keep the fixed default.
-      // Admin page will overwrite the value returned here later.
-      if (data.logoUrl) {
-        brandImg.dataset.fallbackApplied = '';
-        brandMark.classList.remove('is-fallback');
-        brandImg.src = data.logoUrl;
+      var data = await res.json();
+      if (data.name) {
+        var titleEl = document.getElementById('brandTitle');
+        if (titleEl) titleEl.textContent = data.name;
+        document.title = data.name + ' — Tomia Community Senior Secondary School';
       }
-    } catch (_) {
-      // Network failure — fallback image stays in place.
-    }
+      if (data.logoUrl) {
+        var mark = document.getElementById('brandMark');
+        if (mark) mark.innerHTML = '<img src="' + esc(data.logoUrl) + '" alt="Logo">';
+        var head = document.getElementById('headLogo');
+        if (head) head.innerHTML = '<img src="' + esc(data.logoUrl) + '" alt="Logo">';
+      }
+    } catch (_) {}
   })();
 
-  // ---- Alert helpers ----
+  /* ============================================================
+     Auth state check — swap header button and login card if logged in
+     ============================================================ */
+  async function checkAuthState() {
+    try {
+      var res = await fetch('/api/auth/me', { credentials: 'include' });
+      if (!res.ok) return null;
+      var data = await res.json();
+      return data.user || null;
+    } catch (_) { return null; }
+  }
+
+  function renderLoggedIn(user) {
+    // Header button
+    var actions = document.getElementById('headActions');
+    if (actions) {
+      actions.innerHTML =
+        '<a class="head-btn head-btn--primary" href="chat.html">' +
+          '<i class="fa-solid fa-comment-dots" aria-hidden="true"></i>' +
+          '<span>Continue as ' + esc((user.name || 'friend').split(' ')[0]) + '</span>' +
+        '</a>';
+    }
+
+    // Login card — show signed-in state
+    var guestState = document.getElementById('guestState');
+    var signedState = document.getElementById('signedInState');
+    if (guestState) guestState.style.display = 'none';
+    if (signedState) {
+      signedState.style.display = '';
+      var avatar = document.getElementById('signedAvatar');
+      var nameEl = document.getElementById('signedName');
+      var emailEl = document.getElementById('signedEmail');
+      var initial = (user.name || user.email || '?').trim().charAt(0).toUpperCase();
+      if (avatar) avatar.textContent = initial;
+      if (nameEl) nameEl.textContent = (user.name || 'friend').split(' ')[0];
+      if (emailEl) emailEl.textContent = user.email || '';
+    }
+
+    // Logout button
+    var logoutBtn = document.getElementById('signedLogout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async function () {
+        logoutBtn.disabled = true;
+        try {
+          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+        } catch (_) {}
+        window.location.reload();
+      });
+    }
+  }
+
+  /* ============================================================
+     Alert helpers
+     ============================================================ */
+  var alertEl = document.getElementById('alert');
   function clearAlert() {
+    if (!alertEl) return;
     alertEl.className = 'auth-alert';
     alertEl.innerHTML = '';
   }
   function showError(msg) {
+    if (!alertEl) return;
     alertEl.className = 'auth-alert auth-alert--error is-visible';
     alertEl.textContent = msg;
   }
-  function showInfo(msg) {
-    alertEl.className = 'auth-alert auth-alert--info is-visible';
-    alertEl.textContent = msg;
-  }
   function showInfoWithAction(msg, actionLabel, onClick) {
+    if (!alertEl) return;
     alertEl.className = 'auth-alert auth-alert--info is-visible';
     alertEl.innerHTML = '';
     alertEl.appendChild(document.createTextNode(msg + ' '));
-    const btn = document.createElement('button');
+    var btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'auth-alert__action';
     btn.textContent = actionLabel;
     btn.addEventListener('click', onClick);
     alertEl.appendChild(btn);
   }
-
-  // Special: suspended account with reason
   function showSuspended(reason, suspendedAt) {
+    if (!alertEl) return;
     alertEl.className = 'auth-alert auth-alert--warn is-visible';
     alertEl.innerHTML = '';
-
-    const title = document.createElement('span');
+    var title = document.createElement('span');
     title.className = 'auth-alert__title';
     title.textContent = 'Your account is suspended';
     alertEl.appendChild(title);
-
-    const body = document.createElement('span');
+    var body = document.createElement('span');
     body.textContent = 'You are not able to sign in at the moment. If you believe this is a mistake, contact your school administrator.';
     alertEl.appendChild(body);
-
     if (reason) {
-      const r = document.createElement('span');
+      var r = document.createElement('span');
       r.className = 'auth-alert__reason';
       r.textContent = 'Reason: ' + reason;
       alertEl.appendChild(r);
     }
-
     if (suspendedAt) {
-      const t = document.createElement('span');
+      var t = document.createElement('span');
       t.style.cssText = 'display:block;margin-top:6px;font-size:0.78rem;opacity:0.8';
       t.textContent = 'Suspended on ' + new Date(suspendedAt).toLocaleDateString();
       alertEl.appendChild(t);
     }
-
-    const footer = document.createElement('span');
-    footer.style.cssText = 'display:block;margin-top:10px;font-size:0.82rem;font-weight:500';
-    footer.textContent = 'Please try again later.';
-    alertEl.appendChild(footer);
   }
 
-  // ---- Tab switching ----
+  /* ============================================================
+     Tabs
+     ============================================================ */
+  var tabLogin  = document.getElementById('tab-login');
+  var tabSignup = document.getElementById('tab-signup');
+  var loginForm = document.getElementById('login-form');
+  var signupForm = document.getElementById('signup-form');
+  var brandSub  = document.getElementById('brandSub');
+
   function switchMode(mode) {
     clearAlert();
-    const isLogin = mode === 'login';
-
+    var isLogin = mode === 'login';
     tabLogin.classList.toggle('is-active', isLogin);
     tabSignup.classList.toggle('is-active', !isLogin);
-    tabLogin.setAttribute('aria-selected', isLogin);
-    tabSignup.setAttribute('aria-selected', !isLogin);
-
-    loginForm.classList.toggle('hidden', !isLogin);
-    signupForm.classList.toggle('hidden', isLogin);
-    brandSub.textContent = isLogin ? 'Sign in to continue' : 'Create your account';
-
+    loginForm.style.display = isLogin ? '' : 'none';
+    signupForm.style.display = isLogin ? 'none' : '';
+    if (brandSub) brandSub.textContent = isLogin ? 'Sign in to continue learning' : 'Create your free account';
     loginForm.reset();
     signupForm.reset();
-    resetAllToggles();
-
-    setTimeout(() => {
-      document.getElementById(isLogin ? 'login-email' : 'signup-name').focus();
-    }, 0);
+    // reset toggles
+    document.querySelectorAll('.input-toggle').forEach(function (b) {
+      b.classList.remove('is-visible');
+      var t = document.getElementById(b.getAttribute('data-target'));
+      if (t) t.type = 'password';
+    });
+    var focusId = isLogin ? 'login-email' : 'signup-name';
+    setTimeout(function () { var el = document.getElementById(focusId); if (el) el.focus(); }, 0);
   }
 
-  tabLogin.addEventListener('click',  () => switchMode('login'));
-  tabSignup.addEventListener('click', () => switchMode('signup'));
+  if (tabLogin)  tabLogin.addEventListener('click',  function () { switchMode('login'); });
+  if (tabSignup) tabSignup.addEventListener('click', function () { switchMode('signup'); });
 
-  // ---- LOGIN submit ----
-  loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearAlert();
-
-    const email    = document.getElementById('login-email').value.trim();
-    const password = document.getElementById('login-password').value;
-    const submit   = document.getElementById('login-submit');
-
-    if (!email || !password) { showError('Please enter both email and password.'); return; }
-
-    submit.disabled = true;
-    submit.textContent = 'Signing in…';
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok) { window.location.href = 'chat.html'; return; }
-
-      if (res.status === 403 && data.code === 'SUSPENDED') {
-        showSuspended(data.reason, data.suspendedAt);
-        return;
-      }
-
-      if (res.status === 404 || data.code === 'NO_ACCOUNT') {
-        const typedEmail = email;
-        showInfoWithAction('No account found with that email.', 'Create one now', () => {
-          switchMode('signup');
-          document.getElementById('signup-email').value = typedEmail;
+  /* ============================================================
+     Login submit
+     ============================================================ */
+  if (loginForm) {
+    loginForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      clearAlert();
+      var email = document.getElementById('login-email').value.trim();
+      var password = document.getElementById('login-password').value;
+      var submit = document.getElementById('login-submit');
+      if (!email || !password) { showError('Please enter both email and password.'); return; }
+      submit.disabled = true;
+      submit.textContent = 'Signing in…';
+      try {
+        var res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: email, password: password }),
         });
-        return;
+        var data = await res.json().catch(function () { return {}; });
+        if (res.ok) { window.location.href = 'chat.html'; return; }
+        if (res.status === 403 && data.code === 'SUSPENDED') {
+          showSuspended(data.reason, data.suspendedAt);
+          return;
+        }
+        if (res.status === 404 || data.code === 'NO_ACCOUNT') {
+          var typedEmail = email;
+          showInfoWithAction('No account found with that email.', 'Create one now', function () {
+            switchMode('signup');
+            document.getElementById('signup-email').value = typedEmail;
+          });
+          return;
+        }
+        if (res.status === 401 || data.code === 'BAD_CREDENTIALS') {
+          showError('Incorrect password. Please try again.');
+          return;
+        }
+        showError(data.error || 'Sign in failed. Please try again.');
+      } catch (err) {
+        showError('Cannot reach the server. Please try again.');
+      } finally {
+        submit.disabled = false;
+        submit.textContent = 'Sign in';
       }
+    });
+  }
 
-      if (res.status === 401 || data.code === 'BAD_CREDENTIALS') {
-        showError('Incorrect password. Please try again.');
-        return;
-      }
-
-      showError(data.error || 'Sign in failed. Please try again.');
-    } catch (err) {
-      showError('Cannot reach the server. Please try again.');
-    } finally {
-      submit.disabled = false;
-      submit.textContent = 'Sign in';
-    }
-  });
-
-  // ---- SIGNUP submit ----
-  signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearAlert();
-
-    const name     = document.getElementById('signup-name').value.trim();
-    const email    = document.getElementById('signup-email').value.trim();
-    const password = document.getElementById('signup-password').value;
-    const confirm  = document.getElementById('signup-confirm').value;
-    const submit   = document.getElementById('signup-submit');
-
-    if (!name || !email || !password || !confirm) { showError('Please fill in every field.'); return; }
-    if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
-    if (password !== confirm) { showError('Passwords do not match.'); return; }
-
-    submit.disabled = true;
-    submit.textContent = 'Creating account…';
-
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ name, email, password }),
-      });
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok) { window.location.href = 'chat.html'; return; }
-
-      if (res.status === 409 || data.code === 'EMAIL_TAKEN') {
-        const typedEmail = email;
-        showInfoWithAction('An account with that email already exists.', 'Sign in instead', () => {
-          switchMode('login');
-          document.getElementById('login-email').value = typedEmail;
+  /* ============================================================
+     Signup submit
+     ============================================================ */
+  if (signupForm) {
+    signupForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      clearAlert();
+      var name = document.getElementById('signup-name').value.trim();
+      var email = document.getElementById('signup-email').value.trim();
+      var password = document.getElementById('signup-password').value;
+      var confirm = document.getElementById('signup-confirm').value;
+      var submit = document.getElementById('signup-submit');
+      if (!name || !email || !password || !confirm) { showError('Please fill in every field.'); return; }
+      if (password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+      if (password !== confirm) { showError('Passwords do not match.'); return; }
+      submit.disabled = true;
+      submit.textContent = 'Creating account…';
+      try {
+        var res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ name: name, email: email, password: password }),
         });
-        return;
+        var data = await res.json().catch(function () { return {}; });
+        if (res.ok) { window.location.href = 'chat.html'; return; }
+        if (res.status === 409 || data.code === 'EMAIL_TAKEN') {
+          var typedEmail = email;
+          showInfoWithAction('An account with that email already exists.', 'Sign in instead', function () {
+            switchMode('login');
+            document.getElementById('login-email').value = typedEmail;
+          });
+          return;
+        }
+        showError(data.error || 'Could not create your account.');
+      } catch (err) {
+        showError('Cannot reach the server. Please try again.');
+      } finally {
+        submit.disabled = false;
+        submit.textContent = 'Create account';
       }
-      showError(data.error || 'Could not create your account.');
-    } catch (err) {
-      showError('Cannot reach the server. Please try again.');
-    } finally {
-      submit.disabled = false;
-      submit.textContent = 'Create account';
-    }
-  });
+    });
+  }
 
-  window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('login-email').focus();
-  });
+  /* ============================================================
+     Team photo loader
+     ============================================================ */
+  (function loadTeamPhotos() {
+    document.querySelectorAll('.team-card__photo[data-slug]').forEach(function (card) {
+      var slug = card.getAttribute('data-slug');
+      if (!slug) return;
+      var src = '/uploads/branding/team/' + slug + '.jpg';
+      var probe = new Image();
+      probe.onload = function () {
+        var span = card.querySelector('span');
+        if (span) span.remove();
+        var img = document.createElement('img');
+        img.src = src;
+        img.alt = '';
+        img.loading = 'lazy';
+        card.appendChild(img);
+      };
+      probe.src = src;
+    });
+  })();
+
+  /* ============================================================
+     Boot — auth check
+     ============================================================ */
+  (async function init() {
+    var user = await checkAuthState();
+    if (user) {
+      renderLoggedIn(user);
+    } else {
+      // Make sure the guest state is visible
+      var guestState = document.getElementById('guestState');
+      if (guestState) guestState.style.display = '';
+      var signedState = document.getElementById('signedInState');
+      if (signedState) signedState.style.display = 'none';
+      // Focus email field if hash points at login
+      if (location.hash === '#login') {
+        setTimeout(function () {
+          var el = document.getElementById('login-email');
+          if (el) el.focus();
+        }, 400);
+      }
+    }
+  })();
+
+})();
 </script>
+
 </body>
 </html>

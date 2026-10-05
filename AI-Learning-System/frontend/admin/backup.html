@@ -209,7 +209,7 @@
 
     async function guard() {
       var res = await fetch('/api/auth/me', { credentials: 'include' });
-      if (res.status === 401) { window.location.href = '../index.html'; return false; }
+      if (res.status === 401) { window.location.href = '../index.html#login'; return false; }
       var data = await res.json();
       if (!data.user || data.user.role !== 'admin') {
         window.location.href = '../chat.html';
