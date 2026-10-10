@@ -380,17 +380,93 @@
 
     ensureMobileElements();
 
-    var mainLinks    = NAV_ITEMS.map(linkHTML).join('');
+    // ============================================================
+    //  Context-aware sidebar navigation
+    //  - Student pages: NAV_ITEMS + utility footer
+    //  - Admin pages:   admin links at top + student links below
+    // ============================================================
+    var onAdminPage = isAdminPage;
+
+    function adminLinkHTML(item) {
+      var active = item.href === current ? ' is-active' : '';
+      return (
+        '<a class="nav-item' + active + '" href="' + item.href + '">' +
+          '<i class="fa-solid ' + item.icon + '" aria-hidden="true"></i>' +
+          '<span>' + item.label + '</span>' +
+        '</a>'
+      );
+    }
+
+    function studentLinkHTML(item) {
+      var active = item.href === current ? ' is-active' : '';
+      return (
+        '<a class="nav-item nav-item--student' + active + '" href="' + BASE + item.href + '">' +
+          '<i class="fa-solid ' + item.icon + '" aria-hidden="true"></i>' +
+          '<span>' + item.label + '</span>' +
+        '</a>'
+      );
+    }
+
+    var navHTML = '';
+    var footerNavHTML = '';
     var settingsLink = linkHTML(SETTINGS_ITEM);
 
-    var onAdminPage  = isAdminPage;
-    var adminLinkHTML =
-      '<a class="nav-item' + (onAdminPage ? ' is-active' : '') + '" ' +
-         'id="admin-nav-link" href="' + BASE + 'admin/dashboard.html" ' +
-         'style="display:none" title="Admin">' +
-        '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>' +
-        '<span>Admin</span>' +
-      '</a>';
+    if (onAdminPage) {
+      // Admin block
+      var adminLinks = ADMIN_SECTIONS.map(adminLinkHTML).join('');
+      // Student block
+      var studentLinks = NAV_ITEMS.map(studentLinkHTML).join('');
+
+      navHTML =
+        '<a class="nav-item nav-item--back" href="' + BASE + 'chat.html">' +
+          '<i class="fa-solid fa-arrow-left" aria-hidden="true"></i>' +
+          '<span>Back to app</span>' +
+        '</a>' +
+        '<div class="sidebar__divider"></div>' +
+        '<div class="sidebar__section-label">Admin panel</div>' +
+        adminLinks +
+        '<div class="sidebar__divider"></div>' +
+        '<div class="sidebar__section-label">Learning</div>' +
+        studentLinks;
+
+      // Footer for admin pages: just logout at the very bottom
+      footerNavHTML =
+        '<a class="nav-item nav-item--support" href="' + BASE + 'support.html" title="Contact support">' +
+          '<i class="fa-solid fa-headset" aria-hidden="true"></i>' +
+          '<span>Contact Us</span>' +
+          '<span class="nav-item__badge" id="support-badge" style="display:none"></span>' +
+        '</a>' +
+        '<a class="nav-item nav-item--utility" href="' + BASE + 'about.html" title="About the platform">' +
+          '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>' +
+          '<span>About the platform</span>' +
+        '</a>' +
+        '<button class="nav-item" id="logout-btn" type="button" title="Log out">' +
+          '<i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>' +
+          '<span>Log out</span>' +
+        '</button>';
+    } else {
+      // Student pages — the original layout
+      navHTML = NAV_ITEMS.map(linkHTML).join('');
+      footerNavHTML =
+        settingsLink +
+        '<a class="nav-item nav-item--support" href="' + BASE + 'support.html" title="Contact support">' +
+          '<i class="fa-solid fa-headset" aria-hidden="true"></i>' +
+          '<span>Contact Us</span>' +
+          '<span class="nav-item__badge" id="support-badge" style="display:none"></span>' +
+        '</a>' +
+        '<a class="nav-item nav-item--utility" href="' + BASE + 'about.html" title="About the platform">' +
+          '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>' +
+          '<span>About the platform</span>' +
+        '</a>' +
+        '<a class="nav-item nav-item--utility" href="' + SCHOOL_URL + '" target="_blank" rel="noopener noreferrer" title="Official School Website">' +
+          '<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>' +
+          '<span>Official School Website</span>' +
+        '</a>' +
+        '<button class="nav-item" id="logout-btn" type="button" title="Log out">' +
+          '<i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>' +
+          '<span>Log out</span>' +
+        '</button>';
+    }
 
     mount.innerHTML =
       '<aside class="sidebar" id="sidebar" aria-label="Main navigation">' +
@@ -404,38 +480,11 @@
           '</div>' +
         '</div>' +
         '<div class="sidebar__body">' +
-          '<nav class="sidebar__nav">' + mainLinks + adminLinkHTML + '</nav>' +
+          '<nav class="sidebar__nav">' + navHTML + '</nav>' +
           '<div id="sidebar-slot"></div>' +
         '</div>' +
-                '<div class="sidebar__footer">' +
-          settingsLink +
-          '<button class="sidebar__more-toggle" id="sidebar-more-toggle" type="button" aria-expanded="false">' +
-            '<span class="sidebar__more-toggle__label">' +
-              '<i class="fa-solid fa-sliders" aria-hidden="true"></i>' +
-              '<span>More options</span>' +
-            '</span>' +
-            '<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>' +
-          '</button>' +
-          '<div class="sidebar__drawer" id="sidebar-drawer">' +
-          '<a class="nav-item nav-item--support" href="' + BASE + 'support.html" title="Contact support">' +
-            '<i class="fa-solid fa-headset" aria-hidden="true"></i>' +
-            '<span>Contact Us</span>' +
-            '<span class="nav-item__badge" id="support-badge" style="display:none"></span>' +
-          '</a>' +
-           '<a class="nav-item nav-item--utility" href="' + BASE + 'about.html" title="About the platform">' +
-            '<i class="fa-solid fa-circle-info" aria-hidden="true"></i>' +
-            '<span>About the platform</span>' +
-          '</a>' +
-      
-          '<a class="nav-item nav-item--utility" href="' + SCHOOL_URL + '" target="_blank" rel="noopener noreferrer" title="Official School Website">' +
-            '<i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>' +
-            '<span>Official School Website</span>' +
-          '</a>' +
-          '<button class="nav-item" id="logout-btn" type="button" title="Log out">' +
-            '<i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>' +
-            '<span>Log out</span>' +
-          '</button>' +
-          '</div>' +
+        '<div class="sidebar__footer">' +
+          footerNavHTML +
           '<div class="user-chip" id="user-chip" style="display:none">' +
             '<div class="user-chip__avatar">?</div>' +
             '<div class="user-chip__info">' +
@@ -770,7 +819,7 @@
     base = src.replace(/shell\.js.*$/, '');
   }
   var el = document.createElement('script');
-  el.src = base + 'announcements.js?v=20261005e';
+  el.src = '/assets/announcements.js?v=20261006g';
   el.async = true;
   document.head.appendChild(el);
 })();
@@ -789,7 +838,7 @@
     base = src.replace(/shell\.js.*$/, '');
   }
   var el = document.createElement('script');
-  el.src = base + 'badges.js?v=20261005e';
+  el.src = '/assets/badges.js?v=20261006a';
   el.async = true;
   document.head.appendChild(el);
 })();
@@ -986,5 +1035,244 @@
     document.addEventListener('DOMContentLoaded', buildNav);
   } else {
     buildNav();
+  }
+})();
+
+
+/* ------------------------------------------------------------------
+   On admin pages, expose a mobile hamburger so the sidebar is
+   reachable on phones. Only runs on /admin/* pages.
+   ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+  if (window.__adminMobileToggle) return;
+  window.__adminMobileToggle = true;
+
+  if (location.pathname.indexOf('/admin/') === -1) return;
+
+  function install() {
+    // The mobile bar exists (shell.js creates it everywhere).
+    var bar = document.querySelector('.mobile-bar');
+    if (!bar) return;
+
+    var btn = bar.querySelector('.mobile-bar__toggle');
+    if (btn) {
+      // Just un-hide it — the handler is already wired by shell.js
+      btn.style.display = 'grid';
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(install, 120);
+    });
+  } else {
+    setTimeout(install, 120);
+  }
+})();
+
+/* ------------------------------------------------------------------
+   ADMIN SIDEBAR SWAP
+   Runs after the main shell render. On /admin/* pages, replaces the
+   student nav list with admin links + a "Back to app" link.
+   ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+  if (window.__adminSidebarSwap) return;
+  window.__adminSidebarSwap = true;
+
+  if (location.pathname.indexOf('/admin/') === -1) return;
+
+  var ADMIN_ITEMS = [
+    { href: 'dashboard.html',             icon: 'fa-gauge-high',      label: 'Dashboard' },
+    { href: 'users.html',                 icon: 'fa-users',           label: 'Users' },
+    { href: 'support.html',               icon: 'fa-headset',         label: 'Support' },
+    { href: 'library.html',               icon: 'fa-book',            label: 'Library' },
+    { href: 'knowledge.html',             icon: 'fa-brain',           label: 'Knowledge' },
+    { href: 'models.html',                icon: 'fa-microchip',       label: 'Models' },
+    { href: 'analytics.html',             icon: 'fa-chart-line',      label: 'Analytics' },
+    { href: 'audit.html',                 icon: 'fa-clipboard-list',  label: 'Audit' },
+    { href: 'backup.html',                icon: 'fa-database',        label: 'Backup' },
+    { href: 'announcements.html',         icon: 'fa-bullhorn',        label: 'Announcements' },
+    { href: 'announcement-replies.html',  icon: 'fa-comment-dots',    label: 'Replies' },
+    { href: 'settings.html',              icon: 'fa-gears',           label: 'Settings' }
+  ];
+
+  function inject() {
+    var sidebar = document.getElementById('sidebar');
+    if (!sidebar) return false;
+
+    var nav = sidebar.querySelector('.sidebar__nav');
+    if (!nav || nav.getAttribute('data-admin-swapped') === '1') return true;
+
+    var current = (location.pathname.split('/').pop() || 'dashboard.html');
+
+    var html = '';
+    html += '<a class="nav-item nav-item--back" href="../chat.html">' +
+              '<i class="fa-solid fa-arrow-left" aria-hidden="true"></i>' +
+              '<span>Back to app</span>' +
+            '</a>';
+    html += '<div class="sidebar__divider"></div>';
+    html += '<div class="sidebar__section-label">Admin panel</div>';
+
+    ADMIN_ITEMS.forEach(function (item) {
+      var active = item.href === current ? ' is-active' : '';
+      html += '<a class="nav-item' + active + '" href="' + item.href + '">' +
+                '<i class="fa-solid ' + item.icon + '" aria-hidden="true"></i>' +
+                '<span>' + item.label + '</span>' +
+              '</a>';
+    });
+
+    html += '<div class="sidebar__divider"></div>';
+    html += '<div class="sidebar__section-label">Learning</div>';
+    html += '<a class="nav-item" href="../chat.html">' +
+              '<i class="fa-solid fa-comment-dots" aria-hidden="true"></i>' +
+              '<span>Chat</span></a>';
+    html += '<a class="nav-item" href="../spark.html">' +
+              '<i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>' +
+              '<span>Spark</span></a>';
+    html += '<a class="nav-item" href="../lab.html">' +
+              '<i class="fa-solid fa-flask" aria-hidden="true"></i>' +
+              '<span>Studying Lab</span></a>';
+    html += '<a class="nav-item" href="../library.html">' +
+              '<i class="fa-solid fa-book-open" aria-hidden="true"></i>' +
+              '<span>Library</span></a>';
+    html += '<a class="nav-item" href="../badges.html">' +
+              '<i class="fa-solid fa-trophy" aria-hidden="true"></i>' +
+              '<span>Achievements</span></a>';
+
+    nav.innerHTML = html;
+    nav.setAttribute('data-admin-swapped', '1');
+    return true;
+  }
+
+  // Try immediately and then on a delay for safety
+  if (!inject()) {
+    setTimeout(inject, 60);
+    setTimeout(inject, 300);
+    setTimeout(inject, 900);
+  }
+})();
+
+/* ------------------------------------------------------------------
+   ADMIN LINK IN SIDEBAR
+   Ensures an "Admin" entry exists in the sidebar for admin users
+   on every page. Also swaps in the full admin nav on /admin/*.
+   ------------------------------------------------------------------ */
+(function () {
+  'use strict';
+  if (window.__adminLinkInject) return;
+  window.__adminLinkInject = true;
+
+  async function ensureAdminLink() {
+    // Only inject if user is admin
+    var user = window.__currentUser;
+    if (!user) {
+      try {
+        var res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!res.ok) return;
+        var d = await res.json();
+        user = d.user;
+        window.__currentUser = user;
+      } catch (_) { return; }
+    }
+    if (!user || user.role !== 'admin') return;
+
+    var sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+    var nav = sidebar.querySelector('.sidebar__nav');
+    if (!nav) return;
+
+    // On admin pages, we swap nav entirely
+    var onAdmin = location.pathname.indexOf('/admin/') !== -1;
+    if (onAdmin) {
+      injectAdminNav(nav);
+      return;
+    }
+
+    // On student pages, ensure the Admin link exists somewhere in the nav
+    if (nav.querySelector('#admin-nav-link')) {
+      var existing = nav.querySelector('#admin-nav-link');
+      existing.style.display = '';
+      return;
+    }
+
+    // Remove any prior swap marker and add the admin link
+    nav.removeAttribute('data-admin-swapped');
+
+    var link = document.createElement('a');
+    link.className = 'nav-item';
+    link.id = 'admin-nav-link';
+    link.href = '/admin/dashboard.html';
+    link.innerHTML =
+      '<i class="fa-solid fa-shield-halved" aria-hidden="true"></i>' +
+      '<span>Admin</span>';
+    nav.appendChild(link);
+  }
+
+  function injectAdminNav(nav) {
+    if (nav.getAttribute('data-admin-swapped') === '1') return;
+
+    var ADMIN_ITEMS = [
+      { href: 'dashboard.html',             icon: 'fa-gauge-high',      label: 'Dashboard' },
+      { href: 'users.html',                 icon: 'fa-users',           label: 'Users' },
+      { href: 'support.html',               icon: 'fa-headset',         label: 'Support' },
+      { href: 'library.html',               icon: 'fa-book',            label: 'Library' },
+      { href: 'knowledge.html',             icon: 'fa-brain',           label: 'Knowledge' },
+      { href: 'models.html',                icon: 'fa-microchip',       label: 'Models' },
+      { href: 'analytics.html',             icon: 'fa-chart-line',      label: 'Analytics' },
+      { href: 'audit.html',                 icon: 'fa-clipboard-list',  label: 'Audit' },
+      { href: 'backup.html',                icon: 'fa-database',        label: 'Backup' },
+      { href: 'announcements.html',         icon: 'fa-bullhorn',        label: 'Announcements' },
+      { href: 'announcement-replies.html',  icon: 'fa-comment-dots',    label: 'Replies' },
+      { href: 'settings.html',              icon: 'fa-gears',           label: 'Settings' }
+    ];
+
+    var current = (location.pathname.split('/').pop() || 'dashboard.html');
+
+    var html = '';
+    html += '<a class="nav-item nav-item--back" href="../chat.html">' +
+              '<i class="fa-solid fa-arrow-left" aria-hidden="true"></i>' +
+              '<span>Back to app</span></a>';
+    html += '<div class="sidebar__divider"></div>';
+    html += '<div class="sidebar__section-label">Admin panel</div>';
+    ADMIN_ITEMS.forEach(function (item) {
+      var active = item.href === current ? ' is-active' : '';
+      html += '<a class="nav-item' + active + '" href="' + item.href + '">' +
+                '<i class="fa-solid ' + item.icon + '" aria-hidden="true"></i>' +
+                '<span>' + item.label + '</span></a>';
+    });
+    html += '<div class="sidebar__divider"></div>';
+    html += '<div class="sidebar__section-label">Learning</div>';
+    html += '<a class="nav-item" href="../chat.html"><i class="fa-solid fa-comment-dots" aria-hidden="true"></i><span>Chat</span></a>';
+    html += '<a class="nav-item" href="../spark.html"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Spark</span></a>';
+    html += '<a class="nav-item" href="../lab.html"><i class="fa-solid fa-flask" aria-hidden="true"></i><span>Studying Lab</span></a>';
+    html += '<a class="nav-item" href="../library.html"><i class="fa-solid fa-book-open" aria-hidden="true"></i><span>Library</span></a>';
+    html += '<a class="nav-item" href="../badges.html"><i class="fa-solid fa-trophy" aria-hidden="true"></i><span>Achievements</span></a>';
+
+    nav.innerHTML = html;
+    nav.setAttribute('data-admin-swapped', '1');
+  }
+
+  // Wait for shell.js to render the sidebar first, then inject
+  function tryInject() {
+    var sidebar = document.getElementById('sidebar');
+    if (sidebar && sidebar.querySelector('.sidebar__nav')) {
+      ensureAdminLink();
+    } else {
+      setTimeout(tryInject, 100);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(tryInject, 150);
+      setTimeout(tryInject, 500);
+      setTimeout(tryInject, 1200);
+    });
+  } else {
+    setTimeout(tryInject, 150);
+    setTimeout(tryInject, 500);
+    setTimeout(tryInject, 1200);
   }
 })();

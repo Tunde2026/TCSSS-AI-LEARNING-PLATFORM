@@ -5,6 +5,8 @@
    ============================================================ */
 (function () {
   'use strict';
+  // DEV-ONLY: always show announcements during testing
+  window.__DEV_FORCE_ANN = true;
   if (window.__announcementsInit) return;
   window.__announcementsInit = true;
 
@@ -188,8 +190,7 @@
           '<h2 class="ann-popup__title">' + esc(ann.title) + '</h2>' +
           '<div class="ann-popup__text md-content"></div>' +
         '</div>' +
-        '<div class="ann-popup__reply-slot" data-role="reply-slot"></div>' +
-        replyBoxHtml(ann) +
+        ''(ann) +
         '\n' +
         '<div class="ann-popup__foot">' +
           (ann.action_url && ann.action_label
@@ -206,6 +207,13 @@
       '</div>';
     document.body.appendChild(ov);
     renderBody(ann.body, ov.querySelector('.ann-popup__text'));
+    setTimeout(function () {
+      var slot = ov.querySelector('[data-role="reply-slot"]');
+      if (slot && window.buildReplySection) {
+        try { slot.appendChild(window.buildReplySection(ann)); }
+        catch (e) { console.warn('[ann] reply section failed:', e); }
+      }
+    }, 50);
     attachReplyBox(ov, ann);
 
     recordView(ann);
@@ -261,12 +269,8 @@
         '<div class="ann-bar__content">' +
           '<div class="ann-bar__title">' + esc(ann.title) + '</div>' +
           '<div class="ann-bar__text md-content"></div>' +
-          '<div class="ann-bar__reply-slot" data-role="reply-slot" style="display:none;margin-top:12px;"></div>' +
         '</div>' +
         '<div class="ann-bar__actions">' +
-          '<button type="button" class="ann-btn ann-btn--sm ann-btn--ghost" data-role="reply-toggle" title="Reply">' +
-            '<i class="fa-solid fa-reply"></i>' +
-          '</button>' +
           (ann.action_url && ann.action_label
             ? '<a class="ann-btn ann-btn--sm ann-btn--' + esc(ann.action_style || 'primary') +
               '" href="' + esc(ann.action_url) + '"' +
@@ -281,25 +285,6 @@
       '</div>';
     document.body.appendChild(el);
     renderBody(ann.body, el.querySelector('.ann-bar__text'));
-
-    // Reply toggle
-    var replyToggle = el.querySelector('[data-role="reply-toggle"]');
-    var replySlot = el.querySelector('[data-role="reply-slot"]');
-    if (replyToggle && replySlot) {
-      var replyBuilt = false;
-      replyToggle.addEventListener('click', function () {
-        if (!replyBuilt) {
-          replySlot.appendChild(buildReplySection(ann, currentUser));
-          replyBuilt = true;
-        }
-        var showing = replySlot.style.display !== 'none';
-        replySlot.style.display = showing ? 'none' : 'block';
-        if (!showing) {
-          var ta = replySlot.querySelector('.ann-reply__input');
-          if (ta) setTimeout(function () { ta.focus(); }, 80);
-        }
-      });
-    }
 
     recordView(ann);
 
@@ -345,7 +330,7 @@
     var SESSION_KEY = 'announcements-shown-this-session';
     try {
       if (sessionStorage.getItem(SESSION_KEY) === '1') {
-        console.log('[announcements] already shown this session — skipping');
+        console.log('[announcements] DEV: forcing show');
         return;
       }
     } catch (_) {}
@@ -366,4 +351,156 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+})();
+
+/* ============================================================
+   ANNOUNCEMENT REPLIES — appended module
+   ============================================================ */
+(function () {
+  'use strict';
+  if (window.__annReplyInstalled) return;
+  window.__annReplyInstalled = true;
+
+  var cachedUser = null;
+  fetch('/api/auth/me', { credentials: 'include' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { cachedUser = d && d.user ? d.user : null; })
+    .catch(function () {});
+
+  async function fetchReplies(id) {
+    try {
+      var res = await fetch('/api/announcements/' + id + '/replies', { credentials: 'include' });
+      if (!res.ok) return [];
+      var d = await res.json();
+      return d.replies || [];
+    } catch (_) { return []; }
+  }
+
+  async function submitReply(id, body) {
+    try {
+      var res = await fetch('/api/announcements/' + id + '/replies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ body: body }),
+      });
+      var d = await res.json().catch(function () { return {}; });
+      if (!res.ok) return { ok: false, error: d.error || 'Failed' };
+      return { ok: true, reply: d.reply };
+    } catch (_) { return { ok: false, error: 'Network error' }; }
+  }
+
+  async function deleteReply(id, replyId) {
+    try {
+      var res = await fetch('/api/announcements/' + id + '/replies/' + replyId, {
+        method: 'DELETE', credentials: 'include',
+      });
+      return res.ok;
+    } catch (_) { return false; }
+  }
+
+  function renderItem(reply, onDelete) {
+    var item = document.createElement('div');
+    item.className = 'ann-reply__item';
+    var head = document.createElement('div');
+    head.className = 'ann-reply__head';
+    var name = document.createElement('span');
+    name.className = 'ann-reply__name';
+    var displayName = reply.user_name || reply.user_email || 'Student';
+    if (reply.user_role === 'admin') displayName += ' \u00b7 Staff';
+    name.textContent = displayName;
+    head.appendChild(name);
+    var meta = document.createElement('span');
+    meta.className = 'ann-reply__meta';
+    try {
+      meta.textContent = new Date(reply.created_at).toLocaleString(undefined, {
+        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+      });
+    } catch (_) {}
+    head.appendChild(meta);
+    if (cachedUser && reply.user_id === cachedUser.id) {
+      var del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'ann-reply__del';
+      del.textContent = 'Delete';
+      del.addEventListener('click', function () { onDelete(reply.id, item); });
+      head.appendChild(del);
+    }
+    item.appendChild(head);
+    var body = document.createElement('div');
+    body.className = 'ann-reply__body';
+    body.textContent = reply.body;
+    item.appendChild(body);
+    return item;
+  }
+
+  window.buildReplySection = function (ann) {
+    var wrap = document.createElement('div');
+    wrap.className = 'ann-reply';
+    wrap.innerHTML =
+      '<div class="ann-reply__title"><i class="fa-solid fa-comments"></i> Replies <span data-role="reply-count">(0)</span></div>' +
+      '<div class="ann-reply__list"></div>' +
+      '<div class="ann-reply__empty">No replies yet. Be the first to respond.</div>' +
+      '<form class="ann-reply__form">' +
+        '<textarea class="ann-reply__input" placeholder="Reply to this message\u2026" rows="2" maxlength="2000"></textarea>' +
+        '<button type="submit" class="ann-reply__send"><i class="fa-solid fa-paper-plane"></i> Send reply</button>' +
+      '</form>';
+
+    var list = wrap.querySelector('.ann-reply__list');
+    var empty = wrap.querySelector('.ann-reply__empty');
+    var form = wrap.querySelector('.ann-reply__form');
+    var input = wrap.querySelector('.ann-reply__input');
+    var btn = wrap.querySelector('.ann-reply__send');
+    var countEl = wrap.querySelector('[data-role="reply-count"]');
+
+    function updateCount() {
+      var n = list.querySelectorAll('.ann-reply__item').length;
+      countEl.textContent = '(' + n + ')';
+      empty.style.display = n ? 'none' : '';
+    }
+
+    async function onDelete(replyId, itemEl) {
+      if (!confirm('Delete this reply?')) return;
+      var ok = await deleteReply(ann.id, replyId);
+      if (!ok) { alert('Could not delete.'); return; }
+      itemEl.remove();
+      updateCount();
+    }
+
+    function append(reply) {
+      list.appendChild(renderItem(reply, onDelete));
+      updateCount();
+      list.scrollTop = list.scrollHeight;
+    }
+
+    fetchReplies(ann.id).then(function (replies) {
+      replies.forEach(append);
+      updateCount();
+    });
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      btn.disabled = true;
+      var orig = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending\u2026';
+      var result = await submitReply(ann.id, text);
+      btn.disabled = false;
+      btn.innerHTML = orig;
+      if (!result.ok) { alert(result.error || 'Failed'); return; }
+      input.value = '';
+      append({
+        id: result.reply.id,
+        user_id: result.reply.user_id,
+        user_name: (cachedUser && cachedUser.name) || 'You',
+        user_email: (cachedUser && cachedUser.email) || '',
+        user_role: (cachedUser && cachedUser.role) || 'student',
+        body: result.reply.body,
+        created_at: result.reply.created_at,
+      });
+    });
+
+    return wrap;
+  };
 })();

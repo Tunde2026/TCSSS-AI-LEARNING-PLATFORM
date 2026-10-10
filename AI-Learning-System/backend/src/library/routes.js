@@ -48,6 +48,38 @@ const upload = multer({
   },
 });
 
+
+// ---- Upload middleware wrapper ----
+// Catches multer errors so they come back as clean JSON, and logs
+// every upload attempt so we can see what's actually happening.
+function uploadSingle(fieldName) {
+  const mw = upload.single(fieldName);
+  return function (req, res, next) {
+    mw(req, res, function (err) {
+      if (err) {
+        const code = err.code || 'UPLOAD_ERROR';
+        const status = code === 'LIMIT_FILE_SIZE' ? 413 : (err.status || 400);
+        console.error('[library upload] multer error:', code, err.message);
+        return res.status(status).json({
+          error: err.message || 'Upload failed',
+          code: code,
+        });
+      }
+      if (!req.file) {
+        const keys = Object.keys(req.body || {});
+        console.error('[library upload] no file; body keys:', keys.join(',') || '(none)');
+        return res.status(400).json({
+          error: 'No file was attached to the request.',
+          code: 'NO_FILE',
+        });
+      }
+      console.log('[library upload] received:', req.file.originalname,
+                  '(' + req.file.size + ' bytes, ' + req.file.mimetype + ')');
+      next();
+    });
+  };
+}
+
 // ---- Public (logged-in) ----
 
 router.get('/', requireLogin, async function (req, res, next) {
@@ -150,8 +182,9 @@ router.get('/admin', requireAdmin, async function (req, res, next) {
 });
 
 // Standard local upload (small files)
-router.post('/admin/upload', requireAdmin, upload.single('file'), async function (req, res, next) {
+router.post('/admin/upload', requireAdmin, uploadSingle('file'), async function (req, res, next) {
   try {
+    console.log('[library upload] calling saveUpload for:', req.body.title, '/', req.body.subject);
     const result = await service.saveUpload({
       adminId: req.user.id,
       file: req.file,

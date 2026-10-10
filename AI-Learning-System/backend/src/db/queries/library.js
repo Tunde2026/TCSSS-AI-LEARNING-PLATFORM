@@ -49,7 +49,7 @@ async function setApproved(id, approved, adminId) {
     `UPDATE library_documents
         SET approved = $1, status = $2,
             approved_at = CASE WHEN $1 THEN now() ELSE NULL END,
-            approved_by = CASE WHEN $1 THEN $3 ELSE NULL END
+            approved_by = CASE WHEN $1 THEN $3::uuid ELSE NULL END
       WHERE id = $4
       RETURNING *`,
     [approved, approved ? 'approved' : 'rejected', adminId, id]

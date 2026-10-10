@@ -82,3 +82,26 @@ module.exports = {
   getPollinationsKey,
   isStale,
 };
+
+/* ---------- Resilient boot loader ----------
+   If the first loadAndApply fails (DB not ready yet), retry
+   every 5 seconds up to 12 times, then give up quietly. */
+let bootRetries = 0;
+function scheduleInitialLoad() {
+  loadAndApply()
+    .then(function () {
+      logger.info('[keyStore] loaded successfully');
+    })
+    .catch(function (err) {
+      bootRetries++;
+      logger.warn('[keyStore] load attempt ' + bootRetries + ' failed: ' + err.message);
+      if (bootRetries < 12) {
+        setTimeout(scheduleInitialLoad, 5000);
+      } else {
+        logger.warn('[keyStore] giving up after 12 attempts — using env keys only');
+      }
+    });
+}
+scheduleInitialLoad();
+
+module.exports.scheduleInitialLoad = scheduleInitialLoad;

@@ -199,6 +199,7 @@ async function importBook(rawBook, source) {
   return { imported: true, id: docId };
 }
 
+let __fetcherBootRetries = 0;
 async function runOnce() {
   if (running) {
     logger.info('[fetcher] already running — skipping duplicate call');
@@ -209,7 +210,11 @@ async function runOnce() {
 
   // Remove any DB rows whose underlying file has vanished (ephemeral FS).
   try {
-    await cleanupMissingFiles();
+    try {
+      await cleanupMissingFiles();
+    } catch (err) {
+      logger.warn('[fetcher] cleanup skipped (DB not ready): ' + err.message);
+    }
   } catch (err) {
     logger.warn('[fetcher] cleanup threw: ' + err.message);
   }

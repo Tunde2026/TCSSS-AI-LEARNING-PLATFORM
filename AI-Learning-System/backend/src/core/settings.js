@@ -84,3 +84,25 @@ module.exports = {
   getAll,
   loadFromDb,
 };
+
+/* ---------- Resilient boot loader ----------
+   Retries until the DB is ready. Prevents the
+   "Cannot read properties of undefined (reading 'listAll')" warning. */
+let __bootRetries = 0;
+function scheduleInitialLoad() {
+  module.exports.loadFromDb()
+    .then(function () {
+      if (__bootRetries > 0) {
+        console.log('[settings] loaded after ' + __bootRetries + ' retries');
+      }
+    })
+    .catch(function (err) {
+      __bootRetries++;
+      if (__bootRetries < 12) {
+        setTimeout(scheduleInitialLoad, 5000);
+      } else {
+        console.warn('[settings] giving up after 12 attempts — using defaults');
+      }
+    });
+}
+setTimeout(scheduleInitialLoad, 800); // let circular deps finish loading

@@ -1,44 +1,30 @@
 // ============================================================
 // db/pool.js
 // ------------------------------------------------------------
-// Shared PostgreSQL pool.
-//
-// IMPORTANT: this module exports { pool, ping, waitForDb }.
-// pool is a real pg Pool instance.
-//
-// Config is loaded DEFENSIVELY via try/catch, falling back to
-// process.env, to survive circular-dependency moments during
-// module init (e.g. when gateway.js is required standalone).
+// Shared PostgreSQL pool with generous timeouts, so slow
+// cold starts (local Postgres, Neon over the internet) don't
+// fail. Every caller uses `db.pool` exactly as before.
 // ============================================================
 
 const { Pool } = require('pg');
+const { config } = require('../core');
 
-function loadConfig() {
-  try {
-    const core = require('../core');
-    return (core && core.config) || null;
-  } catch (_) { return null; }
-}
-
-const config = loadConfig() || {};
-
-const connectionString =
-  (config.db && config.db.url) ||
-  process.env.DATABASE_URL;
+const connectionString = config.db.url;
 
 if (!connectionString) {
-  console.error('[db] DATABASE_URL is not set. The pool will fail on first query.');
+  console.error('[db] DATABASE_URL is not set. Pool will fail on first query.');
 }
-
-const isProd = (config.nodeEnv === 'production') ||
-               (process.env.NODE_ENV === 'production');
 
 const pool = new Pool({
   connectionString: connectionString,
-  ssl: isProd ? { rejectUnauthorized: false } : false,
+  ssl: config.nodeEnv === 'production' ? { rejectUnauthorized: false } : false,
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 15000,
+  // 30 seconds — enough for a cold Neon connect over slow internet
+  connectionTimeoutMillis: 30000,
+  // Kill any query that takes longer than 20s (prevents hanging server)
+  statement_timeout: 20000,
+  query_timeout: 20000,
 });
 
 pool.on('error', function (err) {
@@ -50,8 +36,12 @@ async function ping() {
   return res.rows[0].now;
 }
 
+/**
+ * Wait for the DB to be reachable. Retries with backoff.
+ * Called at boot so the server doesn't start in a broken state.
+ */
 async function waitForDb(maxAttempts) {
-  maxAttempts = maxAttempts || 5;
+  maxAttempts = maxAttempts || 6;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       const client = await pool.connect();
@@ -61,7 +51,7 @@ async function waitForDb(maxAttempts) {
     } catch (err) {
       console.error('[db] Attempt ' + attempt + ' failed: ' + err.message);
       if (attempt === maxAttempts) return false;
-      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 16000);
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
       await new Promise(function (r) { setTimeout(r, delay); });
     }
   }

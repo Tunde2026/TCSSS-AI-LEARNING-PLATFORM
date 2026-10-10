@@ -62,58 +62,23 @@ async function recordActivity(userId, type) {
    Returns true if newly earned (either first time or after reset)
    ============================================================ */
 async function award(userId, badgeKey, metadata) {
+  if (!userId || !badgeKey) return false;
   try {
-    // 1. Ensure a row exists with started_at
-    await db.pool.query(
-      `INSERT INTO user_badges (user_id, badge_key, earned_at, started_at, times_completed)
-       VALUES ($1, $2, now(), COALESCE(
-         (SELECT MIN(created_at) FROM user_activity_log WHERE user_id = $1),
-         now()
-       ), 0)
-       ON CONFLICT (user_id, badge_key) DO NOTHING`,
-      [userId, badgeKey]
+    const r = await db.pool.query(
+      `INSERT INTO user_badges (user_id, badge_key, earned_at, metadata)
+       VALUES ($1, $2, now(), $3)
+       ON CONFLICT (user_id, badge_key) DO NOTHING
+       RETURNING id`,
+      [userId, badgeKey, metadata || {}]
     );
-
-    // 2. Only award if earned_at is currently set (in-progress state)
-    const row = (await db.pool.query(
-      `SELECT id, earned_at, started_at FROM user_badges
-        WHERE user_id = $1 AND badge_key = $2`,
-      [userId, badgeKey]
-    )).rows[0];
-
-    if (!row) return false;
-    if (!row.earned_at) return false; // already in-progress, nothing to award
-
-    // 3. Compute duration
-    const duration = row.started_at
-      ? Math.round((Date.now() - new Date(row.started_at).getTime()) / 1000)
-      : null;
-
-    // 4. Log to history
-    try {
-      await db.pool.query(
-        `INSERT INTO user_badge_history (user_id, badge_key, duration_seconds, metadata)
-         VALUES ($1, $2, $3, $4)`,
-        [userId, badgeKey, duration, metadata ? JSON.stringify(metadata) : null]
-      );
-    } catch (_) {}
-
-    // 5. Auto-reset: clear earned_at, restart the round
-    await db.pool.query(
-      `UPDATE user_badges
-          SET earned_at         = NULL,
-              completed_at      = NULL,
-              duration_seconds  = NULL,
-              started_at        = now(),
-              times_completed   = times_completed + 1,
-              progress_data     = '{}'::jsonb
-        WHERE user_id = $1 AND badge_key = $2`,
-      [userId, badgeKey]
-    );
-
-    return true;
+    return r.rowCount > 0;
   } catch (err) {
-    logger.warn('[badges] award failed for ' + badgeKey + ': ' + err.message);
+    // Log the real reason once, then stop trying (prevents log spam)
+    if (!award.__logged) award.__logged = {};
+    if (!award.__logged[badgeKey]) {
+      award.__logged[badgeKey] = true;
+      console.warn('[badges] award failed for ' + badgeKey + ': ' + err.message);
+    }
     return false;
   }
 }

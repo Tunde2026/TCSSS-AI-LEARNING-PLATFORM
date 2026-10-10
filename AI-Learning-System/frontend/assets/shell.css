@@ -2979,8 +2979,121 @@ main.page .page-header--lg,
    Hide the mobile-bar hamburger (navigation lives in bottom nav
    and the More sheet now)
    ============================================================ */
-@media (max-width: 860px) {
-  .mobile-bar__toggle { display: none !important; }
+@media (max-width: 860px) {  /* mobile-bar toggle restored — sidebar access on mobile */
   .mobile-bar { padding-left: 18px !important; gap: 0 !important; }
   .mobile-bar__title { padding-left: 0 !important; }
+}
+
+/* ============================================================
+   ADMIN SIDEBAR — polish + mobile hamburger re-enable
+   ============================================================ */
+
+/* A small divider below "Back to app" */
+.sidebar__divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 8px 12px 10px;
+}
+
+/* Highlight the "Back to app" link slightly */
+.nav-item--back {
+  color: rgba(255,255,255,0.85) !important;
+  font-weight: 600;
+}
+.nav-item--back i {
+  color: var(--gold) !important;
+}
+
+/* Admin sidebar: slightly tighter item spacing so 12 items fit */
+.sidebar__nav .nav-item {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+/* Re-enable the hamburger on admin pages (mobile only) */
+@media (max-width: 860px) {
+  body.admin-page .mobile-bar__toggle,
+  .mobile-bar__toggle[data-admin="1"] {
+    display: grid !important;
+  }
+}
+
+/* ============================================================
+   ADMIN SIDEBAR — dual nav (admin + student)
+   ============================================================ */
+
+/* Divider between nav sections */
+.sidebar__divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 10px 12px;
+}
+
+/* Section labels ("Admin panel", "Learning") */
+.sidebar__section-label {
+  font-family: var(--font-ui);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  font-weight: 700;
+  padding: 4px 14px 6px;
+  user-select: none;
+}
+
+/* Back to app link — accent gold icon */
+.nav-item--back {
+  color: rgba(255,255,255,0.9) !important;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.nav-item--back i {
+  color: var(--gold) !important;
+}
+.nav-item--back:hover {
+  background: rgba(201,149,46,0.12) !important;
+}
+
+/* Student nav items inside the admin sidebar — slightly muted */
+.nav-item--student {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.75);
+}
+
+/* Tighten the sidebar body scroll for admin pages with many items */
+.sidebar__nav .nav-item {
+  padding: 8px 12px;
+  font-size: 0.85rem;
+}
+
+/* ============================================================
+   MOBILE SIDEBAR ACCESS — force hamburger visible
+   ============================================================ */
+@media (max-width: 860px) {
+  .mobile-bar__toggle {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* ============================================================
+   MOBILE — hide the sidebar expand/collapse icon
+   The hamburger in the sidebar header is redundant on mobile
+   (the drawer opens from the top bar or the bottom nav).
+   ============================================================ */
+@media (max-width: 860px) {
+  .sidebar__toggle,
+  .sidebar .sidebar__toggle,
+  #sidebar-toggle {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+  /* Recentre the sidebar brand since the toggle is gone */
+  .sidebar__header {
+    justify-content: flex-start;
+    padding-left: 16px;
+  }
 }

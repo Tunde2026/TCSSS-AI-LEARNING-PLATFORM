@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Chat — AI Learning Platform</title>
-<link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="/uploads/branding/logo.png">
-<link rel="stylesheet" href="assets/shell.css?v=20261005e">
+<link rel="manifest" href="/manifest.json"><link rel="apple-touch-icon" href="/uploads/branding/logo.png">
+<link rel="stylesheet" href="assets/shell.css?v=20261010e">
 <style>
   .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--blush); height: 100vh; overflow: hidden; position: relative; }
   .chat-scroll { flex: 1; overflow-y: auto; padding: 32px 24px; min-height: 0; }
@@ -814,7 +814,7 @@
     </div>
   </div>
 
-<script src="assets/shell.js?v=20261005e"></script>
+<script src="assets/shell.js?v=20261010e"></script>
 <script>
 (function () {
   'use strict';
@@ -2012,7 +2012,7 @@
       '</div>';
     container.innerHTML = html;
 
-    var canvas = document.getElementById(canvasId);
+    var canvas = container.querySelector('#' + canvasId);
     var latex = tool.latex || '';
     var unicodeText = tool.unicode || tool.plain || '';
 
@@ -2753,11 +2753,21 @@
     }
     if (sketchTools.length) {
       var skWrap = document.createElement('div'); skWrap.className = 'msg-tools'; body.appendChild(skWrap);
-      sketchTools.forEach(function (t) { buildInlineSketch(t).then(function (w) { skWrap.appendChild(w); scrollToBottom(); }); });
+      sketchTools.forEach(function (t) {
+        try {
+          buildInlineSketch(t).then(function (w) { skWrap.appendChild(w); scrollToBottom(); })
+                             .catch(function (err) { console.warn('[sketch] build failed:', err); });
+        } catch (err) { console.warn('[sketch] threw synchronously:', err); }
+      });
     }
     if (examTools.length) {
       var exWrap = document.createElement('div'); exWrap.className = 'msg-tools'; body.appendChild(exWrap);
-      examTools.forEach(function (t) { buildInteractiveExam(t).then(function (w) { exWrap.appendChild(w); scrollToBottom(); }); });
+      examTools.forEach(function (t) {
+        try {
+          buildInteractiveExam(t).then(function (w) { exWrap.appendChild(w); scrollToBottom(); })
+                                 .catch(function (err) { console.warn('[exam] build failed:', err); });
+        } catch (err) { console.warn('[exam] threw synchronously:', err); }
+      });
     }
     if (mistakesTools.length) {
       var msWrap = document.createElement('div'); msWrap.className = 'msg-tools'; body.appendChild(msWrap);
@@ -2765,7 +2775,12 @@
     }
     if (vizTools.length) {
       var vzWrap = document.createElement('div'); vzWrap.className = 'msg-tools'; body.appendChild(vzWrap);
-      vizTools.forEach(function (t) { buildInlineVisualization(t).then(function (w) { vzWrap.appendChild(w); scrollToBottom(); }); });
+      vizTools.forEach(function (t) {
+        try {
+          buildInlineVisualization(t).then(function (w) { vzWrap.appendChild(w); scrollToBottom(); })
+                                     .catch(function (err) { console.warn('[viz] build failed:', err); });
+        } catch (err) { console.warn('[viz] threw synchronously:', err); }
+      });
     }
     if (planTools.length) {
       var plWrap = document.createElement('div'); plWrap.className = 'msg-tools'; body.appendChild(plWrap);
@@ -3739,6 +3754,119 @@
     });
   }
 
+
+  
+  /* Mobile New chat FAB — draggable, visible only below 860px */
+  (function () {
+    if (window.innerWidth > 860) return;
+    if (document.getElementById('mobile-new-chat-fab')) return;
+
+    var STORAGE_KEY = 'tcsss-fab-position';
+
+    var style = document.createElement('style');
+    style.textContent =
+      '#mobile-new-chat-fab{position:fixed;' +
+      'width:56px;height:56px;border-radius:50%;' +
+      'background:linear-gradient(135deg,#E6111E,#B80F1A);' +
+      'color:#fff;border:none;' +
+      'box-shadow:0 10px 26px rgba(230,17,30,0.42);' +
+      'display:grid;place-items:center;font-size:1.2rem;' +
+      'cursor:grab;z-index:600;' +
+      'touch-action:none;user-select:none;' +
+      '-webkit-tap-highlight-color:transparent;' +
+      'transition:box-shadow 200ms ease;}' +
+      '#mobile-new-chat-fab.is-dragging{cursor:grabbing;' +
+      'box-shadow:0 16px 40px rgba(230,17,30,0.62);' +
+      'transform:scale(1.06);}' +
+      '#mobile-new-chat-fab i{pointer-events:none;}' +
+      '@media (min-width:861px){#mobile-new-chat-fab{display:none !important;}}';
+    document.head.appendChild(style);
+
+    var fab = document.createElement('button');
+    fab.id = 'mobile-new-chat-fab';
+    fab.type = 'button';
+    fab.setAttribute('aria-label', 'New chat');
+    fab.innerHTML = '<i class="fa-solid fa-plus"></i>';
+    document.body.appendChild(fab);
+
+    // Default position: bottom-right, above bottom nav
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var SIZE = 56;
+    var DEFAULT = {
+      x: vw - SIZE - 18,
+      y: vh - SIZE - 90 - (window.visualViewport ? 0 : 0)
+    };
+
+    // Restore saved position
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (_) {}
+    var pos = saved || DEFAULT;
+
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+    function apply(x, y) {
+      pos.x = clamp(x, 8, window.innerWidth - SIZE - 8);
+      pos.y = clamp(y, 8, window.innerHeight - SIZE - 8);
+      fab.style.left = pos.x + 'px';
+      fab.style.top  = pos.y + 'px';
+      fab.style.right = 'auto';
+      fab.style.bottom = 'auto';
+    }
+
+    apply(pos.x, pos.y);
+
+    var dragging = false;
+    var moved = false;
+    var startX = 0, startY = 0;
+    var offsetX = 0, offsetY = 0;
+
+    fab.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
+      dragging = true;
+      moved = false;
+      startX = e.clientX;
+      startY = e.clientY;
+      offsetX = pos.x;
+      offsetY = pos.y;
+      fab.setPointerCapture(e.pointerId);
+      fab.classList.add('is-dragging');
+    });
+
+    fab.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var dx = e.clientX - startX;
+      var dy = e.clientY - startY;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) moved = true;
+      apply(offsetX + dx, offsetY + dy);
+    });
+
+    function endDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      fab.classList.remove('is-dragging');
+      try { fab.releasePointerCapture(e.pointerId); } catch (_) {}
+
+      // Save position (only if moved)
+      if (moved) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pos)); } catch (_) {}
+      } else {
+        // Simple tap → start new chat
+        if (typeof startNewConversation === 'function') {
+          startNewConversation();
+        }
+      }
+    }
+
+    fab.addEventListener('pointerup', endDrag);
+    fab.addEventListener('pointercancel', endDrag);
+
+    // Reposition on resize to keep it inside the viewport
+    window.addEventListener('resize', function () {
+      apply(pos.x, pos.y);
+    });
+  })();
+
   (async function init() {
     var ok = await ensureLoggedIn();
     if (!ok) return;
@@ -3758,6 +3886,6 @@
     <img id="img-lightbox-img" alt="">
   </div>
 
-<script src="assets/pwa.js?v=20261005a" async></script>
+<script src="/assets/pwa.js?v=20261005a" async></script>
 </body>
 </html>
